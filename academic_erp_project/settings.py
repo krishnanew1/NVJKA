@@ -74,14 +74,22 @@ WSGI_APPLICATION = 'academic_erp_project.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 import pymysql
+
+# 1. Install pymysql as the driver
 pymysql.install_as_MySQLdb()
 
+# 2. THE FIX: Force overwrite the version number (No 'if' statements this time)
+import MySQLdb
+MySQLdb.version_info = (2, 2, 2, 'final', 0)
+MySQLdb.__version__ = '2.2.2'
+
+# 3. Database Configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'academic_erp',
-        'USER': 'root', # Your MySQL username
-        'PASSWORD': 'Abcd@1234', # Your MySQL password
+        'USER': 'root',
+        'PASSWORD': 'Krishna@2210',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -123,3 +131,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+AUTH_USER_MODEL = 'portal.User'
