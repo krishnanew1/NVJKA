@@ -19,5 +19,7 @@ from django.urls import path, include  # 1. Import 'include'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('portal.urls')),  # 2. Link the portal app here
+    path('', include('portal.urls')),  # Portal app URLs
+    path('api/auth/', include('users.urls')),  # JWT authentication endpoints
+    path('api/academics/', include('academics.urls')),  # Academic API endpoints
 ]

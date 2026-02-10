@@ -1,22 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 from .models import (
-    User, Department, StudentProfile, FacultyProfile, 
+    Department, StudentProfile, FacultyProfile, 
     Course, FacultyAssignment, Enrollment, Attendance, FeePayment
 )
 
-# 1. Register the Custom User Model
-@admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'role', 'is_staff')
-    fieldsets = UserAdmin.fieldsets + (
-        ('Role Info', {'fields': ('role',)}),
-    )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Role Info', {'fields': ('role',)}),
-    )
-
-# 2. Register other models
+# Register models
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('dept_name', 'dept_code')

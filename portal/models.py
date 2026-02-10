@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 # 1. Departments Table
 class Department(models.Model):
@@ -9,32 +9,9 @@ class Department(models.Model):
     def __str__(self):
         return self.dept_name
 
-# 2. Custom User Model (Replaces your Users table to use Django Auth)
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ('Student', 'Student'),
-        ('Faculty', 'Faculty'),
-        ('Admin', 'Admin'),
-    )
-    # Removing username field validator if you want to use Roll No as username
-    email = models.EmailField(unique=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    
-    # Django requires these for custom user models
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='portal_user_set',
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='portal_user_set',
-        blank=True
-    )
-
 # 3. Student Profiles
 class StudentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     dob = models.DateField(null=True, blank=True)
     home_address = models.TextField(null=True, blank=True)
     parent_name = models.CharField(max_length=100, null=True, blank=True)
@@ -56,7 +33,7 @@ class StudentProfile(models.Model):
 
 # 4. Faculty Profiles
 class FacultyProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     designation = models.CharField(max_length=50, null=True, blank=True)
     specialization = models.CharField(max_length=100, null=True, blank=True)
@@ -88,7 +65,7 @@ class FacultyAssignment(models.Model):
 class Enrollment(models.Model):
     STATUS_CHOICES = (('Pending', 'Pending'), ('Verified', 'Verified'), ('Rejected', 'Rejected'))
     
-    student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Student'})
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'role': 'STUDENT'})
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     semester_no = models.IntegerField()
     is_backlog = models.BooleanField(default=False)
@@ -100,7 +77,7 @@ class Attendance(models.Model):
     STATUS_CHOICES = (('Present', 'Present'), ('Absent', 'Absent'), ('Late', 'Late'))
 
     assignment = models.ForeignKey(FacultyAssignment, on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     attendance_date = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Present')
 
@@ -108,7 +85,7 @@ class Attendance(models.Model):
 class FeePayment(models.Model):
     PAYMENT_STATUS = (('Successful', 'Successful'), ('Failed', 'Failed'), ('Pending', 'Pending'))
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     total_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_status = models.CharField(max_length=15, choices=PAYMENT_STATUS, default='Pending')
     transaction_id = models.CharField(max_length=100, unique=True)
