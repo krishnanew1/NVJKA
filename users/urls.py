@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from .views import StudentDashboardView, FacultyDashboardView
 
 app_name = 'users'
 
@@ -16,4 +17,8 @@ urlpatterns = [
     # JWT Authentication endpoints
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Dashboard endpoints
+    path('dashboard/student/', StudentDashboardView.as_view(), name='student_dashboard'),
+    path('dashboard/faculty/', FacultyDashboardView.as_view(), name='faculty_dashboard'),
 ]

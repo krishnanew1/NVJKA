@@ -22,4 +22,6 @@ urlpatterns = [
     path('', include('portal.urls')),  # Portal app URLs
     path('api/auth/', include('users.urls')),  # JWT authentication endpoints
     path('api/academics/', include('academics.urls')),  # Academic API endpoints
+    path('api/students/', include('students.urls')),  # Student management endpoints
+    path('api/attendance/', include('attendance.urls')),  # Attendance management endpoints
 ]

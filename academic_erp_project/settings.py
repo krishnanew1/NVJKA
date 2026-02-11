@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'portal',
-    'users',
+    'users.apps.UsersConfig',  # Use full config path to ensure ready() is called
     'academics',
     'students',
     'faculty',
