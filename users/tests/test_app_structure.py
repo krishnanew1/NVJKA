@@ -32,9 +32,11 @@ class AppStructureTestCase(TestCase):
         
         for app_name in self.required_apps:
             with self.subTest(app=app_name):
-                self.assertIn(
-                    app_name,
-                    installed_apps,
+                # Check if app_name exists in any of the installed apps
+                # This handles both 'app_name' and 'app_name.apps.AppConfig' formats
+                app_found = any(app_name in app for app in installed_apps)
+                self.assertTrue(
+                    app_found,
                     f"App '{app_name}' is not in INSTALLED_APPS"
                 )
     

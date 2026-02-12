@@ -152,3 +152,7 @@ class FacultyProfile(models.Model):
         verbose_name = 'Faculty Profile'
         verbose_name_plural = 'Faculty Profiles'
         ordering = ['department', 'designation']
+
+
+# Import audit model
+from users.audit_models import AuditLog

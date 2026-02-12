@@ -205,10 +205,58 @@ class Timetable(models.Model):
         return f"{self.class_name} - {self.subject.code} ({self.day_of_week} {self.start_time}-{self.end_time})"
     
     def clean(self):
-        """Validate that end_time is after start_time."""
+        """
+        Validate timetable entry:
+        1. End time must be after start time
+        2. No classroom conflicts (same room at overlapping times)
+        """
         from django.core.exceptions import ValidationError
-        if self.start_time and self.end_time and self.start_time >= self.end_time:
-            raise ValidationError("End time must be after start time.")
+        from django.db.models import Q
+        
+        errors = {}
+        
+        # Validate time range
+        if self.start_time and self.end_time:
+            if self.start_time >= self.end_time:
+                errors['end_time'] = "End time must be after start time."
+        
+        # Validate classroom conflicts (only if room_number is specified)
+        if self.room_number and self.day_of_week and self.start_time and self.end_time and self.academic_year:
+            # Build query to find conflicting timetable entries
+            conflicts = Timetable.objects.filter(
+                room_number=self.room_number,
+                day_of_week=self.day_of_week,
+                academic_year=self.academic_year,
+                is_active=True
+            )
+            
+            # Exclude current instance if updating
+            if self.pk:
+                conflicts = conflicts.exclude(pk=self.pk)
+            
+            # Check for time overlap
+            # Two time slots overlap if:
+            # (start1 < end2) AND (end1 > start2)
+            overlapping = conflicts.filter(
+                Q(start_time__lt=self.end_time) & Q(end_time__gt=self.start_time)
+            )
+            
+            if overlapping.exists():
+                conflicting_entry = overlapping.first()
+                errors['room_number'] = (
+                    f"Room {self.room_number} is already booked on {self.day_of_week} "
+                    f"from {conflicting_entry.start_time.strftime('%H:%M')} to "
+                    f"{conflicting_entry.end_time.strftime('%H:%M')} "
+                    f"for {conflicting_entry.class_name} ({conflicting_entry.subject.code})."
+                )
+        
+        if errors:
+            raise ValidationError(errors)
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean() for validation."""
+        self.clean()
+        super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = "Timetable Entry"
