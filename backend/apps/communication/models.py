@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import FileExtensionValidator
-from users.models import CustomUser
-from academics.models import Subject
+from apps.users.models import CustomUser
+from apps.academics.models import Subject
 
 
 class Notice(models.Model):

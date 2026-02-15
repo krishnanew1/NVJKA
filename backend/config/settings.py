@@ -41,16 +41,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'drf_yasg',  # Swagger/OpenAPI documentation
-    'portal',
-    'users.apps.UsersConfig',  # Use full config path to ensure ready() is called
+    'apps.users.apps.UsersConfig',  # Use full config path to ensure ready() is called
     'apps.academics',
     'apps.attendance',
     'apps.communication',
     'apps.exams',
     'apps.faculty',
-    'apps.portal',
     'apps.students',
-    'apps.users',
 ]
 
 MIDDLEWARE = [
@@ -63,7 +60,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'academic_erp_project.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -80,7 +77,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'academic_erp_project.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database

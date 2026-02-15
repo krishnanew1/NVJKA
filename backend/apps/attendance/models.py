@@ -1,6 +1,6 @@
 from django.db import models
-from users.models import StudentProfile
-from academics.models import Subject
+from apps.users.models import StudentProfile
+from apps.academics.models import Subject
 
 
 class Attendance(models.Model):

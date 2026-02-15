@@ -9,8 +9,8 @@ from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 
 from .models import Enrollment
-from users.models import StudentProfile
-from academics.models import Course
+from apps.users.models import StudentProfile
+from apps.academics.models import Course
 
 
 class IsAdmin(IsAuthenticated):

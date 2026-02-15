@@ -155,4 +155,4 @@ class FacultyProfile(models.Model):
 
 
 # Import audit model
-from users.audit_models import AuditLog
+from apps.users.audit_models import AuditLog

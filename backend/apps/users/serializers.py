@@ -3,7 +3,7 @@ Serializers for user profiles and authentication.
 """
 from rest_framework import serializers
 from .models import CustomUser, StudentProfile, FacultyProfile
-from academics.models import Department
+from apps.academics.models import Department
 
 
 class UserBasicSerializer(serializers.ModelSerializer):

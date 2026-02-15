@@ -60,9 +60,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('portal.urls')),  # Portal app URLs
-    path('api/auth/', include('users.urls')),  # JWT authentication endpoints
-    path('api/academics/', include('academics.urls')),  # Academic API endpoints
+    path('api/auth/', include('apps.users.urls')),  # JWT authentication endpoints
+    path('api/academics/', include('apps.academics.urls')),  # Academic API endpoints
     path('api/students/', include('apps.students.urls')),  # Student management endpoints
     path('api/attendance/', include('apps.attendance.urls')),  # Attendance management endpoints
     

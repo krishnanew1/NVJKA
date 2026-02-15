@@ -3,8 +3,8 @@ Utility functions for exams app - GPA calculations and grade processing.
 """
 from decimal import Decimal
 from django.db.models import Avg, Sum, Q
-from exams.models import Grade, Assessment
-from users.models import StudentProfile
+from apps.exams.models import Grade, Assessment
+from apps.users.models import StudentProfile
 
 
 def calculate_gpa(student_id):

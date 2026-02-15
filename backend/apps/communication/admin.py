@@ -1,5 +1,5 @@
 from django.contrib import admin
-from communication.models import Notice, Resource
+from apps.communication.models import Notice, Resource
 
 
 @admin.register(Notice)

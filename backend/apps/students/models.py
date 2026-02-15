@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from users.models import StudentProfile
-from academics.models import Course
+from apps.users.models import StudentProfile
+from apps.academics.models import Course
 
 
 class Enrollment(models.Model):

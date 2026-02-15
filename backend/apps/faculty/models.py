@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from users.models import FacultyProfile
-from academics.models import Subject
+from apps.users.models import FacultyProfile
+from apps.academics.models import Subject
 
 
 class ClassAssignment(models.Model):

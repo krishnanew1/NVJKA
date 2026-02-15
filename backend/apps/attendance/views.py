@@ -10,8 +10,8 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime
 
 from .models import Attendance
-from users.models import StudentProfile, FacultyProfile
-from academics.models import Subject
+from apps.users.models import StudentProfile, FacultyProfile
+from apps.academics.models import Subject
 
 
 class IsFacultyOrAdmin(IsAuthenticated):
