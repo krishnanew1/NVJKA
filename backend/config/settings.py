@@ -43,12 +43,14 @@ INSTALLED_APPS = [
     'drf_yasg',  # Swagger/OpenAPI documentation
     'portal',
     'users.apps.UsersConfig',  # Use full config path to ensure ready() is called
-    'academics',
-    'students',
-    'faculty',
-    'attendance',
-    'exams',
-    'communication',
+    'apps.academics',
+    'apps.attendance',
+    'apps.communication',
+    'apps.exams',
+    'apps.faculty',
+    'apps.portal',
+    'apps.students',
+    'apps.users',
 ]
 
 MIDDLEWARE = [

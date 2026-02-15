@@ -63,8 +63,8 @@ urlpatterns = [
     path('', include('portal.urls')),  # Portal app URLs
     path('api/auth/', include('users.urls')),  # JWT authentication endpoints
     path('api/academics/', include('academics.urls')),  # Academic API endpoints
-    path('api/students/', include('students.urls')),  # Student management endpoints
-    path('api/attendance/', include('attendance.urls')),  # Attendance management endpoints
+    path('api/students/', include('apps.students.urls')),  # Student management endpoints
+    path('api/attendance/', include('apps.attendance.urls')),  # Attendance management endpoints
     
     # Swagger/OpenAPI documentation endpoints
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
