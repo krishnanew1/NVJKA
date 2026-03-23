@@ -9,11 +9,21 @@ from apps.academics.models import Subject
 class SubjectNestedSerializer(serializers.Serializer):
     """
     Read-only nested representation of a Subject embedded inside
-    class-assignment data.  Exposes id, name, and code only.
+    class-assignment data.  Exposes id, name, code, and course details.
     """
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(read_only=True)
     code = serializers.CharField(read_only=True)
+    semester = serializers.IntegerField(read_only=True)
+    credits = serializers.IntegerField(read_only=True)
+    course = serializers.SerializerMethodField()
+
+    def get_course(self, obj):
+        return {
+            'id': obj.course.id,
+            'name': obj.course.name,
+            'code': obj.course.code
+        } if obj.course else None
 
 
 class ClassAssignmentSerializer(serializers.ModelSerializer):

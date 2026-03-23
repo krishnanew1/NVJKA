@@ -69,9 +69,31 @@ A comprehensive Django REST API for managing academic institutions, built with D
    ```
 
 9. **Access the Application**
-   - **API Base**: http://localhost:8000/api/
+   - **Backend API**: http://localhost:8000/api/
+   - **Frontend App**: http://localhost:5174/
    - **Swagger Documentation**: http://localhost:8000/swagger/
    - **Admin Panel**: http://localhost:8000/admin/
+
+### Frontend Setup (React + Vite)
+
+1. **Navigate to Frontend Directory**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install Frontend Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start Frontend Development Server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Access Frontend Application**
+   - **Frontend**: http://localhost:5174/
+   - **Login with demo credentials** (see login page for options)
 
 ### Quick Test
 
@@ -173,6 +195,14 @@ academic-erp-system/
 │   ├── requirements.txt     # Python dependencies
 │   ├── manage.py           # Django management script
 │   └── .env.example        # Environment variables template
+├── frontend/                  # React + Vite frontend
+│   ├── src/                  # Source code
+│   │   ├── components/       # React components
+│   │   ├── api.js           # API configuration
+│   │   ├── App.jsx          # Main app component
+│   │   └── main.jsx         # Entry point
+│   ├── package.json         # Node.js dependencies
+│   └── vite.config.js       # Vite configuration
 ├── README.md               # Project documentation
 └── .gitignore             # Git ignore rules
 ```

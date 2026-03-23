@@ -1,0 +1,209 @@
+/* CSS Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Light Theme (Default) */
+:root {
+  /* Background Colors */
+  --bg-color: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  
+  /* Text Colors */
+  --text-color: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-inverse: #ffffff;
+  
+  /* Card and Surface Colors */
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Primary Colors */
+  --primary-color: #667eea;
+  --primary-hover: #5a6fd8;
+  --primary-light: #e6f3ff;
+  
+  /* Secondary Colors */
+  --secondary-color: #764ba2;
+  --secondary-hover: #6a4190;
+  
+  /* Status Colors */
+  --success-color: #48bb78;
+  --success-light: #f0fff4;
+  --warning-color: #ed8936;
+  --warning-light: #fffaf0;
+  --error-color: #f56565;
+  --error-light: #fed7d7;
+  --info-color: #4299e1;
+  --info-light: #ebf8ff;
+  
+  /* Border Colors */
+  --border-color: #e2e8f0;
+  --border-light: #f7fafc;
+  --border-dark: #cbd5e0;
+  
+  /* Interactive Colors */
+  --hover-bg: #f7fafc;
+  --active-bg: #edf2f7;
+  --focus-ring: #667eea;
+  
+  /* Sidebar Colors */
+  --sidebar-bg: #2d3748;
+  --sidebar-text: #e2e8f0;
+  --sidebar-hover: #4a5568;
+  --sidebar-active: #667eea;
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  /* Background Colors */
+  --bg-color: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  
+  /* Text Colors */
+  --text-color: #f1f5f9;
+  --text-secondary: #cbd5e0;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+  
+  /* Card and Surface Colors */
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  
+  /* Primary Colors */
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --primary-light: #312e81;
+  
+  /* Secondary Colors */
+  --secondary-color: #a78bfa;
+  --secondary-hover: #8b5cf6;
+  
+  /* Status Colors */
+  --success-color: #34d399;
+  --success-light: #064e3b;
+  --warning-color: #fbbf24;
+  --warning-light: #451a03;
+  --error-color: #f87171;
+  --error-light: #7f1d1d;
+  --info-color: #60a5fa;
+  --info-light: #1e3a8a;
+  
+  /* Border Colors */
+  --border-color: #334155;
+  --border-light: #475569;
+  --border-dark: #1e293b;
+  
+  /* Interactive Colors */
+  --hover-bg: #334155;
+  --active-bg: #475569;
+  --focus-ring: #818cf8;
+  
+  /* Sidebar Colors */
+  --sidebar-bg: #111827;
+  --sidebar-text: #d1d5db;
+  --sidebar-hover: #374151;
+  --sidebar-active: #818cf8;
+}
+
+html {
+  height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  height: 100%;
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease;
+}
+
+/* Remove default button and input styles */
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  transition: all 0.3s ease;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Remove default link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Remove default list styles */
+ul, ol {
+  list-style: none;
+}
+
+/* Ensure images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Selection Styling */
+::selection {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+}
+
+/* Theme Transition Animation */
+* {
+  transition: background-color 0.3s ease, 
+              border-color 0.3s ease, 
+              color 0.3s ease,
+              box-shadow 0.3s ease;
+}

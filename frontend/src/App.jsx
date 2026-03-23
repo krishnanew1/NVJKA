@@ -1,0 +1,68 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import AdminDashboard from './pages/AdminDashboard';
+import FacultyDashboard from './pages/FacultyDashboard';
+import StudentDashboard from './pages/StudentDashboard';
+import './App.css';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Login />} />
+          
+          {/* Legacy Dashboard Route (for backward compatibility) */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Protected Routes with Layout */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+          </Route>
+          
+          <Route 
+            path="/faculty" 
+            element={
+              <ProtectedRoute allowedRoles={['FACULTY']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<FacultyDashboard />} />
+          </Route>
+          
+          <Route 
+            path="/student" 
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<StudentDashboard />} />
+          </Route>
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;

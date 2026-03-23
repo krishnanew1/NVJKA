@@ -35,8 +35,8 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         if user.role == 'STUDENT':
             return Enrollment.objects.filter(
                 student__user=user
-            ).select_related('course', 'student')
-        return Enrollment.objects.all().select_related('course', 'student')
+            ).select_related('course', 'student', 'student__user', 'student__department')
+        return Enrollment.objects.all().select_related('course', 'student', 'student__user', 'student__department')
 
     def get_permissions(self):
         if self.action == 'destroy':

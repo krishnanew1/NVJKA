@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -232,7 +233,9 @@ SIMPLE_JWT = {
 # https://github.com/adamchainz/django-cors-headers
 
 # Allow all origins in development (change for production)
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000', cast=Csv())
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5174,http://127.0.0.1:3000', cast=Csv())
+
+#CORS_ALLOW_ALL_ORIGINS = True
 
 # Allow credentials (cookies, authorization headers) to be sent with CORS requests
 CORS_ALLOW_CREDENTIALS = True

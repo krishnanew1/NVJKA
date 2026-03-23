@@ -7,6 +7,17 @@ consistency regardless of the global DRF setting.
 from rest_framework import serializers
 from .models import Enrollment, AcademicHistory
 from apps.academics.models import Course
+from apps.users.serializers import UserBasicSerializer
+
+
+class StudentNestedSerializer(serializers.Serializer):
+    """
+    Read-only nested representation of a StudentProfile embedded inside enrollment data.
+    """
+    id = serializers.IntegerField(read_only=True)
+    enrollment_number = serializers.CharField(read_only=True)
+    roll_number = serializers.CharField(read_only=True, source='enrollment_number')
+    user = UserBasicSerializer(read_only=True)
 
 
 class CourseNestedSerializer(serializers.Serializer):
@@ -24,12 +35,14 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     Serializer for the ``Enrollment`` model.
 
     Read:  ``course`` is returned as a nested object (id, name, code).
+           ``student`` is returned as a nested object with user details.
     Write: ``course_id`` (integer FK) must be supplied instead.
 
     Validation ensures a student cannot be enrolled in the same course
     for the same semester twice (mirrors the ``unique_together`` DB constraint
     with a friendlier error message).
     """
+    student = StudentNestedSerializer(read_only=True)
     course = CourseNestedSerializer(read_only=True)
     course_id = serializers.PrimaryKeyRelatedField(
         queryset=Course.objects.all(),
