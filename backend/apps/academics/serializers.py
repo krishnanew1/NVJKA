@@ -241,17 +241,21 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class TimetableSerializer(serializers.ModelSerializer):
     """
-    Serializer for Timetable model with nested Subject information.
+    Serializer for Timetable model with nested Subject and Faculty information.
     
     Provides comprehensive timetable information including related subject,
-    course, and department details through nested serialization.
+    course, department, and faculty details through nested serialization.
     """
     
     # Nested subject serialization (which includes course and department)
     subject = SubjectSerializer(read_only=True)
     
-    # Write-only field for creating/updating timetable entries
+    # Nested faculty information
+    faculty_info = serializers.SerializerMethodField()
+    
+    # Write-only fields for creating/updating timetable entries
     subject_id = serializers.IntegerField(write_only=True)
+    faculty_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     
     # Read-only computed fields
     day_display = serializers.CharField(source='get_day_of_week_display', read_only=True)
@@ -264,18 +268,32 @@ class TimetableSerializer(serializers.ModelSerializer):
             'class_name',
             'subject',
             'subject_id',
+            'faculty_info',
+            'faculty_id',
             'day_of_week',
             'day_display',
             'start_time',
             'end_time',
             'duration_minutes',
             'room_number',
+            'classroom',
             'academic_year',
             'is_active',
             'created_at',
             'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'duration_minutes']
+    
+    def get_faculty_info(self, obj):
+        """Get faculty information if assigned."""
+        if obj.faculty:
+            return {
+                'id': obj.faculty.id,
+                'employee_id': obj.faculty.employee_id,
+                'name': obj.faculty.user.get_full_name() or obj.faculty.user.username,
+                'designation': obj.faculty.designation,
+            }
+        return None
     
     def get_duration_minutes(self, obj):
         """Calculate the duration of the class in minutes."""
@@ -291,6 +309,16 @@ class TimetableSerializer(serializers.ModelSerializer):
             Subject.objects.get(id=value)
         except Subject.DoesNotExist:
             raise serializers.ValidationError("Subject with this ID does not exist.")
+        return value
+    
+    def validate_faculty_id(self, value):
+        """Validate that the faculty exists."""
+        if value is not None:
+            from apps.users.models import FacultyProfile
+            try:
+                FacultyProfile.objects.get(id=value)
+            except FacultyProfile.DoesNotExist:
+                raise serializers.ValidationError("Faculty with this ID does not exist.")
         return value
     
     def validate(self, data):
@@ -325,18 +353,36 @@ class TimetableSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        """Create a new timetable entry with the specified subject."""
+        """Create a new timetable entry with the specified subject and faculty."""
         subject_id = validated_data.pop('subject_id')
+        faculty_id = validated_data.pop('faculty_id', None)
+        
         subject = Subject.objects.get(id=subject_id)
         validated_data['subject'] = subject
+        
+        if faculty_id:
+            from apps.users.models import FacultyProfile
+            faculty = FacultyProfile.objects.get(id=faculty_id)
+            validated_data['faculty'] = faculty
+        
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        """Update timetable entry with optional subject change."""
+        """Update timetable entry with optional subject and faculty change."""
         if 'subject_id' in validated_data:
             subject_id = validated_data.pop('subject_id')
             subject = Subject.objects.get(id=subject_id)
             validated_data['subject'] = subject
+        
+        if 'faculty_id' in validated_data:
+            faculty_id = validated_data.pop('faculty_id')
+            if faculty_id:
+                from apps.users.models import FacultyProfile
+                faculty = FacultyProfile.objects.get(id=faculty_id)
+                validated_data['faculty'] = faculty
+            else:
+                validated_data['faculty'] = None
+        
         return super().update(instance, validated_data)
 
 

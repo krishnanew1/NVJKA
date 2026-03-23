@@ -28,6 +28,18 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
+# Production Security Settings
+if not DEBUG:
+    # Security settings for production
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    X_FRAME_OPTIONS = 'DENY'
+
 
 # Application definition
 
@@ -42,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'drf_yasg',  # Swagger/OpenAPI documentation
+    'corsheaders',  # CORS headers for frontend integration
     'apps.users.apps.UsersConfig',  # Use full config path to ensure ready() is called
     'apps.academics',
     'apps.attendance',
@@ -52,6 +65,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Must be at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.AuditLogMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -142,6 +157,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # For production collectstatic
+
+# Media files (User uploads)
+# https://docs.djangoproject.com/en/6.0/topics/files/
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 AUTH_USER_MODEL = 'users.CustomUser'
 
 # Default primary key field type
@@ -163,6 +186,15 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    # Consistent date/time formatting across all serializers
+    'DATE_FORMAT': '%Y-%m-%d',
+    'DATE_INPUT_FORMATS': ['%Y-%m-%d'],
+    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S',
+    'DATETIME_INPUT_FORMATS': ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S'],
+    'TIME_FORMAT': '%H:%M:%S',
+    'TIME_INPUT_FORMATS': ['%H:%M:%S', '%H:%M'],
+    # Global exception handler
+    'EXCEPTION_HANDLER': 'apps.common.exceptions.custom_exception_handler',
 }
 
 # Simple JWT Configuration
@@ -195,3 +227,41 @@ SIMPLE_JWT = {
     
     'JTI_CLAIM': 'jti',
 }
+
+# CORS Configuration for Frontend Integration
+# https://github.com/adamchainz/django-cors-headers
+
+# Allow all origins in development (change for production)
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000', cast=Csv())
+
+# Allow credentials (cookies, authorization headers) to be sent with CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow all headers in development (restrict in production)
+CORS_ALLOW_ALL_HEADERS = config('CORS_ALLOW_ALL_HEADERS', default=True, cast=bool)
+
+# Allowed headers for CORS requests
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Allowed methods for CORS requests
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Preflight request cache time (in seconds)
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours

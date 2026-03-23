@@ -173,6 +173,14 @@ class Timetable(models.Model):
         related_name='timetable_entries',
         help_text="Subject being taught in this time slot"
     )
+    faculty = models.ForeignKey(
+        'users.FacultyProfile',
+        on_delete=models.CASCADE,
+        related_name='timetable_entries',
+        null=True,
+        blank=True,
+        help_text="Faculty member teaching this class"
+    )
     day_of_week = models.CharField(
         max_length=10,
         choices=DAY_CHOICES,
@@ -189,6 +197,12 @@ class Timetable(models.Model):
         blank=True,
         null=True,
         help_text="Room number where the class is held"
+    )
+    classroom = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Classroom identifier (alias for room_number)"
     )
     academic_year = models.CharField(
         max_length=10,
@@ -209,6 +223,7 @@ class Timetable(models.Model):
         Validate timetable entry:
         1. End time must be after start time
         2. No classroom conflicts (same room at overlapping times)
+        3. No faculty conflicts (same faculty at overlapping times)
         """
         from django.core.exceptions import ValidationError
         from django.db.models import Q
@@ -220,14 +235,18 @@ class Timetable(models.Model):
             if self.start_time >= self.end_time:
                 errors['end_time'] = "End time must be after start time."
         
-        # Validate classroom conflicts (only if room_number is specified)
-        if self.room_number and self.day_of_week and self.start_time and self.end_time and self.academic_year:
+        # Use classroom if room_number is not set
+        room = self.room_number or self.classroom
+        
+        # Validate classroom conflicts (only if room is specified)
+        if room and self.day_of_week and self.start_time and self.end_time and self.academic_year:
             # Build query to find conflicting timetable entries
             conflicts = Timetable.objects.filter(
-                room_number=self.room_number,
                 day_of_week=self.day_of_week,
                 academic_year=self.academic_year,
                 is_active=True
+            ).filter(
+                Q(room_number=room) | Q(classroom=room)
             )
             
             # Exclude current instance if updating
@@ -244,10 +263,39 @@ class Timetable(models.Model):
             if overlapping.exists():
                 conflicting_entry = overlapping.first()
                 errors['room_number'] = (
-                    f"Room {self.room_number} is already booked on {self.day_of_week} "
+                    f"Room {room} is already booked on {self.day_of_week} "
                     f"from {conflicting_entry.start_time.strftime('%H:%M')} to "
                     f"{conflicting_entry.end_time.strftime('%H:%M')} "
                     f"for {conflicting_entry.class_name} ({conflicting_entry.subject.code})."
+                )
+        
+        # Validate faculty conflicts
+        if self.faculty and self.day_of_week and self.start_time and self.end_time and self.academic_year:
+            # Build query to find conflicting faculty assignments
+            faculty_conflicts = Timetable.objects.filter(
+                faculty=self.faculty,
+                day_of_week=self.day_of_week,
+                academic_year=self.academic_year,
+                is_active=True
+            )
+            
+            # Exclude current instance if updating
+            if self.pk:
+                faculty_conflicts = faculty_conflicts.exclude(pk=self.pk)
+            
+            # Check for time overlap
+            overlapping_faculty = faculty_conflicts.filter(
+                Q(start_time__lt=self.end_time) & Q(end_time__gt=self.start_time)
+            )
+            
+            if overlapping_faculty.exists():
+                conflicting_entry = overlapping_faculty.first()
+                errors['faculty'] = (
+                    f"Faculty member {self.faculty.user.get_full_name() or self.faculty.employee_id} "
+                    f"is already assigned to another class on {self.day_of_week} "
+                    f"from {conflicting_entry.start_time.strftime('%H:%M')} to "
+                    f"{conflicting_entry.end_time.strftime('%H:%M')} "
+                    f"({conflicting_entry.class_name} - {conflicting_entry.subject.code})."
                 )
         
         if errors:

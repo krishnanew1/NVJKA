@@ -1,367 +1,225 @@
-# 🎓 Academic ERP Backend System
+# Academic ERP System
 
-A comprehensive Django REST API backend for managing academic institution operations including user management, academic structure, student enrollment, attendance tracking, examinations, grading, and communication systems.
+A comprehensive Django REST API for managing academic institutions, built with Django 6.0 and MySQL.
 
----
+## 🚀 Quick Start
 
-## 📋 Table of Contents
+### Prerequisites
+- Python 3.11+
+- MySQL 8.0+
+- Git
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Testing](#testing)
-- [API Endpoints](#api-endpoints)
-- [License](#license)
+### Installation & Setup
 
----
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd academic-erp-system
+   ```
 
-## ✨ Features
+2. **Set Up Python Virtual Environment**
+   ```bash
+   # Create virtual environment
+   python -m venv venv
+   
+   # Activate virtual environment
+   # Windows:
+   venv\Scripts\activate
+   # Linux/Mac:
+   source venv/bin/activate
+   ```
 
-### Core Functionality
-- **JWT Authentication** - Secure token-based authentication
-- **Role-Based Access Control** - Admin, Faculty, and Student roles
-- **User Management** - Custom user model with automatic profile creation
-- **Academic Structure Management** - Departments, Courses, Subjects, and Timetables
-- **Student Enrollment System** - Course registration and academic history tracking
-- **Faculty Management** - Class assignments and roster management
-- **Attendance Tracking** - Bulk attendance marking with percentage calculations
-- **Examination & Grading** - Assessment management with grade validation
-- **GPA Calculation** - Credit-weighted GPA calculation (10.0 scale)
-- **Communication System** - Notice board and learning resource management
-- **Audit Logging** - Comprehensive request logging for all data modifications
-- **API Documentation** - Interactive Swagger/ReDoc documentation
+3. **Install Backend Dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
 
-### Key Highlights
-- ✅ 184 automated tests (100% passing)
-- ✅ Timetable conflict prevention
-- ✅ Automatic profile creation via Django signals
-- ✅ Nested serialization for related data
-- ✅ Bulk operations with transaction safety
-- ✅ File upload with validation
-- ✅ Sensitive data sanitization in logs
+4. **Configure Environment Variables**
+   ```bash
+   # Copy environment template
+   cp .env.example .env
+   
+   # Edit .env with your settings:
+   # - Set SECRET_KEY (generate new one for production)
+   # - Configure database credentials
+   # - Set DEBUG=True for development
+   ```
 
----
+5. **Set Up Database**
+   ```sql
+   -- Connect to MySQL and create database
+   mysql -u root -p
+   CREATE DATABASE academic_erp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
 
-## 🛠️ Tech Stack
+6. **Run Database Migrations**
+   ```bash
+   python manage.py migrate
+   ```
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Python | 3.14+ | Programming Language |
-| Django | 4.2.28 | Web Framework |
-| Django REST Framework | 3.16.1 | REST API Toolkit |
-| MySQL | 8.0+ | Database |
-| Simple JWT | 5.5.1 | JWT Authentication |
-| drf-yasg | 1.21.14 | API Documentation |
-| python-decouple | 3.8 | Environment Variables |
+7. **Create Superuser Account**
+   ```bash
+   python manage.py createsuperuser
+   ```
 
----
+8. **Start Development Server**
+   ```bash
+   python manage.py runserver
+   ```
+
+9. **Access the Application**
+   - **API Base**: http://localhost:8000/api/
+   - **Swagger Documentation**: http://localhost:8000/swagger/
+   - **Admin Panel**: http://localhost:8000/admin/
+
+### Quick Test
+
+Run the demo flow to verify everything works:
+```bash
+python manage.py test tests.test_demo_flow --verbosity=2
+```
+
+## 📚 API Documentation
+
+Interactive API documentation is available at:
+- **Swagger UI**: [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
+- **ReDoc**: [http://localhost:8000/redoc/](http://localhost:8000/redoc/)
+
+### Authentication
+```bash
+# Get JWT Token
+POST /api/users/login/
+{
+  "username": "your_username",
+  "password": "your_password"
+}
+
+# Use in headers
+Authorization: Bearer <your_access_token>
+```
+
+### Auto-Generate Timetable
+```bash
+# Generate timetable for a batch
+POST /api/academics/timetable/generate/
+{
+  "batch_year": 2024,
+  "department_id": 1,
+  "semester": 3,
+  "academic_year": "2026-27"
+}
+
+# Get generated timetable
+GET /api/academics/timetable/batch/?batch_year=2024&department_id=1&semester=3
+```
+
+### Mark Bulk Attendance
+```bash
+POST /api/attendance/bulk-mark/
+{
+  "subject_id": 1,
+  "date": "2026-03-23",
+  "records": [
+    {"student_id": 1, "status": "Present"},
+    {"student_id": 2, "status": "Absent"}
+  ]
+}
+```
+
+### Get Student Transcript
+```bash
+GET /api/exams/transcript/1/
+# Returns complete transcript with GPA calculation
+```
+
+## 🎯 Demo Flow
+
+Run the complete demo test:
+```bash
+python manage.py test tests.test_demo_flow --verbosity=2
+```
+
+This simulates the entire user journey:
+1. User Registration (Admin, Faculty, Student)
+2. JWT Authentication
+3. Academic Structure Creation
+4. Faculty Assignment
+5. Student Enrollment
+6. Attendance Marking
+
+## 🔧 Frontend Integration
+
+The API is configured with CORS support for frontend applications:
+- Default allowed origins: `http://localhost:3000`, `http://127.0.0.1:3000`
+- Configure additional origins in `.env`: `CORS_ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com`
 
 ## 📁 Project Structure
 
 ```
-academic-erp-backend/
-├── backend/
-│   ├── apps/                      # Django applications
-│   │   ├── academics/            # Academic structure (Departments, Courses, Subjects, Timetables)
-│   │   ├── attendance/           # Attendance tracking and calculations
-│   │   ├── communication/        # Notices and learning resources
-│   │   ├── exams/               # Examinations, grading, and GPA calculation
-│   │   ├── faculty/             # Faculty management and class assignments
-│   │   ├── students/            # Student enrollment and academic history
-│   │   └── users/               # Authentication, user profiles, and audit logging
-│   ├── config/                   # Project configuration
-│   │   ├── settings.py          # Django settings
-│   │   ├── urls.py              # URL routing
-│   │   ├── middleware.py        # Custom middleware (audit logging)
-│   │   └── wsgi.py              # WSGI configuration
-│   ├── docs/                     # Technical documentation
-│   ├── resources/                # Uploaded files storage
-│   ├── manage.py                 # Django management script
-│   ├── requirements.txt          # Python dependencies
-│   ├── .env.example             # Environment variables template
-│   └── .gitignore               # Git ignore rules
-└── README.md                     # This file
+academic-erp-system/
+├── backend/                   # Django REST API
+│   ├── apps/                 # Django applications
+│   │   ├── academics/        # Departments, courses, subjects, timetables
+│   │   ├── attendance/       # Attendance management
+│   │   ├── common/          # Shared utilities (permissions, exceptions)
+│   │   ├── communication/   # Notices and resources
+│   │   ├── exams/           # Assessments, grades, transcripts
+│   │   ├── faculty/         # Faculty management
+│   │   ├── students/        # Student enrollment, academic history
+│   │   └── users/           # Authentication, user profiles
+│   ├── config/              # Django configuration
+│   ├── tests/               # Integration tests
+│   ├── requirements.txt     # Python dependencies
+│   ├── manage.py           # Django management script
+│   └── .env.example        # Environment variables template
+├── README.md               # Project documentation
+└── .gitignore             # Git ignore rules
 ```
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-
-Before you begin, ensure you have the following installed:
-- Python 3.14 or higher
-- MySQL Server 8.0 or higher
-- pip (Python package manager)
-- Git
-
-### Step 1: Clone the Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/academic-erp-backend.git
-cd academic-erp-backend/backend
-```
-
-### Step 2: Create Virtual Environment
-
-**Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-**Linux/Mac:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Step 3: Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## ⚙️ Configuration
-
-### Step 1: Create Environment File
-
-Copy the example environment file:
-
-```bash
-# Windows
-copy .env.example .env
-
-# Linux/Mac
-cp .env.example .env
-```
-
-### Step 2: Configure Environment Variables
-
-Edit the `.env` file and update the following:
-
-```env
-# Django Settings
-SECRET_KEY=your-secret-key-here-generate-a-new-one
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Database Configuration
-DB_ENGINE=django.db.backends.mysql
-DB_NAME=academic_erp
-DB_USER=root
-DB_PASSWORD=your-mysql-password
-DB_HOST=localhost
-DB_PORT=3306
-```
-
-**Generate a new SECRET_KEY:**
-```python
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
-
-### Step 3: Create MySQL Database
-
-Open MySQL and run:
-
-```sql
-CREATE DATABASE academic_erp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### Step 4: Run Migrations
-
-```bash
-python manage.py migrate
-```
-
-### Step 5: Create Superuser
-
-```bash
-python manage.py createsuperuser
-```
-
-Follow the prompts to create an admin account.
-
----
-
-## 🏃 Running the Application
-
-### Start Development Server
-
-```bash
-python manage.py runserver
-```
-
-The application will be available at:
-- **API Base URL**: http://127.0.0.1:8000/
-- **Admin Panel**: http://127.0.0.1:8000/admin/
-- **Swagger UI**: http://127.0.0.1:8000/swagger/
-- **ReDoc**: http://127.0.0.1:8000/redoc/
-
----
-
-## 📚 API Documentation
-
-### Interactive Documentation
-
-Once the server is running, access the interactive API documentation:
-
-- **Swagger UI**: http://127.0.0.1:8000/swagger/
-  - Interactive API explorer
-  - Test endpoints directly from browser
-  - JWT authentication support
-
-- **ReDoc**: http://127.0.0.1:8000/redoc/
-  - Clean, responsive documentation
-  - Better for reading and reference
-
-### Authentication
-
-Most endpoints require JWT authentication:
-
-1. **Get Token**: POST to `/api/auth/login/` with username and password
-2. **Use Token**: Add to request headers:
-   ```
-   Authorization: Bearer <your_access_token>
-   ```
-3. **Refresh Token**: POST to `/api/auth/token/refresh/` with refresh token
-
----
 
 ## 🧪 Testing
 
-### Run All Tests
-
 ```bash
-python manage.py test
+# Run all tests
+python manage.py test --verbosity=2
+
+# Run demo flow
+python manage.py test tests.test_demo_flow --verbosity=2
+
+# Run final system test
+python manage.py test tests.test_final_system --verbosity=2
 ```
 
-**Expected Output**: 184 tests passing
+## 🔒 Security Features
 
-### Run Specific App Tests
+- JWT Authentication with refresh tokens
+- Role-based permissions (Admin, Faculty, Student)
+- Department-level access control
+- Audit logging for all API operations
+- CORS configuration for secure frontend integration
+- Production-ready security settings
 
-```bash
-python manage.py test apps.users
-python manage.py test apps.academics
-python manage.py test apps.attendance
-```
+## 📊 Key Features
 
-### Check for Issues
+- **User Management**: Multi-role authentication system
+- **Academic Structure**: Departments → Courses → Subjects
+- **Student Management**: Enrollment, transcripts, GPA calculation
+- **Faculty Management**: Class assignments, subject allocation
+- **Attendance System**: Bulk marking with conflict detection
+- **Examination System**: Assessments, grades, automated GPA
+- **Auto-Generate Timetables**: Intelligent scheduling with conflict detection
+- **Communication**: Notice board, resource sharing
+- **API Documentation**: Auto-generated Swagger/OpenAPI docs
 
-```bash
-python manage.py check
-```
+## 🚀 Production Deployment
 
----
+See [DEPLOYMENT.md](backend/DEPLOYMENT.md) for detailed production setup instructions including:
+- Security configuration
+- Database optimization
+- Web server setup (Nginx + Gunicorn)
+- SSL/TLS configuration
+- Monitoring and logging
 
-## 🔌 API Endpoints
-
-### Authentication
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/login/` | JWT token generation | No |
-| POST | `/api/auth/token/refresh/` | Refresh access token | No |
-| GET | `/api/auth/dashboard/student/` | Student dashboard | Yes |
-| GET | `/api/auth/dashboard/faculty/` | Faculty dashboard | Yes |
-
-### Academic Management
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET/POST | `/api/academics/departments/` | List/Create departments | Yes |
-| GET/PUT/DELETE | `/api/academics/departments/{id}/` | Retrieve/Update/Delete department | Yes |
-| GET/POST | `/api/academics/courses/` | List/Create courses | Yes |
-| GET/PUT/DELETE | `/api/academics/courses/{id}/` | Retrieve/Update/Delete course | Yes |
-| GET/POST | `/api/academics/subjects/` | List/Create subjects | Yes |
-| GET/PUT/DELETE | `/api/academics/subjects/{id}/` | Retrieve/Update/Delete subject | Yes |
-| GET/POST | `/api/academics/timetables/` | List/Create timetables | Yes |
-| GET/PUT/DELETE | `/api/academics/timetables/{id}/` | Retrieve/Update/Delete timetable | Yes |
-
-### Student Operations
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/students/enroll/` | Enroll student in course | Yes (Admin) |
-
-### Attendance
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/attendance/bulk-mark/` | Mark attendance for multiple students | Yes |
-
-### Documentation
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/swagger/` | Swagger UI documentation | No |
-| GET | `/redoc/` | ReDoc documentation | No |
-| GET | `/swagger.json` | OpenAPI schema (JSON) | No |
-| GET | `/swagger.yaml` | OpenAPI schema (YAML) | No |
-
----
-
-## 🔐 Security Features
-
-- **JWT Authentication** - Secure token-based authentication
-- **Password Hashing** - Django's built-in password hashing
-- **Role-Based Permissions** - Admin, Faculty, Student access levels
-- **CSRF Protection** - Enabled by default
-- **Audit Logging** - All data modifications logged
-- **Environment Variables** - Sensitive data in .env file
-- **Input Validation** - Serializer and model-level validation
-
----
-
-## 📖 Additional Documentation
-
-Technical documentation is available in the `backend/docs/` directory:
-
-- `API_DOCUMENTATION_SETUP.md` - Swagger configuration guide
-- `ATTENDANCE_CALCULATIONS_DOCUMENTATION.md` - Attendance calculation logic
-- `AUDIT_LOGGING_DOCUMENTATION.md` - Audit system implementation
-- `ENROLLMENT_API_DOCUMENTATION.md` - Enrollment endpoint details
-- `TIMETABLE_CONFLICT_PREVENTION.md` - Conflict detection logic
-- `attendance.md` - Attendance system overview
-- `faculty.md` - Faculty management details
-- `gpa.md` - GPA calculation algorithms
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License.
-
----
-
-## 📧 Support
-
-For questions, issues, or support:
-- Open an issue on GitHub
-- Check the documentation in `backend/docs/`
-- Review the API documentation at `/swagger/`
-
----
-
-## 🎯 Project Status
-
-- ✅ Backend Development: Complete
-- ✅ API Documentation: Complete
-- ✅ Testing: 184 tests passing
-- ✅ Security: Environment variables configured
-- ✅ Production Ready: Yes
-
----
-
-**Built with ❤️ using Django and Django REST Framework**

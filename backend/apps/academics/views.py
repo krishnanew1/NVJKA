@@ -5,15 +5,20 @@ This module provides REST API viewsets for Department, Course, and Subject
 models with authentication, filtering, and search capabilities.
 """
 
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import ValidationError
+
 from .models import Department, Course, Subject, Timetable
 from .serializers import (
     DepartmentSerializer, DepartmentDetailSerializer,
     CourseSerializer, CourseDetailSerializer,
     SubjectSerializer, TimetableSerializer
 )
+from .utils import generate_batch_timetable, get_batch_timetable
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -115,10 +120,18 @@ class TimetableViewSet(viewsets.ModelViewSet):
     
     Provides CRUD operations for timetable entries with nested subject,
     course, and department information, authentication, filtering, and search.
+    
+    Custom Filters:
+    - student_id: Filter timetable by student's enrolled courses
+    - faculty_id: Filter timetable by faculty assignments
+    - day_of_week: Filter by specific day
+    
+    Custom Actions:
+    - generate: Auto-generate timetable for a batch
     """
     
     queryset = Timetable.objects.select_related(
-        'subject__course__department'
+        'subject__course__department', 'faculty__user'
     ).all().order_by('day_of_week', 'start_time', 'class_name')
     serializer_class = TimetableSerializer
     permission_classes = [IsAuthenticated]
@@ -129,16 +142,258 @@ class TimetableViewSet(viewsets.ModelViewSet):
         'class_name', 'subject', 'subject__name', 'subject__code',
         'subject__course', 'subject__course__name', 'subject__course__code',
         'subject__course__department', 'subject__course__department__name', 'subject__course__department__code',
-        'day_of_week', 'room_number', 'academic_year', 'is_active'
+        'day_of_week', 'room_number', 'classroom', 'academic_year', 'is_active', 'faculty'
     ]
     search_fields = [
-        'class_name', 'room_number', 'academic_year',
+        'class_name', 'room_number', 'classroom', 'academic_year',
         'subject__name', 'subject__code',
         'subject__course__name', 'subject__course__code',
-        'subject__course__department__name', 'subject__course__department__code'
+        'subject__course__department__name', 'subject__course__department__code',
+        'faculty__user__first_name', 'faculty__user__last_name', 'faculty__employee_id'
     ]
     ordering_fields = [
         'class_name', 'day_of_week', 'start_time', 'end_time',
         'academic_year', 'is_active', 'created_at'
     ]
     ordering = ['day_of_week', 'start_time', 'class_name']
+
+    def get_queryset(self):
+        """
+        Optionally filter timetable by student_id, faculty_id, or day_of_week.
+        
+        Query Parameters:
+        - student_id: Returns timetable for courses the student is enrolled in
+        - faculty_id: Returns timetable for classes assigned to this faculty
+        - day_of_week: Returns timetable for a specific day (MONDAY, TUESDAY, etc.)
+        """
+        queryset = super().get_queryset()
+        
+        # Filter by student_id
+        student_id = self.request.query_params.get('student_id')
+        if student_id:
+            # Get all courses the student is enrolled in
+            from apps.students.models import Enrollment
+            enrolled_courses = Enrollment.objects.filter(
+                student_id=student_id,
+                status='Active'
+            ).values_list('course_id', flat=True)
+            
+            # Filter timetable by subjects in those courses
+            queryset = queryset.filter(subject__course_id__in=enrolled_courses)
+        
+        # Filter by faculty_id
+        faculty_id = self.request.query_params.get('faculty_id')
+        if faculty_id:
+            queryset = queryset.filter(faculty_id=faculty_id)
+        
+        # Filter by day_of_week (already handled by filterset_fields, but can be explicit)
+        day_of_week = self.request.query_params.get('day_of_week')
+        if day_of_week:
+            queryset = queryset.filter(day_of_week=day_of_week.upper())
+        
+        return queryset
+
+    @action(detail=False, methods=['post'], url_path='generate')
+    def generate_timetable(self, request):
+        """
+        Auto-generate timetable for a specific batch.
+        
+        POST /api/academics/timetable/generate/
+        
+        Request Body:
+        {
+            "batch_year": 2024,
+            "department_id": 1,  // optional
+            "semester": 3,       // optional
+            "academic_year": "2026-27"  // optional
+        }
+        
+        Returns:
+        {
+            "success": true,
+            "message": "Timetable generated successfully",
+            "data": {
+                "batch_year": 2024,
+                "semester": 3,
+                "class_name": "CSE-2024-S3",
+                "academic_year": "2026-27",
+                "total_subjects": 6,
+                "scheduled_subjects": 5,
+                "failed_subjects": 1,
+                "total_entries": 20,
+                "generated_entries": [...],
+                "failed_subjects_details": [...]
+            }
+        }
+        """
+        # Extract parameters from request
+        batch_year = request.data.get('batch_year')
+        department_id = request.data.get('department_id')
+        semester = request.data.get('semester')
+        academic_year = request.data.get('academic_year')
+        
+        # Validate required parameters
+        if not batch_year:
+            return Response({
+                'success': False,
+                'error': 'batch_year is required',
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            batch_year = int(batch_year)
+        except (ValueError, TypeError):
+            return Response({
+                'success': False,
+                'error': 'batch_year must be a valid integer',
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate optional parameters
+        if department_id:
+            try:
+                department_id = int(department_id)
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'error': 'department_id must be a valid integer',
+                    'code': 400
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if semester:
+            try:
+                semester = int(semester)
+                if semester < 1 or semester > 8:
+                    raise ValueError("Semester must be between 1 and 8")
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'error': 'semester must be a valid integer between 1 and 8',
+                    'code': 400
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Generate timetable
+            result = generate_batch_timetable(
+                batch_year=batch_year,
+                department_id=department_id,
+                semester=semester,
+                academic_year=academic_year
+            )
+            
+            return Response({
+                'success': True,
+                'message': f'Timetable generated successfully for batch {batch_year}',
+                'data': result
+            }, status=status.HTTP_201_CREATED)
+            
+        except ValidationError as e:
+            return Response({
+                'success': False,
+                'error': str(e),
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': f'Failed to generate timetable: {str(e)}',
+                'code': 500
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='batch')
+    def get_batch_timetable(self, request):
+        """
+        Retrieve timetable for a specific batch.
+        
+        GET /api/academics/timetable/batch/?batch_year=2024&department_id=1&semester=3
+        
+        Query Parameters:
+        - batch_year: Required - Year of admission
+        - department_id: Optional - Department filter
+        - semester: Optional - Semester filter
+        - academic_year: Optional - Academic year
+        
+        Returns:
+        {
+            "success": true,
+            "data": [
+                {
+                    "id": 1,
+                    "class_name": "CSE-2024-S3",
+                    "subject": {...},
+                    "faculty": {...},
+                    "day_of_week": "MONDAY",
+                    "start_time": "09:00",
+                    "end_time": "10:00",
+                    "classroom": "Room-101",
+                    "academic_year": "2026-27"
+                },
+                ...
+            ]
+        }
+        """
+        # Extract parameters from query params
+        batch_year = request.query_params.get('batch_year')
+        department_id = request.query_params.get('department_id')
+        semester = request.query_params.get('semester')
+        academic_year = request.query_params.get('academic_year')
+        
+        # Validate required parameters
+        if not batch_year:
+            return Response({
+                'success': False,
+                'error': 'batch_year query parameter is required',
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            batch_year = int(batch_year)
+        except (ValueError, TypeError):
+            return Response({
+                'success': False,
+                'error': 'batch_year must be a valid integer',
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate optional parameters
+        if department_id:
+            try:
+                department_id = int(department_id)
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'error': 'department_id must be a valid integer',
+                    'code': 400
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if semester:
+            try:
+                semester = int(semester)
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'error': 'semester must be a valid integer',
+                    'code': 400
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Get batch timetable
+            timetable_entries = get_batch_timetable(
+                batch_year=batch_year,
+                department_id=department_id,
+                semester=semester,
+                academic_year=academic_year
+            )
+            
+            return Response({
+                'success': True,
+                'data': timetable_entries
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': f'Failed to retrieve timetable: {str(e)}',
+                'code': 500
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

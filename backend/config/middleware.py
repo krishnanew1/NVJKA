@@ -92,23 +92,13 @@ class AuditLogMiddleware(MiddlewareMixin):
     def _log_request(self, request, response, execution_time):
         """
         Create an audit log entry.
-        
-        Args:
-            request: Django HttpRequest object
-            response: Django HttpResponse object
-            execution_time: Request execution time in seconds
         """
-        # Import here to avoid circular imports
-        from users.audit_models import AuditLog
-        
-        # Create audit log entry
+        from apps.users.audit_models import AuditLog
         AuditLog.log_request(
             request=request,
             response=response,
             execution_time=execution_time
         )
-        
-        # Also log to file for redundancy
         self._log_to_file(request, response, execution_time)
     
     def _log_to_file(self, request, response, execution_time):

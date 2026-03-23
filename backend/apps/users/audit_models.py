@@ -44,6 +44,12 @@ class AuditLog(models.Model):
         max_length=500,
         help_text='API endpoint/URL path accessed'
     )
+
+    resource_affected = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text='Resource/model affected by this action (e.g., Grade, Attendance)'
+    )
     
     ip_address = models.GenericIPAddressField(
         null=True,
@@ -124,9 +130,26 @@ class AuditLog(models.Model):
             user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
             request_body=request_body,
             response_status=response.status_code if response else None,
-            execution_time=execution_time
+            execution_time=execution_time,
+            resource_affected=cls._derive_resource(request.path),
         )
     
+    @staticmethod
+    def _derive_resource(path):
+        """
+        Derive the resource name from the URL path.
+        e.g. '/api/exams/grades/3/' -> 'grades'
+        """
+        parts = [p for p in path.strip('/').split('/') if p]
+        # Skip 'api' prefix, take the first meaningful segment after it
+        if 'api' in parts:
+            idx = parts.index('api')
+            if idx + 2 <= len(parts):
+                return parts[idx + 2] if idx + 2 < len(parts) else parts[idx + 1]
+            elif idx + 1 < len(parts):
+                return parts[idx + 1]
+        return parts[-1] if parts else ''
+
     @staticmethod
     def _get_client_ip(request):
         """Extract client IP address from request."""
