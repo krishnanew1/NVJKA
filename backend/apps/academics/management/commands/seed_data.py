@@ -9,6 +9,7 @@ from django.db import transaction
 from apps.users.models import CustomUser, FacultyProfile, StudentProfile
 from apps.academics.models import Department, Course, Subject
 from apps.faculty.models import ClassAssignment
+from apps.attendance.models import Attendance
 
 
 class Command(BaseCommand):
@@ -236,6 +237,65 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f'✓ Enrolled {student_user.username} in {btech_cs.code}'))
                 else:
                     self.stdout.write(self.style.WARNING(f'⚠ Enrollment already exists for {student_user.username}'))
+
+                # Create Attendance Records for Student
+                self.stdout.write('Creating attendance records...')
+                from datetime import date, timedelta
+                
+                # Create attendance for CS101 (Data Structures)
+                today = date.today()
+                attendance_records_created = 0
+                
+                # Create 10 attendance records for CS101 over the past 10 days (starting from yesterday)
+                for i in range(1, 11):
+                    attendance_date = today - timedelta(days=i)
+                    # 80% present, 10% late, 10% absent
+                    if i <= 8:
+                        status = 'Present'
+                    elif i == 9:
+                        status = 'Late'
+                    else:
+                        status = 'Absent'
+                    
+                    attendance, created = Attendance.objects.get_or_create(
+                        student=student_profile,
+                        subject=ds_subject,
+                        date=attendance_date,
+                        defaults={
+                            'status': status,
+                            'recorded_by': faculty_user
+                        }
+                    )
+                    if created:
+                        attendance_records_created += 1
+                
+                # Create 8 attendance records for CS201 (Algorithm Design)
+                for i in range(1, 9):
+                    attendance_date = today - timedelta(days=i)
+                    # 62.5% present (5/8), 25% late (2/8), 12.5% absent (1/8)
+                    if i <= 5:
+                        status = 'Present'
+                    elif i <= 7:
+                        status = 'Late'
+                    else:
+                        status = 'Absent'
+                    
+                    attendance, created = Attendance.objects.get_or_create(
+                        student=student_profile,
+                        subject=algo_subject,
+                        date=attendance_date,
+                        defaults={
+                            'status': status,
+                            'recorded_by': faculty_user
+                        }
+                    )
+                    if created:
+                        attendance_records_created += 1
+                
+                if attendance_records_created > 0:
+                    self.stdout.write(self.style.SUCCESS(f'✓ Created {attendance_records_created} attendance records'))
+                else:
+                    self.stdout.write(self.style.WARNING(f'⚠ Attendance records already exist'))
 
                 self.stdout.write(self.style.SUCCESS('\n' + '='*60))
                 self.stdout.write(self.style.SUCCESS('Database seeding completed successfully!'))

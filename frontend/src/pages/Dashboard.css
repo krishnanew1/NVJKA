@@ -1576,3 +1576,1315 @@
     padding: 6px 10px;
   }
 }
+
+/* Student Dashboard Specific Styles */
+.student-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Hero Section - Welcome Banner */
+.hero-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 30px var(--card-shadow);
+  color: var(--text-inverse);
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.hero-icon {
+  font-size: 64px;
+  opacity: 0.9;
+}
+
+.hero-text {
+  flex: 1;
+}
+
+.hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: var(--text-inverse);
+}
+
+.hero-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 16px;
+}
+
+.hero-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-label {
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.hero-divider {
+  opacity: 0.6;
+}
+
+/* Subjects Section */
+.subjects-section {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.section-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.section-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.subject-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px var(--card-shadow);
+  border-color: var(--primary-color);
+}
+
+.subject-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.subject-icon {
+  font-size: 32px;
+  opacity: 0.8;
+}
+
+.subject-badge {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subject-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subject-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.subject-code {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary-color);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.subject-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.info-icon {
+  font-size: 14px;
+}
+
+/* Attendance Section */
+.attendance-section {
+  margin-bottom: 40px;
+}
+
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.attendance-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.attendance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px var(--card-shadow);
+}
+
+.attendance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.attendance-subject-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.attendance-subject-code {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.attendance-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attendance-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.stat-value.success {
+  color: var(--success-color);
+}
+
+.stat-value.danger {
+  color: var(--error-color);
+}
+
+.stat-value.warning {
+  color: var(--warning-color);
+}
+
+/* Attendance Progress */
+.attendance-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.progress-percentage {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.progress-percentage.success {
+  color: var(--success-color);
+}
+
+.progress-percentage.warning {
+  color: var(--warning-color);
+}
+
+.progress-percentage.danger {
+  color: var(--error-color);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+}
+
+.progress-bar.success {
+  background: linear-gradient(90deg, var(--success-color) 0%, #10b981 100%);
+}
+
+.progress-bar.warning {
+  background: linear-gradient(90deg, var(--warning-color) 0%, #f59e0b 100%);
+}
+
+.progress-bar.danger {
+  background: linear-gradient(90deg, var(--error-color) 0%, #dc2626 100%);
+}
+
+.progress-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.success {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.status-badge.warning {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.status-badge.danger {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+.status-warning {
+  font-size: 11px;
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+/* Responsive Design for Student Dashboard */
+@media (max-width: 1024px) {
+  .subjects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .attendance-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-dashboard {
+    padding: 16px;
+  }
+
+  .hero-section {
+    padding: 24px;
+  }
+
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .hero-icon {
+    font-size: 48px;
+  }
+
+  .hero-title {
+    font-size: 24px;
+  }
+
+  .hero-details {
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .subjects-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .attendance-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .attendance-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .student-dashboard {
+    padding: 12px;
+  }
+
+  .hero-section {
+    padding: 20px;
+  }
+
+  .hero-title {
+    font-size: 20px;
+  }
+
+  .hero-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hero-divider {
+    display: none;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+  }
+
+  .subject-name {
+    font-size: 16px;
+  }
+
+  .attendance-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* View Details Button */
+.view-details-btn {
+  width: 100%;
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.view-details-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.view-details-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Attendance Details Modal */
+.attendance-details-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modal-subject-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.modal-subject-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.modal-subject-code {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-tertiary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.modal-subject-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.modal-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.modal-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.modal-stat-value.success {
+  color: var(--success-color);
+}
+
+.modal-stat-value.warning {
+  color: var(--warning-color);
+}
+
+.modal-stat-value.danger {
+  color: var(--error-color);
+}
+
+/* Attendance Details Table */
+.attendance-details-table-container {
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.attendance-details-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-details-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+}
+
+.attendance-details-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 13px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.attendance-details-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.attendance-details-table tr:hover {
+  background: var(--hover-bg);
+}
+
+.attendance-details-table tr:last-child td {
+  border-bottom: none;
+}
+
+.detail-date {
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.detail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.detail-status.status-present {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.detail-status.status-absent {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+.detail-status.status-late {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.detail-recorded-by {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Modal Empty State */
+.modal-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.modal-empty-icon {
+  font-size: 48px;
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+
+.modal-empty-state p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Responsive Design for Modal */
+@media (max-width: 768px) {
+  .modal-subject-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .modal-subject-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .modal-stat {
+    text-align: center;
+  }
+
+  .attendance-details-table th,
+  .attendance-details-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .detail-status {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-details-table-container {
+    max-height: 300px;
+  }
+
+  .attendance-details-table th,
+  .attendance-details-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .detail-status {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .modal-subject-info h3 {
+    font-size: 16px;
+  }
+
+  .modal-stat-value {
+    font-size: 18px;
+  }
+}
+
+/* Edit Past Attendance Button */
+.edit-attendance-btn {
+  width: 100%;
+  background: var(--bg-secondary);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.edit-attendance-btn:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+/* Edit Attendance Modal */
+.edit-attendance-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.edit-date-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-date-section label {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.edit-date-section input[type="date"] {
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.edit-date-section input[type="date"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.edit-info-message {
+  background: var(--info-light);
+  border: 1px solid var(--info-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.edit-info-message p {
+  margin: 0;
+  color: var(--info-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.no-date-selected {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-date-selected p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Responsive Design for Edit Modal */
+@media (max-width: 768px) {
+  .edit-attendance-btn {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .class-card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-attendance-btn {
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+}
+
+/* Student Timetable Styles */
+.student-timetable {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.page-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Timetable Grid */
+.timetable-container {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  overflow-x: auto;
+}
+
+.timetable-grid {
+  display: grid;
+  grid-template-columns: 120px repeat(5, 1fr);
+  gap: 2px;
+  background: var(--border-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 900px;
+}
+
+.timetable-cell {
+  background: var(--card-bg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  transition: all 0.3s ease;
+}
+
+.timetable-cell.header-cell {
+  background: var(--bg-secondary);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.timetable-cell.time-header {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  font-weight: 700;
+}
+
+.timetable-cell.time-cell {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.timetable-cell.has-class {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+  cursor: pointer;
+  border: 1px solid var(--primary-color);
+}
+
+.timetable-cell.has-class:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  z-index: 10;
+}
+
+.timetable-cell.empty-cell {
+  background: var(--bg-tertiary);
+  opacity: 0.5;
+}
+
+.class-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  width: 100%;
+}
+
+.class-subject {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Courier New', monospace;
+}
+
+.class-room {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.class-faculty {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.empty-slot {
+  color: var(--text-secondary);
+  opacity: 0.3;
+  font-size: 18px;
+}
+
+/* Student Grades Styles */
+.student-grades {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Transcript Summary */
+.transcript-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.gpa-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 30px var(--card-shadow);
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  transition: all 0.3s ease;
+}
+
+.gpa-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px var(--card-shadow);
+}
+
+.gpa-icon {
+  font-size: 48px;
+  opacity: 0.9;
+}
+
+.gpa-content {
+  flex: 1;
+}
+
+.gpa-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gpa-value {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1;
+}
+
+.gpa-content p {
+  font-size: 13px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Grades Section */
+.grades-section {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  overflow: hidden;
+}
+
+.grades-section .section-header {
+  background: var(--bg-secondary);
+  padding: 20px 24px;
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.grades-section .section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+/* Grades Table */
+.grades-table-container {
+  overflow-x: auto;
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grades-table thead {
+  background: var(--bg-secondary);
+}
+
+.grades-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.grades-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.grades-table tr:hover {
+  background: var(--hover-bg);
+}
+
+.grades-table tr:last-child td {
+  border-bottom: none;
+}
+
+.subject-code {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.subject-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.marks-obtained {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.total-marks {
+  color: var(--text-secondary);
+}
+
+.percentage {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Grade Badges */
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 50px;
+}
+
+.grade-badge.grade-a {
+  background: var(--success-light);
+  color: var(--success-color);
+  border: 2px solid var(--success-color);
+}
+
+.grade-badge.grade-b {
+  background: #dbeafe;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+
+.grade-badge.grade-c {
+  background: var(--warning-light);
+  color: var(--warning-color);
+  border: 2px solid var(--warning-color);
+}
+
+.grade-badge.grade-d {
+  background: #fed7aa;
+  color: #ea580c;
+  border: 2px solid #ea580c;
+}
+
+.grade-badge.grade-f {
+  background: var(--error-light);
+  color: var(--error-color);
+  border: 2px solid var(--error-color);
+}
+
+/* Responsive Design for Timetable */
+@media (max-width: 1200px) {
+  .timetable-grid {
+    min-width: 800px;
+  }
+
+  .timetable-cell {
+    padding: 12px;
+    min-height: 70px;
+  }
+
+  .class-subject {
+    font-size: 13px;
+  }
+
+  .class-room,
+  .class-faculty {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-timetable,
+  .student-grades {
+    padding: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+  }
+
+  .timetable-container {
+    padding: 16px;
+  }
+
+  .timetable-grid {
+    min-width: 700px;
+  }
+
+  .timetable-cell {
+    padding: 10px;
+    min-height: 60px;
+  }
+
+  .transcript-summary {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .gpa-card {
+    padding: 24px;
+  }
+
+  .gpa-icon {
+    font-size: 40px;
+  }
+
+  .gpa-value {
+    font-size: 40px;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-timetable,
+  .student-grades {
+    padding: 12px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .timetable-container {
+    padding: 12px;
+  }
+
+  .timetable-grid {
+    min-width: 600px;
+    gap: 1px;
+  }
+
+  .timetable-cell {
+    padding: 8px;
+    min-height: 50px;
+  }
+
+  .timetable-cell.header-cell {
+    font-size: 12px;
+  }
+
+  .class-subject {
+    font-size: 12px;
+  }
+
+  .class-room,
+  .class-faculty {
+    font-size: 10px;
+  }
+
+  .gpa-card {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .gpa-icon {
+    font-size: 36px;
+  }
+
+  .gpa-value {
+    font-size: 36px;
+  }
+
+  .grades-section .section-header {
+    padding: 16px 20px;
+  }
+
+  .grades-section .section-header h2 {
+    font-size: 18px;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .grade-badge {
+    padding: 4px 10px;
+    font-size: 12px;
+    min-width: 40px;
+  }
+}

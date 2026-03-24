@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import Loader from '../components/Loader';
 import './Dashboard.css';
 
 const AdminDashboard = () => {
@@ -105,8 +106,24 @@ const AdminDashboard = () => {
     }));
   };
 
+  // Validate department form
+  const isDepartmentFormValid = () => {
+    return (
+      departmentForm.name.trim().length > 0 &&
+      departmentForm.code.trim().length > 0 &&
+      /^[A-Z0-9_-]+$/i.test(departmentForm.code.trim()) // Only alphanumeric, underscore, hyphen
+    );
+  };
+
   const handleDepartmentSubmit = async (e) => {
     e.preventDefault();
+    
+    // Frontend validation
+    if (!isDepartmentFormValid()) {
+      showToast('Please fill all required fields correctly. Code should only contain letters, numbers, hyphens, or underscores.', 'error');
+      return;
+    }
+
     setIsDepartmentSubmitting(true);
 
     try {
@@ -120,7 +137,8 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Error adding department:', err);
       if (err.response?.status === 400) {
-        showToast('Invalid data. Please check your input.', 'error');
+        const errorMsg = err.response.data?.detail || err.response.data?.message || 'Invalid data. Please check your input.';
+        showToast(errorMsg, 'error');
       } else if (err.response?.status === 409) {
         showToast('Department code already exists.', 'error');
       } else {
@@ -140,8 +158,25 @@ const AdminDashboard = () => {
     }));
   };
 
+  // Validate course form
+  const isCourseFormValid = () => {
+    return (
+      courseForm.name.trim().length > 0 &&
+      courseForm.code.trim().length > 0 &&
+      /^[A-Z0-9_-]+$/i.test(courseForm.code.trim()) && // Only alphanumeric, underscore, hyphen
+      courseForm.department !== ''
+    );
+  };
+
   const handleCourseSubmit = async (e) => {
     e.preventDefault();
+    
+    // Frontend validation
+    if (!isCourseFormValid()) {
+      showToast('Please fill all required fields correctly. Code should only contain letters, numbers, hyphens, or underscores.', 'error');
+      return;
+    }
+
     setIsCourseSubmitting(true);
 
     try {
@@ -163,7 +198,8 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Error adding course:', err);
       if (err.response?.status === 400) {
-        showToast('Invalid data. Please check your input.', 'error');
+        const errorMsg = err.response.data?.detail || err.response.data?.message || 'Invalid data. Please check your input.';
+        showToast(errorMsg, 'error');
       } else if (err.response?.status === 409) {
         showToast('Course code already exists.', 'error');
       } else {
@@ -230,12 +266,7 @@ const AdminDashboard = () => {
 
   // Loading spinner component
   const LoadingSpinner = () => (
-    <div className="loading-container">
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-      </div>
-      <p className="loading-text">Loading academic data...</p>
-    </div>
+    <Loader message="Loading academic data..." size="large" />
   );
 
   // Error message component
@@ -491,7 +522,7 @@ const AdminDashboard = () => {
             <button
               type="submit"
               className={`btn btn-primary ${isDepartmentSubmitting ? 'btn-loading' : ''}`}
-              disabled={isDepartmentSubmitting}
+              disabled={isDepartmentSubmitting || !isDepartmentFormValid()}
             >
               {isDepartmentSubmitting ? 'Adding...' : 'Add Department'}
             </button>
@@ -595,7 +626,7 @@ const AdminDashboard = () => {
             <button
               type="submit"
               className={`btn btn-primary ${isCourseSubmitting ? 'btn-loading' : ''}`}
-              disabled={isCourseSubmitting || !courseForm.department}
+              disabled={isCourseSubmitting || !isCourseFormValid()}
             >
               {isCourseSubmitting ? 'Adding...' : 'Add Course'}
             </button>

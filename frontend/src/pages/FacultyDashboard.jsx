@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import Loader from '../components/Loader';
 import './Dashboard.css';
 
 const FacultyDashboard = () => {
@@ -18,6 +19,15 @@ const FacultyDashboard = () => {
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceRecords, setAttendanceRecords] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit attendance modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedClassForEdit, setSelectedClassForEdit] = useState(null);
+  const [editDate, setEditDate] = useState('');
+  const [editStudents, setEditStudents] = useState([]);
+  const [editAttendanceRecords, setEditAttendanceRecords] = useState({});
+  const [loadingEditData, setLoadingEditData] = useState(false);
+  const [isUpdatingAttendance, setIsUpdatingAttendance] = useState(false);
 
   // Toast state
   const [toast, setToast] = useState({
@@ -183,14 +193,113 @@ const FacultyDashboard = () => {
     setAttendanceRecords({});
   };
 
+  // Edit Past Attendance Functions
+  const handleEditClick = (assignment) => {
+    setSelectedClassForEdit(assignment);
+    setEditDate('');
+    setEditStudents([]);
+    setEditAttendanceRecords({});
+    setIsEditModalOpen(true);
+  };
+
+  const fetchPastAttendance = async () => {
+    if (!selectedClassForEdit || !editDate) return;
+
+    try {
+      setLoadingEditData(true);
+      
+      const response = await api.get('/api/attendance/records/', {
+        params: {
+          subject_id: selectedClassForEdit.subject.id,
+          date: editDate
+        }
+      });
+
+      const data = response.data;
+      setEditStudents(data.students || []);
+
+      // Initialize attendance records with existing statuses
+      const initialRecords = {};
+      data.students.forEach(student => {
+        initialRecords[student.student_id] = student.status || 'Present';
+      });
+      setEditAttendanceRecords(initialRecords);
+
+      if (!data.has_records) {
+        showToast('No attendance was marked on this date', 'info');
+      }
+    } catch (err) {
+      console.error('Error fetching past attendance:', err);
+      if (err.response?.status === 404) {
+        showToast('No data found for this date', 'warning');
+        setEditStudents([]);
+      } else {
+        showToast('Failed to load attendance data', 'error');
+      }
+    } finally {
+      setLoadingEditData(false);
+    }
+  };
+
+  useEffect(() => {
+    if (editDate && selectedClassForEdit) {
+      fetchPastAttendance();
+    }
+  }, [editDate]);
+
+  const handleEditStatusChange = (studentId, status) => {
+    setEditAttendanceRecords(prev => ({
+      ...prev,
+      [studentId]: status
+    }));
+  };
+
+  const handleUpdateAttendance = async () => {
+    if (!selectedClassForEdit || !editDate) return;
+
+    setIsUpdatingAttendance(true);
+
+    try {
+      const records = Object.entries(editAttendanceRecords).map(([studentId, status]) => ({
+        student_id: parseInt(studentId),
+        status: status
+      }));
+
+      const payload = {
+        subject_id: selectedClassForEdit.subject.id,
+        date: editDate,
+        records: records
+      };
+
+      await api.patch('/api/attendance/records/', payload);
+
+      showToast(`Attendance updated successfully for ${records.length} students!`, 'success');
+      closeEditModal();
+    } catch (err) {
+      console.error('Error updating attendance:', err);
+      if (err.response?.status === 400) {
+        showToast('Invalid data. Please check your input.', 'error');
+      } else if (err.response?.status === 403) {
+        showToast('You are not authorized to update attendance for this class.', 'error');
+      } else {
+        showToast('Failed to update attendance. Please try again.', 'error');
+      }
+    } finally {
+      setIsUpdatingAttendance(false);
+    }
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedClassForEdit(null);
+    setEditDate('');
+    setEditStudents([]);
+    setEditAttendanceRecords({});
+  };
+
   // Loading spinner component
   const LoadingSpinner = () => (
-    <div className="loading-container">
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-      </div>
-      <p className="loading-text">Loading your assignments...</p>
-    </div>
+    <Loader message="Loading your class assignments..." size="large" />
   );
 
   // Error message component
@@ -267,8 +376,17 @@ const FacultyDashboard = () => {
                   <p className="class-year">Academic Year: {assignment.academic_year}</p>
                 </div>
                 <div className="class-card-footer">
-                  <button className="mark-attendance-btn">
+                  <button 
+                    className="mark-attendance-btn"
+                    onClick={() => handleClassClick(assignment)}
+                  >
                     📋 Mark Attendance
+                  </button>
+                  <button 
+                    className="edit-attendance-btn"
+                    onClick={() => handleEditClick(assignment)}
+                  >
+                    ✏️ Edit Past Attendance
                   </button>
                 </div>
               </div>
@@ -379,6 +497,128 @@ const FacultyDashboard = () => {
               >
                 {isSubmitting ? 'Saving...' : 'Save Attendance'}
               </button>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Edit Past Attendance Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        title={`Edit Past Attendance - ${selectedClassForEdit?.subject.name || ''}`}
+      >
+        <div className="edit-attendance-modal-content">
+          {/* Date Picker */}
+          <div className="edit-date-section">
+            <label htmlFor="edit-attendance-date">Select Date:</label>
+            <input
+              type="date"
+              id="edit-attendance-date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              disabled={isUpdatingAttendance}
+            />
+          </div>
+
+          {/* Loading State */}
+          {loadingEditData && (
+            <div className="modal-loading">
+              <div className="spinner"></div>
+              <p>Loading attendance data...</p>
+            </div>
+          )}
+
+          {/* Students List */}
+          {!loadingEditData && editStudents.length > 0 && (
+            <>
+              <div className="edit-info-message">
+                {editStudents.some(s => s.status) ? (
+                  <p>✏️ Editing attendance for {editDate}. Update the statuses below.</p>
+                ) : (
+                  <p>ℹ️ No attendance was marked on this date. You can mark it now.</p>
+                )}
+              </div>
+
+              <div className="attendance-table-container">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Roll No.</th>
+                      <th>Student Name</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editStudents.map((student) => (
+                      <tr key={student.student_id}>
+                        <td className="student-roll">{student.roll_number}</td>
+                        <td className="student-name">{student.name}</td>
+                        <td className="student-status">
+                          <div className="status-buttons">
+                            <button
+                              className={`status-btn ${editAttendanceRecords[student.student_id] === 'Present' ? 'active present' : ''}`}
+                              onClick={() => handleEditStatusChange(student.student_id, 'Present')}
+                              disabled={isUpdatingAttendance}
+                            >
+                              ✓ Present
+                            </button>
+                            <button
+                              className={`status-btn ${editAttendanceRecords[student.student_id] === 'Absent' ? 'active absent' : ''}`}
+                              onClick={() => handleEditStatusChange(student.student_id, 'Absent')}
+                              disabled={isUpdatingAttendance}
+                            >
+                              ✗ Absent
+                            </button>
+                            <button
+                              className={`status-btn ${editAttendanceRecords[student.student_id] === 'Late' ? 'active late' : ''}`}
+                              onClick={() => handleEditStatusChange(student.student_id, 'Late')}
+                              disabled={isUpdatingAttendance}
+                            >
+                              ⏰ Late
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Update Button */}
+              <div className="attendance-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeEditModal}
+                  disabled={isUpdatingAttendance}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-primary ${isUpdatingAttendance ? 'btn-loading' : ''}`}
+                  onClick={handleUpdateAttendance}
+                  disabled={isUpdatingAttendance || editStudents.length === 0}
+                >
+                  {isUpdatingAttendance ? 'Updating...' : 'Update Attendance'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Empty State */}
+          {!loadingEditData && editDate && editStudents.length === 0 && (
+            <div className="no-students">
+              <p>No students found for this class</p>
+            </div>
+          )}
+
+          {/* No Date Selected */}
+          {!loadingEditData && !editDate && (
+            <div className="no-date-selected">
+              <p>📅 Please select a date to view attendance records</p>
             </div>
           )}
         </div>

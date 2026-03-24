@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import AdminDashboard from './pages/AdminDashboard';
 import FacultyDashboard from './pages/FacultyDashboard';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentTimetable from './pages/StudentTimetable';
+import StudentGrades from './pages/StudentGrades';
 import './App.css';
 
 function App() {
@@ -58,6 +60,8 @@ function App() {
             }
           >
             <Route index element={<StudentDashboard />} />
+            <Route path="timetable" element={<StudentTimetable />} />
+            <Route path="grades" element={<StudentGrades />} />
           </Route>
         </Routes>
       </div>

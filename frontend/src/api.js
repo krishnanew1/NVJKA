@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+// Global toast notification function (will be set by App.jsx)
+let globalShowToast = null;
+
+export const setGlobalToast = (toastFunction) => {
+  globalShowToast = toastFunction;
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: 'http://127.0.0.1:8000',
@@ -22,7 +29,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh and auto-logout
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -48,12 +55,34 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access}`;
           return api(originalRequest);
         } catch (refreshError) {
-          // Refresh failed, clear tokens and redirect to login
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          window.location.href = '/';
+          // Refresh failed - session expired, auto-logout
+          tokenUtils.clearTokens();
+          
+          // Show toast notification if available
+          if (globalShowToast) {
+            globalShowToast('Session expired. Please log in again.', 'error');
+          }
+          
+          // Redirect to login after a short delay
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+          
           return Promise.reject(refreshError);
         }
+      } else {
+        // No refresh token available - auto-logout
+        tokenUtils.clearTokens();
+        
+        // Show toast notification if available
+        if (globalShowToast) {
+          globalShowToast('Session expired. Please log in again.', 'error');
+        }
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
       }
     }
 

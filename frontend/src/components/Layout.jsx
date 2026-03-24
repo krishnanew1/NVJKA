@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { tokenUtils } from '../api';
 import './Layout.css';
@@ -129,12 +129,12 @@ const Layout = () => {
             <ul className="nav-list">
               {navigationItems.map((item) => (
                 <li key={item.path} className="nav-item">
-                  <a 
-                    href={item.path} 
+                  <Link 
+                    to={item.path} 
                     className={`nav-link ${isActiveRoute(item.path) ? 'active' : ''}`}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
