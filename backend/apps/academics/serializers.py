@@ -2,11 +2,137 @@
 Serializers for academics app models.
 
 This module provides Django REST Framework serializers for Department, Course,
-Subject, and Timetable models with nested serialization support.
+Subject, Timetable, CustomRegistrationField, and Program models with nested serialization support.
 """
 
 from rest_framework import serializers
-from .models import Department, Course, Subject, Timetable
+from .models import Department, Course, Subject, Timetable, CustomRegistrationField, Program
+
+
+class CustomRegistrationFieldSerializer(serializers.ModelSerializer):
+    """
+    Serializer for CustomRegistrationField model.
+    
+    Allows institutions to dynamically configure registration fields
+    without code changes.
+    """
+    
+    dropdown_options_list = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CustomRegistrationField
+        fields = [
+            'id',
+            'field_name',
+            'field_label',
+            'field_type',
+            'dropdown_options',
+            'dropdown_options_list',
+            'is_required',
+            'placeholder',
+            'help_text',
+            'order',
+            'is_active',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_dropdown_options_list(self, obj):
+        """Convert comma-separated dropdown options to a list."""
+        if obj.field_type == 'dropdown' and obj.dropdown_options:
+            return [opt.strip() for opt in obj.dropdown_options.split(',') if opt.strip()]
+        return []
+    
+    def validate(self, data):
+        """Validate that dropdown fields have options."""
+        if data.get('field_type') == 'dropdown':
+            if not data.get('dropdown_options'):
+                raise serializers.ValidationError({
+                    'dropdown_options': 'Dropdown fields must have options specified.'
+                })
+        return data
+
+
+class ProgramSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Program model.
+    
+    Represents academic programs (e.g., B.Tech, M.Sc) that can be
+    dynamically configured by institutions.
+    """
+    
+    # Nested department information
+    department = serializers.SerializerMethodField()
+    
+    # Write-only field for creating/updating programs
+    department_id = serializers.IntegerField(write_only=True)
+    
+    # Read-only computed fields
+    total_students = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Program
+        fields = [
+            'id',
+            'name',
+            'code',
+            'department',
+            'department_id',
+            'duration_years',
+            'duration_semesters',
+            'total_credits',
+            'description',
+            'is_active',
+            'total_students',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'total_students']
+    
+    def get_department(self, obj):
+        """Get basic department information."""
+        if obj.department:
+            return {
+                'id': obj.department.id,
+                'name': obj.department.name,
+                'code': obj.department.code
+            }
+        return None
+    
+    def get_total_students(self, obj):
+        """Get the total number of students enrolled in this program."""
+        return obj.students.count()
+    
+    def validate_department_id(self, value):
+        """Validate that the department exists."""
+        try:
+            Department.objects.get(id=value)
+        except Department.DoesNotExist:
+            raise serializers.ValidationError("Department with this ID does not exist.")
+        return value
+    
+    def validate(self, data):
+        """Validate program data."""
+        # Auto-calculate semesters from years if not provided
+        if 'duration_years' in data and 'duration_semesters' not in data:
+            data['duration_semesters'] = data['duration_years'] * 2
+        return data
+    
+    def create(self, validated_data):
+        """Create a new program with the specified department."""
+        department_id = validated_data.pop('department_id')
+        department = Department.objects.get(id=department_id)
+        validated_data['department'] = department
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        """Update program with optional department change."""
+        if 'department_id' in validated_data:
+            department_id = validated_data.pop('department_id')
+            department = Department.objects.get(id=department_id)
+            validated_data['department'] = department
+        return super().update(instance, validated_data)
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

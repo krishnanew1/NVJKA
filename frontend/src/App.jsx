@@ -4,10 +4,14 @@ import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminSettings from './pages/AdminSettings';
+import AdminStudents from './pages/AdminStudents';
+import AdminRegTracking from './pages/AdminRegTracking';
 import FacultyDashboard from './pages/FacultyDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentTimetable from './pages/StudentTimetable';
 import StudentGrades from './pages/StudentGrades';
+import StudentRegistration from './pages/StudentRegistration';
 import './App.css';
 
 function App() {
@@ -38,6 +42,9 @@ function App() {
             }
           >
             <Route index element={<AdminDashboard />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="registration-tracking" element={<AdminRegTracking />} />
           </Route>
           
           <Route 
@@ -60,6 +67,7 @@ function App() {
             }
           >
             <Route index element={<StudentDashboard />} />
+            <Route path="register" element={<StudentRegistration />} />
             <Route path="timetable" element={<StudentTimetable />} />
             <Route path="grades" element={<StudentGrades />} />
           </Route>

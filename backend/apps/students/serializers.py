@@ -5,8 +5,11 @@ All date fields are explicitly formatted as ``YYYY-MM-DD`` to ensure
 consistency regardless of the global DRF setting.
 """
 from rest_framework import serializers
-from .models import Enrollment, AcademicHistory
-from apps.academics.models import Course
+from .models import (
+    Enrollment, AcademicHistory, SemesterRegistration,
+    FeeTransaction, RegisteredCourse
+)
+from apps.academics.models import Course, Subject
 from apps.users.serializers import UserBasicSerializer
 
 
@@ -84,3 +87,147 @@ class AcademicHistorySerializer(serializers.ModelSerializer):
             'id', 'student', 'institution_name', 'board_university',
             'passing_year', 'percentage_cgpa',
         ]
+
+
+
+class FeeTransactionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for FeeTransaction model.
+    
+    Used as a nested serializer within SemesterRegistrationSerializer.
+    """
+    transaction_date = serializers.DateField(format='%Y-%m-%d')
+    
+    class Meta:
+        model = FeeTransaction
+        fields = [
+            'id', 'utr_no', 'bank_name', 'transaction_date',
+            'amount', 'account_debited', 'account_credited'
+        ]
+        read_only_fields = ['id']
+
+
+class RegisteredCourseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for RegisteredCourse model.
+    
+    Used as a nested serializer within SemesterRegistrationSerializer.
+    For read operations, includes subject details.
+    """
+    subject_id = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(),
+        source='subject',
+        write_only=True
+    )
+    subject = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = RegisteredCourse
+        fields = ['id', 'subject_id', 'subject', 'is_backlog']
+        read_only_fields = ['id']
+    
+    def get_subject(self, obj):
+        """Return subject details for read operations."""
+        return {
+            'id': obj.subject.id,
+            'name': obj.subject.name,
+            'code': obj.subject.code,
+            'credits': obj.subject.credits,
+            'semester': obj.subject.semester
+        }
+
+
+class SemesterRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Nested serializer for SemesterRegistration with FeeTransactions and RegisteredCourses.
+    
+    Accepts a single POST request with:
+    - Semester registration details
+    - List of fee_transactions (up to 3)
+    - List of registered_courses
+    
+    Validates that:
+    - Maximum 3 fee transactions per registration
+    - Student can only register their own semester
+    """
+    fee_transactions = FeeTransactionSerializer(many=True, required=False)
+    registered_courses = RegisteredCourseSerializer(many=True, required=False)
+    student_name = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = SemesterRegistration
+        fields = [
+            'id', 'student', 'student_name', 'academic_year', 'semester',
+            'institute_fee_paid', 'hostel_fee_paid', 'hostel_room_no',
+            'total_credits', 'fee_transactions', 'registered_courses',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_student_name(self, obj):
+        """Return student's full name."""
+        return obj.student.user.get_full_name() or obj.student.user.username
+    
+    def validate_fee_transactions(self, value):
+        """Validate that there are at most 3 fee transactions."""
+        if len(value) > 3:
+            raise serializers.ValidationError(
+                'A semester registration cannot have more than 3 fee transactions.'
+            )
+        return value
+    
+    def create(self, validated_data):
+        """Create semester registration with nested transactions and courses."""
+        fee_transactions_data = validated_data.pop('fee_transactions', [])
+        registered_courses_data = validated_data.pop('registered_courses', [])
+        
+        # Create the semester registration
+        semester_registration = SemesterRegistration.objects.create(**validated_data)
+        
+        # Create fee transactions
+        for transaction_data in fee_transactions_data:
+            FeeTransaction.objects.create(
+                semester_registration=semester_registration,
+                **transaction_data
+            )
+        
+        # Create registered courses
+        for course_data in registered_courses_data:
+            RegisteredCourse.objects.create(
+                semester_registration=semester_registration,
+                **course_data
+            )
+        
+        return semester_registration
+    
+    def update(self, instance, validated_data):
+        """Update semester registration and nested objects."""
+        fee_transactions_data = validated_data.pop('fee_transactions', None)
+        registered_courses_data = validated_data.pop('registered_courses', None)
+        
+        # Update semester registration fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update fee transactions if provided
+        if fee_transactions_data is not None:
+            # Delete existing transactions and create new ones
+            instance.fee_transactions.all().delete()
+            for transaction_data in fee_transactions_data:
+                FeeTransaction.objects.create(
+                    semester_registration=instance,
+                    **transaction_data
+                )
+        
+        # Update registered courses if provided
+        if registered_courses_data is not None:
+            # Delete existing courses and create new ones
+            instance.registered_courses.all().delete()
+            for course_data in registered_courses_data:
+                RegisteredCourse.objects.create(
+                    semester_registration=instance,
+                    **course_data
+                )
+        
+        return instance

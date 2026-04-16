@@ -57,10 +57,12 @@ const Layout = () => {
       case 'ADMIN':
         return [
           { path: '/admin', label: '📊 Dashboard', icon: '📊' },
-          { path: '/admin/academics', label: '🏫 Academics', icon: '🏫' },
-          { path: '/admin/attendance', label: '📋 Attendance', icon: '📋' },
-          { path: '/admin/faculty', label: '👨‍🏫 Faculty', icon: '👨‍🏫' },
+          { path: '/admin/settings', label: '⚙️ Settings', icon: '⚙️' },
           { path: '/admin/students', label: '👨‍🎓 Students', icon: '👨‍🎓' },
+          { path: '/admin/registration-tracking', label: '📋 Reg. Tracking', icon: '📋' },
+          { path: '/admin/academics', label: '🏫 Academics', icon: '🏫' },
+          { path: '/admin/attendance', label: '✓ Attendance', icon: '✓' },
+          { path: '/admin/faculty', label: '👨‍🏫 Faculty', icon: '👨‍🏫' },
           { path: '/admin/timetables', label: '📅 Timetables', icon: '📅' },
           { path: '/admin/exams', label: '📝 Exams', icon: '📝' },
           { path: '/admin/reports', label: '📈 Reports', icon: '📈' },
@@ -75,9 +77,10 @@ const Layout = () => {
       case 'STUDENT':
         return [
           { path: '/student', label: '📊 Dashboard', icon: '📊' },
+          { path: '/student/register', label: '📝 Semester Reg.', icon: '📝' },
           { path: '/student/timetable', label: '📅 Timetable', icon: '📅' },
           { path: '/student/attendance', label: '📋 My Attendance', icon: '📋' },
-          { path: '/student/grades', label: '📝 Grades', icon: '📝' },
+          { path: '/student/grades', label: '🎓 Grades', icon: '🎓' },
           { path: '/student/reports', label: '📈 Reports', icon: '📈' },
         ];
       default:

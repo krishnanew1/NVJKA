@@ -2,6 +2,141 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+class CustomRegistrationField(models.Model):
+    """
+    Model for dynamic registration fields that can be configured per institution.
+    
+    Allows colleges to add custom fields like Aadhar, Samagra ID, etc.
+    without code changes.
+    """
+    FIELD_TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('number', 'Number'),
+        ('date', 'Date'),
+        ('dropdown', 'Dropdown'),
+        ('email', 'Email'),
+        ('phone', 'Phone'),
+    ]
+    
+    field_name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Name of the custom field (e.g., 'Aadhar Number', 'Samagra ID')"
+    )
+    field_label = models.CharField(
+        max_length=100,
+        help_text="Display label for the field"
+    )
+    field_type = models.CharField(
+        max_length=20,
+        choices=FIELD_TYPE_CHOICES,
+        default='text',
+        help_text="Type of input field"
+    )
+    dropdown_options = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Comma-separated options for dropdown fields (e.g., 'Option1,Option2,Option3')"
+    )
+    is_required = models.BooleanField(
+        default=False,
+        help_text="Whether this field is mandatory during registration"
+    )
+    placeholder = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Placeholder text for the input field"
+    )
+    help_text = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Help text to guide users"
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Display order (lower numbers appear first)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this field is currently active"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.field_label} ({self.field_type})"
+    
+    class Meta:
+        verbose_name = "Custom Registration Field"
+        verbose_name_plural = "Custom Registration Fields"
+        ordering = ['order', 'field_name']
+
+
+class Program(models.Model):
+    """
+    Model representing an academic program (e.g., B.Tech, M.Sc, MBA).
+    
+    Replaces hardcoded courses with dynamic programs that can be
+    configured by each institution.
+    """
+    name = models.CharField(
+        max_length=100,
+        help_text="Full name of the program (e.g., 'Bachelor of Technology')"
+    )
+    code = models.CharField(
+        max_length=20,
+        unique=True,
+        help_text="Short code for the program (e.g., 'BTECH', 'MSC', 'MBA')"
+    )
+    department = models.ForeignKey(
+        'Department',
+        on_delete=models.CASCADE,
+        related_name='programs',
+        help_text="Department offering this program"
+    )
+    duration_years = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Duration of the program in years"
+    )
+    duration_semesters = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(20)],
+        help_text="Duration of the program in semesters"
+    )
+    total_credits = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(500)],
+        blank=True,
+        null=True,
+        help_text="Total credits required to complete the program"
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Detailed description of the program"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this program is currently accepting students"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-calculate semesters from years if not provided
+        if not self.duration_semesters and self.duration_years:
+            self.duration_semesters = self.duration_years * 2
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = "Program"
+        verbose_name_plural = "Programs"
+        ordering = ['department__code', 'code']
+
+
 class Department(models.Model):
     """
     Model representing an academic department.

@@ -7,7 +7,10 @@ Django REST Framework routers.
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import DepartmentViewSet, CourseViewSet, SubjectViewSet, TimetableViewSet
+from .views import (
+    DepartmentViewSet, CourseViewSet, SubjectViewSet, TimetableViewSet,
+    CustomRegistrationFieldViewSet, ProgramViewSet
+)
 
 # Create a router and register our viewsets
 router = DefaultRouter()
@@ -15,6 +18,8 @@ router.register(r'departments', DepartmentViewSet, basename='department')
 router.register(r'courses', CourseViewSet, basename='course')
 router.register(r'subjects', SubjectViewSet, basename='subject')
 router.register(r'timetables', TimetableViewSet, basename='timetable')
+router.register(r'custom-fields', CustomRegistrationFieldViewSet, basename='custom-field')
+router.register(r'programs', ProgramViewSet, basename='program')
 
 app_name = 'academics'
 

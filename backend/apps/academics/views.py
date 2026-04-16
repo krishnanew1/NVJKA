@@ -1,8 +1,8 @@
 """
 Views for academics app.
 
-This module provides REST API viewsets for Department, Course, and Subject
-models with authentication, filtering, and search capabilities.
+This module provides REST API viewsets for Department, Course, Subject,
+CustomRegistrationField, and Program models with authentication, filtering, and search capabilities.
 """
 
 from rest_framework import viewsets, filters, status
@@ -12,13 +12,116 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError
 
-from .models import Department, Course, Subject, Timetable
+from .models import Department, Course, Subject, Timetable, CustomRegistrationField, Program
 from .serializers import (
     DepartmentSerializer, DepartmentDetailSerializer,
     CourseSerializer, CourseDetailSerializer,
-    SubjectSerializer, TimetableSerializer
+    SubjectSerializer, TimetableSerializer,
+    CustomRegistrationFieldSerializer, ProgramSerializer
 )
 from .utils import generate_batch_timetable, get_batch_timetable
+
+
+class CustomRegistrationFieldViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for CustomRegistrationField model.
+    
+    Allows institutions to dynamically configure registration fields
+    without code changes. Only active fields are returned by default.
+    """
+    
+    queryset = CustomRegistrationField.objects.all().order_by('order', 'field_name')
+    serializer_class = CustomRegistrationFieldSerializer
+    permission_classes = [IsAuthenticated]
+    
+    # Filtering and search configuration
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['field_type', 'is_required', 'is_active']
+    search_fields = ['field_name', 'field_label', 'help_text']
+    ordering_fields = ['order', 'field_name', 'created_at']
+    ordering = ['order', 'field_name']
+    
+    def get_queryset(self):
+        """
+        Return queryset filtered by active status.
+        
+        By default, only active fields are returned unless
+        'show_inactive=true' is passed as a query parameter.
+        """
+        queryset = super().get_queryset()
+        
+        # Filter by active status unless explicitly requested
+        show_inactive = self.request.query_params.get('show_inactive', 'false').lower() == 'true'
+        if not show_inactive:
+            queryset = queryset.filter(is_active=True)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def active_fields(self, request):
+        """
+        Get all active registration fields ordered by display order.
+        
+        This endpoint is used by the registration form to dynamically
+        render custom fields.
+        """
+        fields = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(fields, many=True)
+        return Response(serializer.data)
+
+
+class ProgramViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Program model.
+    
+    Provides CRUD operations for academic programs with authentication,
+    filtering, and search capabilities.
+    """
+    
+    queryset = Program.objects.all().select_related('department').order_by('department__code', 'code')
+    serializer_class = ProgramSerializer
+    permission_classes = [IsAuthenticated]
+    
+    # Filtering and search configuration
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['department', 'duration_years', 'is_active']
+    search_fields = ['name', 'code', 'description']
+    ordering_fields = ['name', 'code', 'duration_years', 'created_at']
+    ordering = ['department__code', 'code']
+    
+    def get_queryset(self):
+        """
+        Return queryset filtered by active status.
+        
+        By default, only active programs are returned unless
+        'show_inactive=true' is passed as a query parameter.
+        """
+        queryset = super().get_queryset()
+        
+        # Filter by active status unless explicitly requested
+        show_inactive = self.request.query_params.get('show_inactive', 'false').lower() == 'true'
+        if not show_inactive:
+            queryset = queryset.filter(is_active=True)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def by_department(self, request):
+        """
+        Get programs grouped by department.
+        
+        Returns a dictionary with department codes as keys and
+        lists of programs as values.
+        """
+        department_code = request.query_params.get('department')
+        
+        if department_code:
+            programs = self.get_queryset().filter(department__code=department_code)
+        else:
+            programs = self.get_queryset()
+        
+        serializer = self.get_serializer(programs, many=True)
+        return Response(serializer.data)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):

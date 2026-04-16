@@ -1,7 +1,149 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from apps.users.models import StudentProfile
-from apps.academics.models import Course
+from apps.academics.models import Course, Subject
+
+
+class SemesterRegistration(models.Model):
+    """
+    Model representing a student's semester registration.
+    
+    Captures fee payment status, hostel details, and total credits for a semester.
+    """
+    student = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name='semester_registrations'
+    )
+    academic_year = models.CharField(
+        max_length=10,
+        help_text="Academic year (e.g., '2025-26')"
+    )
+    semester = models.CharField(
+        max_length=50,
+        help_text="Semester period (e.g., 'Jan-Jun 2026')"
+    )
+    institute_fee_paid = models.BooleanField(
+        default=False,
+        help_text="Whether institute fee has been paid"
+    )
+    hostel_fee_paid = models.BooleanField(
+        default=False,
+        help_text="Whether hostel fee has been paid"
+    )
+    hostel_room_no = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Hostel room number (if applicable)"
+    )
+    total_credits = models.PositiveIntegerField(
+        default=0,
+        help_text="Total credits registered for this semester"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('student', 'academic_year', 'semester')
+        ordering = ['-academic_year', '-semester']
+    
+    def __str__(self):
+        return f"{self.student} - {self.academic_year} ({self.semester})"
+
+
+class FeeTransaction(models.Model):
+    """
+    Model representing a fee payment transaction.
+    
+    Each semester registration can have up to 3 fee transactions.
+    """
+    semester_registration = models.ForeignKey(
+        SemesterRegistration,
+        on_delete=models.CASCADE,
+        related_name='fee_transactions'
+    )
+    utr_no = models.CharField(
+        max_length=50,
+        help_text="Unique Transaction Reference number"
+    )
+    bank_name = models.CharField(
+        max_length=100,
+        help_text="Name of the bank"
+    )
+    transaction_date = models.DateField(
+        help_text="Date of transaction"
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="Transaction amount"
+    )
+    account_debited = models.CharField(
+        max_length=100,
+        help_text="Account from which amount was debited"
+    )
+    account_credited = models.CharField(
+        max_length=100,
+        help_text="Account to which amount was credited"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-transaction_date']
+    
+    def __str__(self):
+        return f"Transaction {self.utr_no} - {self.amount}"
+    
+    def clean(self):
+        """Validate that a semester registration doesn't have more than 3 transactions."""
+        if not self.pk:  # Only check on creation
+            existing_count = FeeTransaction.objects.filter(
+                semester_registration=self.semester_registration
+            ).count()
+            if existing_count >= 3:
+                raise ValidationError(
+                    'A semester registration cannot have more than 3 fee transactions.'
+                )
+    
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+
+class RegisteredCourse(models.Model):
+    """
+    Model representing a course/subject registered by a student for a semester.
+    
+    Links a semester registration to specific subjects with backlog tracking.
+    """
+    semester_registration = models.ForeignKey(
+        SemesterRegistration,
+        on_delete=models.CASCADE,
+        related_name='registered_courses'
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        related_name='student_registrations'
+    )
+    is_backlog = models.BooleanField(
+        default=False,
+        help_text="Whether this is a backlog subject"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('semester_registration', 'subject')
+        ordering = ['is_backlog', 'subject__code']
+    
+    def __str__(self):
+        backlog_str = " (Backlog)" if self.is_backlog else ""
+        return f"{self.subject.code}{backlog_str}"
 
 
 class Enrollment(models.Model):

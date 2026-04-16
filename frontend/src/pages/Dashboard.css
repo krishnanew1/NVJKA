@@ -2888,3 +2888,198 @@
     min-width: 40px;
   }
 }
+
+/* Hierarchical List Styles for Student Grouping */
+.hierarchical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.year-group {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.year-group:hover {
+  box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.year-header:hover {
+  background: var(--hover-bg);
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+  width: 16px;
+  display: inline-block;
+}
+
+.year-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  flex: 1;
+}
+
+.year-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.year-content {
+  padding: 16px;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.program-group {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.program-group:hover {
+  border-color: var(--primary-color);
+}
+
+.program-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.program-header:hover {
+  background: var(--hover-bg);
+}
+
+.program-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  flex: 1;
+}
+
+.program-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.program-content {
+  padding: 12px;
+  background: var(--card-bg);
+}
+
+.program-content .data-table {
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.program-content .data-table th {
+  background: var(--bg-tertiary);
+  font-size: 13px;
+  padding: 12px 16px;
+}
+
+.program-content .data-table td {
+  font-size: 13px;
+  padding: 12px 16px;
+}
+
+/* Responsive Design for Hierarchical List */
+@media (max-width: 768px) {
+  .year-header {
+    padding: 12px 16px;
+  }
+
+  .year-title {
+    font-size: 14px;
+  }
+
+  .year-count,
+  .program-count {
+    font-size: 11px;
+  }
+
+  .program-header {
+    padding: 10px 12px;
+  }
+
+  .program-title {
+    font-size: 13px;
+  }
+
+  .year-content {
+    padding: 12px;
+  }
+
+  .program-content {
+    padding: 8px;
+  }
+
+  .program-content .data-table th,
+  .program-content .data-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .year-header {
+    padding: 10px 12px;
+  }
+
+  .year-title {
+    font-size: 13px;
+  }
+
+  .program-header {
+    padding: 8px 10px;
+  }
+
+  .program-title {
+    font-size: 12px;
+  }
+
+  .year-content {
+    padding: 8px;
+  }
+
+  .program-content {
+    padding: 6px;
+  }
+
+  .program-content .data-table th,
+  .program-content .data-table td {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
