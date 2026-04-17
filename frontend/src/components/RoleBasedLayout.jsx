@@ -38,7 +38,6 @@ const RoleBasedLayout = ({ role = 'admin' }) => {
         return [
           ...baseItems,
           { path: '/faculty/assignments', label: '📚 My Classes', icon: '📚' },
-          { path: '/faculty/attendance', label: '📋 Mark Attendance', icon: '📋' },
           { path: '/faculty/grades', label: '📝 Enter Grades', icon: '📝' },
           { path: '/faculty/timetable', label: '📅 My Timetable', icon: '📅' },
           { path: '/faculty/students', label: '👨‍🎓 My Students', icon: '👨‍🎓' },

@@ -461,3 +461,296 @@ class AttendanceRecordsView(APIView):
             'count': len(results),
             'records': results,
         }, status=status.HTTP_200_OK)
+
+
+class FacultyAttendanceSummaryView(APIView):
+    """
+    GET /api/faculty/attendance-summary/
+    
+    Returns attendance summary for all students in subjects assigned to the logged-in faculty.
+    Calculates attendance percentage for each student per subject.
+    Groups students by batch (extracted from reg_no).
+    
+    Query params:
+    - subject_id (optional): Filter by specific subject
+    - batch (optional): Filter by specific batch string (e.g., '2024')
+    
+    Response:
+    {
+        "faculty": {...},
+        "subjects": [
+            {
+                "subject": {...},
+                "batches": {
+                    "2024": {
+                        "batch_string": "2024",
+                        "students": [
+                            {
+                                "student_id": 1,
+                                "reg_no": "2024001",
+                                "name": "John Doe",
+                                "total_classes": 20,
+                                "attended": 18,
+                                "attendance_percentage": 90.0
+                            },
+                            ...
+                        ],
+                        "batch_average": 85.5
+                    }
+                }
+            }
+        ]
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get attendance summary for faculty's assigned subjects."""
+        # Check if user is faculty
+        if request.user.role != 'FACULTY':
+            return Response(
+                {'error': 'This endpoint is only accessible to faculty members.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get faculty profile
+        try:
+            faculty_profile = request.user.faculty_profile
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': 'Faculty profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get query parameters
+        subject_id_filter = request.query_params.get('subject_id')
+        batch_filter = request.query_params.get('batch')
+        
+        # Get subjects assigned to this faculty
+        subjects_query = Subject.objects.filter(faculty=faculty_profile).select_related('course')
+        
+        if subject_id_filter:
+            subjects_query = subjects_query.filter(id=subject_id_filter)
+        
+        subjects = list(subjects_query)
+        
+        if not subjects:
+            return Response({
+                'faculty': {
+                    'id': faculty_profile.id,
+                    'name': request.user.get_full_name() or request.user.username,
+                    'employee_id': faculty_profile.employee_id
+                },
+                'subjects': [],
+                'message': 'No subjects assigned to this faculty member.'
+            }, status=status.HTTP_200_OK)
+        
+        # Build response data
+        subjects_data = []
+        
+        for subject in subjects:
+            # Get all students enrolled in this subject's course and semester
+            from apps.students.models import Enrollment
+            enrollments = Enrollment.objects.filter(
+                course=subject.course,
+                semester=subject.semester,
+                status='Active'
+            ).select_related('student', 'student__user')
+            
+            # Group students by batch (extract year from reg_no)
+            batches_data = {}
+            
+            for enrollment in enrollments:
+                student = enrollment.student
+                reg_no = student.enrollment_number or ''
+                
+                # Extract batch year from reg_no (first 4 digits)
+                batch_year = reg_no[:4] if len(reg_no) >= 4 and reg_no[:4].isdigit() else 'Unknown'
+                
+                # Apply batch filter if specified
+                if batch_filter and batch_year != batch_filter:
+                    continue
+                
+                # Get attendance records for this student and subject
+                attendance_records = Attendance.objects.filter(
+                    student=student,
+                    subject=subject
+                )
+                
+                total_classes = attendance_records.count()
+                attended = attendance_records.filter(
+                    Q(status='Present') | Q(status='Late')
+                ).count()
+                
+                attendance_percentage = (attended / total_classes * 100) if total_classes > 0 else 0
+                
+                # Initialize batch if not exists
+                if batch_year not in batches_data:
+                    batches_data[batch_year] = {
+                        'batch_string': batch_year,
+                        'students': [],
+                        'total_percentage': 0,
+                        'student_count': 0
+                    }
+                
+                # Add student data
+                student_data = {
+                    'student_id': student.id,
+                    'reg_no': reg_no,
+                    'name': student.user.get_full_name() or student.user.username,
+                    'total_classes': total_classes,
+                    'attended': attended,
+                    'attendance_percentage': round(attendance_percentage, 2)
+                }
+                
+                batches_data[batch_year]['students'].append(student_data)
+                batches_data[batch_year]['total_percentage'] += attendance_percentage
+                batches_data[batch_year]['student_count'] += 1
+            
+            # Calculate batch averages
+            for batch_year, batch_info in batches_data.items():
+                if batch_info['student_count'] > 0:
+                    batch_info['batch_average'] = round(
+                        batch_info['total_percentage'] / batch_info['student_count'], 2
+                    )
+                else:
+                    batch_info['batch_average'] = 0
+                
+                # Remove temporary fields
+                del batch_info['total_percentage']
+                del batch_info['student_count']
+            
+            subjects_data.append({
+                'subject': {
+                    'id': subject.id,
+                    'name': subject.name,
+                    'code': subject.code,
+                    'semester': subject.semester,
+                    'course': {
+                        'id': subject.course.id,
+                        'name': subject.course.name,
+                        'code': subject.course.code
+                    }
+                },
+                'batches': batches_data
+            })
+        
+        return Response({
+            'faculty': {
+                'id': faculty_profile.id,
+                'name': request.user.get_full_name() or request.user.username,
+                'employee_id': faculty_profile.employee_id
+            },
+            'subjects': subjects_data
+        }, status=status.HTTP_200_OK)
+
+
+class SubmitAttendanceReportView(APIView):
+    """
+    POST /api/faculty/submit-attendance-report/
+    
+    Submit an attendance report for a specific subject and batch.
+    Creates an AttendanceReportSubmission record for admin review.
+    
+    Payload:
+    {
+        "subject_id": 1,
+        "batch_string": "2024-IMG"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Attendance report submitted successfully.",
+        "submission": {
+            "id": 1,
+            "subject": {...},
+            "batch_string": "2024-IMG",
+            "submitted_at": "2026-04-18T10:30:00Z",
+            "is_reviewed": false
+        }
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """Submit an attendance report."""
+        # Check if user is faculty
+        if request.user.role != 'FACULTY':
+            return Response(
+                {'error': 'This endpoint is only accessible to faculty members.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get faculty profile
+        try:
+            faculty_profile = request.user.faculty_profile
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': 'Faculty profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get request data
+        subject_id = request.data.get('subject_id')
+        batch_string = request.data.get('batch_string')
+        
+        # Validate required fields
+        if not subject_id:
+            return Response(
+                {'error': 'subject_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not batch_string:
+            return Response(
+                {'error': 'batch_string is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get subject
+        try:
+            subject = Subject.objects.get(id=subject_id)
+        except Subject.DoesNotExist:
+            return Response(
+                {'error': f'Subject with id {subject_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Verify faculty is assigned to this subject
+        if subject.faculty != faculty_profile:
+            return Response(
+                {'error': 'You are not assigned to this subject.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Create submission record
+        from .models import AttendanceReportSubmission
+        
+        try:
+            submission = AttendanceReportSubmission.objects.create(
+                faculty=faculty_profile,
+                subject=subject,
+                batch_string=batch_string
+            )
+            
+            return Response({
+                'success': True,
+                'message': 'Attendance report submitted successfully.',
+                'submission': {
+                    'id': submission.id,
+                    'subject': {
+                        'id': subject.id,
+                        'name': subject.name,
+                        'code': subject.code
+                    },
+                    'batch_string': submission.batch_string,
+                    'submitted_at': submission.submitted_at.isoformat(),
+                    'is_reviewed': submission.is_reviewed_by_admin
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to submit attendance report.', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

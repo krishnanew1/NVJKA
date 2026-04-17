@@ -7,7 +7,9 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminSettings from './pages/AdminSettings';
 import AdminStudents from './pages/AdminStudents';
 import AdminRegTracking from './pages/AdminRegTracking';
+import AdminFaculty from './pages/AdminFaculty';
 import FacultyDashboard from './pages/FacultyDashboard';
+import FacultyAttendance from './pages/FacultyAttendance';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentTimetable from './pages/StudentTimetable';
 import StudentGrades from './pages/StudentGrades';
@@ -45,6 +47,7 @@ function App() {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="students" element={<AdminStudents />} />
             <Route path="registration-tracking" element={<AdminRegTracking />} />
+            <Route path="faculty" element={<AdminFaculty />} />
           </Route>
           
           <Route 
@@ -56,6 +59,7 @@ function App() {
             }
           >
             <Route index element={<FacultyDashboard />} />
+            <Route path="attendance" element={<FacultyAttendance />} />
           </Route>
           
           <Route 

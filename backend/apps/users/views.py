@@ -452,3 +452,43 @@ class StudentListView(APIView):
                 },
                 status=status.HTTP_200_OK  # Still return 200 to prevent frontend error state
             )
+
+
+class FacultyListView(APIView):
+    """
+    API endpoint to list all faculty members.
+    
+    Permissions: IsAuthenticated
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """
+        Get list of all faculty members with their profiles.
+        Always returns 200 OK with empty array if no faculty exist.
+        """
+        try:
+            faculty = FacultyProfile.objects.select_related(
+                'user', 'department'
+            ).all().order_by('employee_id')
+            
+            serializer = FacultyProfileSerializer(faculty, many=True)
+            
+            return Response(
+                {
+                    'count': faculty.count(),
+                    'results': serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            # Log the error but return empty list to prevent frontend errors
+            print(f"Error fetching faculty: {str(e)}")
+            return Response(
+                {
+                    'count': 0,
+                    'results': [],
+                    'error': 'Failed to fetch faculty'
+                },
+                status=status.HTTP_200_OK  # Still return 200 to prevent frontend error state
+            )

@@ -9,6 +9,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError
 
@@ -194,7 +195,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
     information, authentication, filtering, and search capabilities.
     """
     
-    queryset = Subject.objects.select_related('course__department').all().order_by('course__code', 'semester', 'code')
+    queryset = Subject.objects.select_related('course__department', 'faculty__user').all().order_by('course__code', 'semester', 'code')
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
     
@@ -203,18 +204,143 @@ class SubjectViewSet(viewsets.ModelViewSet):
     filterset_fields = [
         'name', 'code', 'course', 'course__name', 'course__code', 
         'course__department', 'course__department__name', 'course__department__code',
-        'semester', 'credits', 'is_mandatory'
+        'semester', 'credits', 'is_mandatory', 'faculty'
     ]
     search_fields = [
         'name', 'code', 'description', 
         'course__name', 'course__code',
-        'course__department__name', 'course__department__code'
+        'course__department__name', 'course__department__code',
+        'faculty__user__first_name', 'faculty__user__last_name', 'faculty__employee_id'
     ]
     ordering_fields = [
         'name', 'code', 'course__code', 'semester', 'credits', 
         'is_mandatory', 'created_at'
     ]
     ordering = ['course__code', 'semester', 'code']
+    
+    @action(detail=True, methods=['patch', 'put'], url_path='assign-faculty')
+    def assign_faculty(self, request, pk=None):
+        """
+        Assign a faculty member to a subject.
+        
+        PATCH/PUT /api/academics/subjects/{id}/assign-faculty/
+        
+        Request Body:
+        {
+            "faculty_id": 5  // ID of the FacultyProfile to assign (null to unassign)
+        }
+        
+        Returns:
+        {
+            "success": true,
+            "message": "Faculty assigned successfully",
+            "data": {
+                "id": 1,
+                "name": "Operating Systems",
+                "code": "CS301",
+                "faculty": {
+                    "id": 5,
+                    "employee_id": "FAC102",
+                    "name": "Deepak Kumar Dewangan",
+                    "designation": "Assistant Professor"
+                }
+            }
+        }
+        """
+        from apps.users.models import FacultyProfile
+        
+        subject = self.get_object()
+        faculty_id = request.data.get('faculty_id')
+        
+        # Allow null to unassign faculty
+        if faculty_id is None:
+            subject.faculty = None
+            subject.save()
+            
+            return Response({
+                'success': True,
+                'message': 'Faculty unassigned successfully',
+                'data': self.get_serializer(subject).data
+            }, status=status.HTTP_200_OK)
+        
+        # Validate faculty_id
+        try:
+            faculty_id = int(faculty_id)
+            faculty = FacultyProfile.objects.select_related('user', 'department').get(id=faculty_id)
+        except (ValueError, TypeError):
+            return Response({
+                'success': False,
+                'error': 'faculty_id must be a valid integer',
+                'code': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except FacultyProfile.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': f'Faculty with ID {faculty_id} not found',
+                'code': 404
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Assign faculty to subject
+        subject.faculty = faculty
+        subject.save()
+        
+        return Response({
+            'success': True,
+            'message': f'Faculty {faculty.user.get_full_name()} assigned to {subject.name}',
+            'data': self.get_serializer(subject).data
+        }, status=status.HTTP_200_OK)
+
+
+class MySubjectsView(ListAPIView):
+    """
+    View to list subjects assigned to the currently logged-in faculty member.
+    
+    GET /api/faculty/my-subjects/
+    
+    Returns all subjects where the faculty field matches the current user's FacultyProfile.
+    Requires authentication and that the user has a FacultyProfile.
+    
+    Returns:
+    [
+        {
+            "id": 1,
+            "name": "Operating Systems",
+            "code": "CS301",
+            "course": {...},
+            "semester": 3,
+            "semester_display": "Semester 3",
+            "credits": 4,
+            "is_mandatory": true,
+            "faculty_info": {...}
+        },
+        ...
+    ]
+    """
+    
+    serializer_class = SubjectSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Filter subjects by the currently logged-in faculty member.
+        
+        Returns subjects where faculty.user matches request.user.
+        """
+        from apps.users.models import FacultyProfile
+        
+        # Get the faculty profile for the current user
+        try:
+            faculty_profile = FacultyProfile.objects.get(user=self.request.user)
+        except FacultyProfile.DoesNotExist:
+            # If user doesn't have a faculty profile, return empty queryset
+            return Subject.objects.none()
+        
+        # Return subjects assigned to this faculty member
+        return Subject.objects.select_related(
+            'course__department', 'faculty__user'
+        ).filter(
+            faculty=faculty_profile
+        ).order_by('course__code', 'semester', 'code')
 
 
 class TimetableViewSet(viewsets.ModelViewSet):

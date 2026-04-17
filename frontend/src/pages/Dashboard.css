@@ -3083,3 +3083,148 @@
     font-size: 11px;
   }
 }
+
+
+/* Faculty Dashboard Action Buttons */
+.class-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.action-btn {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.action-btn.primary-btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--text-inverse);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn.primary-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.action-btn.secondary-btn {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+}
+
+.action-btn.secondary-btn:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.class-course {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 4px 0;
+  font-style: italic;
+}
+
+/* Edit Attendance Modal Styles */
+.edit-attendance-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.edit-date-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-date-section label {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.edit-date-section input[type="date"] {
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.edit-date-section input[type="date"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.edit-info-message {
+  background: var(--info-light);
+  border-left: 4px solid var(--info-color);
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.edit-info-message p {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.no-date-selected {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-date-selected p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Responsive adjustments for action buttons */
+@media (max-width: 768px) {
+  .class-card-footer {
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-btn {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+}

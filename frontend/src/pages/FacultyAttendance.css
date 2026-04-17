@@ -1,0 +1,656 @@
+/* Faculty Attendance Page */
+.faculty-attendance {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Page Header */
+.attendance-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.attendance-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.attendance-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Faculty Info Card */
+.faculty-info-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--text-inverse);
+}
+
+.faculty-info-card .info-icon {
+  font-size: 48px;
+  opacity: 0.9;
+}
+
+.faculty-info-card .info-content h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text-inverse);
+}
+
+.faculty-info-card .info-content p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Attendance Content */
+.attendance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Accordion Items */
+.accordion-item {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px var(--card-shadow);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.accordion-item:hover {
+  box-shadow: 0 4px 20px var(--card-shadow);
+}
+
+/* Subject Accordion */
+.subject-accordion {
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Batch Accordion */
+.batch-accordion {
+  margin: 12px 0;
+  border-left: 4px solid var(--secondary-color);
+}
+
+/* Branch Accordion */
+.branch-accordion {
+  margin: 8px 0;
+  border-left: 4px solid var(--success-color);
+}
+
+/* Accordion Header */
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--card-bg);
+}
+
+.accordion-header:hover {
+  background: var(--hover-bg);
+}
+
+.batch-header {
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+}
+
+.batch-header:hover {
+  background: var(--hover-bg);
+}
+
+.branch-header {
+  padding: 14px 18px;
+  background: var(--bg-tertiary);
+}
+
+.branch-header:hover {
+  background: var(--hover-bg);
+}
+
+/* Header Layout */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Accordion Icon */
+.accordion-icon {
+  font-size: 16px;
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Header Info */
+.header-info {
+  flex: 1;
+}
+
+/* Subject Styles */
+.subject-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 6px 0;
+}
+
+.subject-details {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subject-code {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.subject-separator {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* Batch Styles */
+.batch-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+}
+
+.batch-stats {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Branch Styles */
+.branch-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+}
+
+.branch-stats {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Count Badges */
+.batch-count,
+.branch-count {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Accordion Content */
+.accordion-content {
+  padding: 0 24px 20px 24px;
+  animation: slideDown 0.3s ease;
+}
+
+.batch-accordion .accordion-content {
+  padding: 0 20px 16px 20px;
+}
+
+.branch-accordion .accordion-content {
+  padding: 0 18px 14px 18px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Branch Content */
+.branch-content {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Students Table */
+.students-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.students-table thead {
+  background: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.students-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.students-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.students-table tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.students-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Cell Styles */
+.student-reg-no {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.student-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.student-total,
+.student-attended {
+  text-align: center;
+  font-weight: 500;
+}
+
+.student-percentage {
+  text-align: center;
+}
+
+/* Percentage Badge */
+.percentage-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.percentage-badge.attendance-good {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.percentage-badge.attendance-poor {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+/* Attendance Color Classes */
+.attendance-good {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.attendance-poor {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+/* Branch Actions */
+.branch-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Submit Report Button */
+.submit-report-btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.submit-report-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-report-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-report-btn.submitted {
+  background: var(--success-color);
+  box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+}
+
+.submit-report-btn.submitting {
+  background: var(--info-color);
+  cursor: wait;
+}
+
+/* Button Spinner */
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid var(--text-inverse);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Error Container */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-text {
+  color: var(--error-color);
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .faculty-attendance {
+    padding: 20px;
+  }
+
+  .accordion-header {
+    padding: 16px 20px;
+  }
+
+  .batch-header {
+    padding: 14px 18px;
+  }
+
+  .branch-header {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-attendance {
+    padding: 16px;
+  }
+
+  .attendance-header h1 {
+    font-size: 28px;
+  }
+
+  .faculty-info-card {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .faculty-info-card .info-icon {
+    font-size: 40px;
+  }
+
+  .faculty-info-card .info-content h3 {
+    font-size: 20px;
+  }
+
+  .accordion-header {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-left {
+    width: 100%;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 36px;
+  }
+
+  .subject-name {
+    font-size: 18px;
+  }
+
+  .batch-name {
+    font-size: 16px;
+  }
+
+  .branch-name {
+    font-size: 15px;
+  }
+
+  .accordion-content {
+    padding: 0 16px 16px 16px;
+  }
+
+  .students-table th,
+  .students-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .submit-report-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .faculty-attendance {
+    padding: 12px;
+  }
+
+  .attendance-header h1 {
+    font-size: 24px;
+  }
+
+  .attendance-header p {
+    font-size: 14px;
+  }
+
+  .faculty-info-card {
+    padding: 16px;
+  }
+
+  .faculty-info-card .info-icon {
+    font-size: 36px;
+  }
+
+  .faculty-info-card .info-content h3 {
+    font-size: 18px;
+  }
+
+  .accordion-header {
+    padding: 12px 14px;
+  }
+
+  .batch-header {
+    padding: 10px 12px;
+  }
+
+  .branch-header {
+    padding: 10px 12px;
+  }
+
+  .subject-name {
+    font-size: 16px;
+  }
+
+  .batch-name {
+    font-size: 15px;
+  }
+
+  .branch-name {
+    font-size: 14px;
+  }
+
+  .subject-details {
+    font-size: 12px;
+  }
+
+  .batch-stats,
+  .branch-stats {
+    font-size: 11px;
+  }
+
+  .accordion-content {
+    padding: 0 12px 12px 12px;
+  }
+
+  .students-table th,
+  .students-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  /* Hide some columns on very small screens */
+  .students-table th:nth-child(3),
+  .students-table td:nth-child(3),
+  .students-table th:nth-child(4),
+  .students-table td:nth-child(4) {
+    display: none;
+  }
+
+  .submit-report-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .empty-state {
+    padding: 60px 16px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+}

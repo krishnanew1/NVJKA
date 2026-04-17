@@ -11,7 +11,8 @@ from .views import (
     StudentDashboardView, 
     FacultyDashboardView,
     RegisterUserView,
-    StudentListView
+    StudentListView,
+    FacultyListView
 )
 
 app_name = 'users'
@@ -24,8 +25,9 @@ urlpatterns = [
     # Registration endpoint
     path('register/', RegisterUserView.as_view(), name='register'),
     
-    # Student list endpoint
+    # List endpoints
     path('students/', StudentListView.as_view(), name='student_list'),
+    path('faculty/', FacultyListView.as_view(), name='faculty_list'),
     
     # Dashboard endpoints
     path('dashboard/student/', StudentDashboardView.as_view(), name='student_dashboard'),

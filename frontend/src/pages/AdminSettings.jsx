@@ -224,111 +224,170 @@ const AdminSettings = () => {
 
       <div className="dashboard-header">
         <h1>⚙️ Institute Settings</h1>
-        <p>Manage programs and custom registration fields</p>
+        <p>Manage programs, custom registration fields, and student registration</p>
       </div>
 
-      {/* Programs Section */}
-      <div className="tables-section">
-        <div className="table-card">
-          <div className="table-header">
-            <h2>Academic Programs</h2>
-            <button className="add-btn" onClick={() => setIsProgramModalOpen(true)}>
-              + Add Program
-            </button>
-          </div>
-          <div className="table-container">
-            {programs.length > 0 ? (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Duration</th>
-                    <th>Credits</th>
-                    <th>Students</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {programs.map((program) => (
-                    <tr key={program.id}>
-                      <td className="table-code">{program.code}</td>
-                      <td className="table-name">{program.name}</td>
-                      <td>{program.department?.name || 'N/A'}</td>
-                      <td>{program.duration_years} years ({program.duration_semesters} sem)</td>
-                      <td>{program.total_credits || 'N/A'}</td>
-                      <td>{program.total_students || 0}</td>
-                      <td className="table-actions">
-                        <button className="action-btn delete-btn" onClick={() => handleDeleteClick('program', program)} title="Delete Program">
-                          🗑️
-                        </button>
-                      </td>
+      {/* Two-Section Layout Container */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        
+        {/* TOP SECTION: Programs and Custom Fields */}
+        <div className="tables-section">
+          {/* Programs Section */}
+          <div className="table-card">
+            <div className="table-header">
+              <h2>Academic Programs</h2>
+              <button className="add-btn" onClick={() => setIsProgramModalOpen(true)}>
+                + Add Program
+              </button>
+            </div>
+            <div className="table-container">
+              {programs.length > 0 ? (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th>Duration</th>
+                      <th>Credits</th>
+                      <th>Students</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="empty-state">
-                <div className="empty-icon">🎓</div>
-                <p>No programs found</p>
-                <button className="add-btn" onClick={() => setIsProgramModalOpen(true)}>
-                  Add First Program
-                </button>
-              </div>
-            )}
+                  </thead>
+                  <tbody>
+                    {programs.map((program) => (
+                      <tr key={program.id}>
+                        <td className="table-code">{program.code}</td>
+                        <td className="table-name">{program.name}</td>
+                        <td>{program.department?.name || 'N/A'}</td>
+                        <td>{program.duration_years} years ({program.duration_semesters} sem)</td>
+                        <td>{program.total_credits || 'N/A'}</td>
+                        <td>{program.total_students || 0}</td>
+                        <td className="table-actions">
+                          <button className="action-btn delete-btn" onClick={() => handleDeleteClick('program', program)} title="Delete Program">
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">🎓</div>
+                  <p>No programs found</p>
+                  <button className="add-btn" onClick={() => setIsProgramModalOpen(true)}>
+                    Add First Program
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Custom Fields Section */}
+          <div className="table-card">
+            <div className="table-header">
+              <h2>Custom Registration Fields</h2>
+              <button className="add-btn" onClick={() => setIsFieldModalOpen(true)}>
+                + Add Field
+              </button>
+            </div>
+            <div className="table-container">
+              {customFields.length > 0 ? (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Label</th>
+                      <th>Type</th>
+                      <th>Required</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customFields.map((field) => (
+                      <tr key={field.id}>
+                        <td>{field.order}</td>
+                        <td className="table-name">{field.field_label}</td>
+                        <td><span className="table-code">{field.field_type}</span></td>
+                        <td>{field.is_required ? '✅ Yes' : '❌ No'}</td>
+                        <td>{field.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                        <td className="table-actions">
+                          <button className="action-btn delete-btn" onClick={() => handleDeleteClick('field', field)} title="Delete Field">
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">📝</div>
+                  <p>No custom fields found</p>
+                  <button className="add-btn" onClick={() => setIsFieldModalOpen(true)}>
+                    Add First Field
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Custom Fields Section */}
+        {/* BOTTOM SECTION: Manual Student Registration */}
         <div className="table-card">
           <div className="table-header">
-            <h2>Custom Registration Fields</h2>
-            <button className="add-btn" onClick={() => setIsFieldModalOpen(true)}>
-              + Add Field
+            <h2>👨‍🎓 Manual Student Registration</h2>
+            <button className="add-btn" onClick={() => {
+              // TODO: Open student registration modal
+              showToast('Student registration modal coming soon!', 'info');
+            }}>
+              + Add Student
             </button>
           </div>
           <div className="table-container">
-            {customFields.length > 0 ? (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Label</th>
-                    <th>Type</th>
-                    <th>Required</th>
-                    <th>Active</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customFields.map((field) => (
-                    <tr key={field.id}>
-                      <td>{field.order}</td>
-                      <td className="table-name">{field.field_label}</td>
-                      <td><span className="table-code">{field.field_type}</span></td>
-                      <td>{field.is_required ? '✅ Yes' : '❌ No'}</td>
-                      <td>{field.is_active ? '✅ Active' : '❌ Inactive'}</td>
-                      <td className="table-actions">
-                        <button className="action-btn delete-btn" onClick={() => handleDeleteClick('field', field)} title="Delete Field">
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="empty-state">
-                <div className="empty-icon">📝</div>
-                <p>No custom fields found</p>
-                <button className="add-btn" onClick={() => setIsFieldModalOpen(true)}>
-                  Add First Field
-                </button>
+            <div className="info-section" style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: 'var(--text-secondary)'
+            }}>
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '1rem'
+              }}>
+                👨‍🎓
               </div>
-            )}
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: 'var(--text-color)',
+                marginBottom: '0.5rem'
+              }}>
+                Manual Student Registration
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                lineHeight: '1.6',
+                maxWidth: '600px',
+                margin: '0 auto 1.5rem'
+              }}>
+                Use this section to manually enter and register a student into the system. 
+                You can add student details, assign them to programs, and configure their enrollment information.
+              </p>
+              <button 
+                className="add-btn"
+                onClick={() => {
+                  // TODO: Open student registration modal
+                  showToast('Student registration modal coming soon!', 'info');
+                }}
+              >
+                + Add Student
+              </button>
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Add Program Modal */}

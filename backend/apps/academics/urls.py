@@ -9,7 +9,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     DepartmentViewSet, CourseViewSet, SubjectViewSet, TimetableViewSet,
-    CustomRegistrationFieldViewSet, ProgramViewSet
+    CustomRegistrationFieldViewSet, ProgramViewSet, MySubjectsView
 )
 
 # Create a router and register our viewsets
@@ -24,6 +24,9 @@ router.register(r'programs', ProgramViewSet, basename='program')
 app_name = 'academics'
 
 urlpatterns = [
+    # Faculty-specific endpoints
+    path('faculty/my-subjects/', MySubjectsView.as_view(), name='my-subjects'),
+    
     # Include all router URLs
     path('', include(router.urls)),
 ]

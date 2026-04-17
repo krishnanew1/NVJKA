@@ -52,6 +52,17 @@
   --active-bg: #edf2f7;
   --focus-ring: #667eea;
   
+  /* Input Colors */
+  --input-bg: #ffffff;
+  --input-border: #e2e8f0;
+  --input-focus: #667eea;
+  
+  /* Alpha Colors */
+  --primary-color-alpha: rgba(102, 126, 234, 0.15);
+  
+  /* Header Colors */
+  --header-bg: #f8fafc;
+  
   /* Sidebar Colors */
   --sidebar-bg: #2d3748;
   --sidebar-text: #e2e8f0;
@@ -106,6 +117,17 @@
   --active-bg: #475569;
   --focus-ring: #818cf8;
   
+  /* Input Colors */
+  --input-bg: #1e293b;
+  --input-border: #334155;
+  --input-focus: #818cf8;
+  
+  /* Alpha Colors */
+  --primary-color-alpha: rgba(129, 140, 248, 0.15);
+  
+  /* Header Colors */
+  --header-bg: #334155;
+  
   /* Sidebar Colors */
   --sidebar-bg: #111827;
   --sidebar-text: #d1d5db;
@@ -146,6 +168,87 @@ button, input, textarea, select {
 
 button {
   cursor: pointer;
+}
+
+/* Global Select and Option Styling */
+select {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 2px solid var(--input-border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 36px;
+}
+
+select:hover:not(:disabled) {
+  border-color: var(--primary-color);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--bg-tertiary);
+}
+
+/* Light Mode - Dropdown Options */
+:root select option {
+  background-color: #ffffff;
+  color: #1a202c;
+  padding: 8px 12px;
+}
+
+/* Dark Mode - Dropdown Options */
+[data-theme='dark'] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23818cf8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+[data-theme='dark'] select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  padding: 8px 12px;
+}
+
+/* Input Styling */
+input, textarea {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 2px solid var(--input-border);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+input:hover:not(:disabled):not(:focus), 
+textarea:hover:not(:disabled):not(:focus) {
+  border-color: var(--primary-color);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+input:disabled, textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--bg-tertiary);
 }
 
 /* Remove default link styles */

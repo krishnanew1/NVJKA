@@ -36,40 +36,81 @@ const FacultyDashboard = () => {
     type: 'info'
   });
 
-  // Fetch faculty assignments
+  // Fetch faculty's assigned subjects
   const fetchAssignments = async () => {
     try {
       setLoading(true);
       setError('');
 
-      const response = await api.get('/api/faculty/assignments/');
-      const data = response.data.results || response.data;
-      setAssignments(data);
+      console.log('🔍 Fetching faculty subjects from: /api/academics/faculty/my-subjects/');
       
-      // If no assignments, don't show error - just empty state
-      if (!data || data.length === 0) {
-        setError(''); // Clear any previous errors
+      // Fetch subjects assigned to the logged-in faculty
+      const response = await api.get('/api/academics/faculty/my-subjects/');
+      
+      // DEBUG: Log the full response
+      console.log('📡 API Response:', response);
+      console.log('📦 Response Data:', response.data);
+      console.log('📊 Data Type:', typeof response.data);
+      console.log('📋 Is Array:', Array.isArray(response.data));
+      
+      // Handle different response structures
+      let data;
+      if (response.data.results) {
+        // Paginated response
+        console.log('✓ Paginated response detected');
+        data = response.data.results;
+      } else if (Array.isArray(response.data)) {
+        // Direct array response
+        console.log('✓ Direct array response detected');
+        data = response.data;
+      } else {
+        // Unexpected format
+        console.warn('⚠️ Unexpected response format:', response.data);
+        data = [];
       }
+      
+      console.log('📚 Extracted Data:', data);
+      console.log('🔢 Number of subjects:', data.length);
+      
+      if (data.length > 0) {
+        console.log('📖 First subject:', data[0]);
+      }
+      
+      setAssignments(Array.isArray(data) ? data : []);
+      
+      // Clear any previous errors on successful fetch
+      setError('');
     } catch (err) {
-      console.error('Error fetching assignments:', err);
+      console.error('❌ Error fetching assignments:', err);
+      console.error('❌ Error response:', err.response);
+      console.error('❌ Error status:', err.response?.status);
+      console.error('❌ Error data:', err.response?.data);
       
       // Handle 404 as empty state, not an error
       if (err.response?.status === 404) {
+        console.log('ℹ️ 404 - Treating as empty state');
         setAssignments([]);
         setError(''); // Don't show error for 404 - will show empty state instead
       } else if (err.response?.status === 401) {
+        console.log('🔒 401 - Authentication required');
         setError('Authentication required. Please log in again.');
       } else if (err.response?.status === 403) {
+        console.log('🚫 403 - Access denied');
         setError('Access denied. Faculty privileges required.');
       } else {
-        setError('Failed to load class assignments. Please try again.');
+        console.log('⚠️ Other error - Generic message');
+        setError('Failed to load your assigned subjects. Please try again.');
       }
     } finally {
       setLoading(false);
+      console.log('✅ Fetch complete. Loading:', false);
     }
   };
 
   useEffect(() => {
+    console.log('🚀 FacultyDashboard mounted');
+    console.log('👤 Current user from localStorage:', localStorage.getItem('user'));
+    console.log('🔑 Auth token exists:', !!localStorage.getItem('access_token'));
     fetchAssignments();
   }, []);
 
@@ -87,15 +128,15 @@ const FacultyDashboard = () => {
   };
 
   // Fetch students for a specific assignment
-  const fetchStudentsForAssignment = async (assignment) => {
+  const fetchStudentsForAssignment = async (subject) => {
     try {
       setLoadingStudents(true);
       
       // Get students enrolled in the course and semester
       const response = await api.get('/api/students/enrollments/', {
         params: {
-          course: assignment.subject.course?.id,
-          semester: assignment.semester,
+          course: subject.course?.id,
+          semester: subject.semester,
           status: 'Active'
         }
       });
@@ -129,10 +170,10 @@ const FacultyDashboard = () => {
   };
 
   // Handle class card click
-  const handleClassClick = async (assignment) => {
-    setSelectedAssignment(assignment);
+  const handleClassClick = async (subject) => {
+    setSelectedAssignment(subject);
     setIsAttendanceModalOpen(true);
-    await fetchStudentsForAssignment(assignment);
+    await fetchStudentsForAssignment(subject);
   };
 
   // Handle attendance status change
@@ -143,7 +184,6 @@ const FacultyDashboard = () => {
     }));
   };
 
-  // Handle attendance submission
   const handleSubmitAttendance = async () => {
     if (!selectedAssignment) return;
 
@@ -157,7 +197,7 @@ const FacultyDashboard = () => {
       }));
 
       const payload = {
-        subject_id: selectedAssignment.subject.id,
+        subject_id: selectedAssignment.id,
         date: attendanceDate,
         records: records
       };
@@ -194,8 +234,8 @@ const FacultyDashboard = () => {
   };
 
   // Edit Past Attendance Functions
-  const handleEditClick = (assignment) => {
-    setSelectedClassForEdit(assignment);
+  const handleEditClick = (subject) => {
+    setSelectedClassForEdit(subject);
     setEditDate('');
     setEditStudents([]);
     setEditAttendanceRecords({});
@@ -210,7 +250,7 @@ const FacultyDashboard = () => {
       
       const response = await api.get('/api/attendance/records/', {
         params: {
-          subject_id: selectedClassForEdit.subject.id,
+          subject_id: selectedClassForEdit.id,
           date: editDate
         }
       });
@@ -266,7 +306,7 @@ const FacultyDashboard = () => {
       }));
 
       const payload = {
-        subject_id: selectedClassForEdit.subject.id,
+        subject_id: selectedClassForEdit.id,
         date: editDate,
         records: records
       };
@@ -334,8 +374,8 @@ const FacultyDashboard = () => {
 
       {/* Dashboard Header */}
       <div className="dashboard-header">
-        <h1>Faculty Dashboard</h1>
-        <p>Manage your class assignments and mark attendance</p>
+        <h1>👨‍🏫 Faculty Dashboard</h1>
+        <p>Manage attendance for your assigned subjects</p>
       </div>
 
       {/* Summary Section */}
@@ -343,8 +383,30 @@ const FacultyDashboard = () => {
         <div className="summary-card">
           <div className="card-icon">📚</div>
           <div className="card-content">
-            <h3 className="card-number">{assignments.length}</h3>
-            <p className="card-label">Assigned Classes</p>
+            <h3 className="card-number">{assignments ? assignments.length : 0}</h3>
+            <p className="card-label">Assigned Subjects</p>
+          </div>
+        </div>
+        <div className="summary-card">
+          <div className="card-icon">📅</div>
+          <div className="card-content">
+            <h3 className="card-number">
+              {assignments && assignments.length > 0 
+                ? new Set(assignments.map(a => a.course?.name).filter(Boolean)).size 
+                : 0}
+            </h3>
+            <p className="card-label">Courses</p>
+          </div>
+        </div>
+        <div className="summary-card">
+          <div className="card-icon">🎓</div>
+          <div className="card-content">
+            <h3 className="card-number">
+              {assignments && assignments.length > 0 
+                ? new Set(assignments.map(a => a.semester).filter(Boolean)).size 
+                : 0}
+            </h3>
+            <p className="card-label">Semesters</p>
           </div>
         </div>
       </div>
@@ -352,41 +414,67 @@ const FacultyDashboard = () => {
       {/* Class Assignments Grid */}
       <div className="assignments-section">
         <div className="section-header">
-          <h2>My Class Assignments</h2>
-          <p>Click on a class to mark attendance</p>
+          <h2>My Assigned Subjects</h2>
+          <p>Manage attendance and view schedules for your classes</p>
         </div>
 
-        {assignments.length > 0 ? (
+        {/* Debug Info */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ 
+            padding: '12px', 
+            background: 'var(--info-light)', 
+            border: '1px solid var(--info-color)',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            fontFamily: 'monospace'
+          }}>
+            <strong>🐛 Debug Info:</strong><br />
+            Assignments: {assignments ? assignments.length : 'null/undefined'}<br />
+            Type: {typeof assignments}<br />
+            Is Array: {Array.isArray(assignments) ? 'Yes' : 'No'}
+          </div>
+        )}
+
+        {assignments && assignments.length > 0 ? (
           <div className="class-cards-grid">
-            {assignments.map((assignment) => (
+            {assignments.map((subject) => (
               <div 
-                key={assignment.id} 
+                key={subject.id} 
                 className="class-card"
-                onClick={() => handleClassClick(assignment)}
               >
                 <div className="class-card-header">
                   <div className="class-icon">📖</div>
                   <div className="class-badge">
-                    Sem {assignment.semester}
+                    {subject.semester_display || `Sem ${subject.semester}`}
                   </div>
                 </div>
                 <div className="class-card-body">
-                  <h3 className="class-name">{assignment.subject.name}</h3>
-                  <p className="class-code">{assignment.subject.code}</p>
-                  <p className="class-year">Academic Year: {assignment.academic_year}</p>
+                  <h3 className="class-name">{subject.name || 'Unnamed Subject'}</h3>
+                  <p className="class-code">{subject.code || 'N/A'}</p>
+                  <p className="class-course">{subject.course?.name || 'N/A'}</p>
+                  <p className="class-credits">💳 {subject.credits || 0} Credits</p>
                 </div>
                 <div className="class-card-footer">
                   <button 
-                    className="mark-attendance-btn"
-                    onClick={() => handleClassClick(assignment)}
+                    className="action-btn primary-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClassClick(subject);
+                    }}
+                    title="Mark attendance for this subject"
                   >
-                    📋 Mark Attendance
+                    📋 Take Attendance
                   </button>
                   <button 
-                    className="edit-attendance-btn"
-                    onClick={() => handleEditClick(assignment)}
+                    className="action-btn secondary-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(subject);
+                    }}
+                    title="Edit past attendance records"
                   >
-                    ✏️ Edit Past Attendance
+                    ✏️ Edit Attendance
                   </button>
                 </div>
               </div>
@@ -394,9 +482,17 @@ const FacultyDashboard = () => {
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">👋</div>
-            <p>Welcome! You currently have no active class assignments</p>
-            <p className="empty-subtext">Class assignments will appear here once they are created by the administration</p>
+            <div className="empty-icon">📚</div>
+            <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              {assignments === null || assignments === undefined 
+                ? 'Loading subjects...' 
+                : 'No subjects assigned yet'}
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+              {assignments === null || assignments === undefined
+                ? 'Please wait while we fetch your data'
+                : 'Your assigned subjects will appear here once the administration assigns them to you'}
+            </p>
           </div>
         )}
       </div>
@@ -405,7 +501,7 @@ const FacultyDashboard = () => {
       <Modal
         isOpen={isAttendanceModalOpen}
         onClose={closeAttendanceModal}
-        title={`Mark Attendance - ${selectedAssignment?.subject.name || ''}`}
+        title={`Mark Attendance - ${selectedAssignment?.name || ''}`}
       >
         <div className="attendance-modal-content">
           {/* Date Selector */}
@@ -506,7 +602,7 @@ const FacultyDashboard = () => {
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
-        title={`Edit Past Attendance - ${selectedClassForEdit?.subject.name || ''}`}
+        title={`Edit Past Attendance - ${selectedClassForEdit?.name || ''}`}
       >
         <div className="edit-attendance-modal-content">
           {/* Date Picker */}

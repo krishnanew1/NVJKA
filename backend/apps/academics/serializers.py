@@ -286,7 +286,7 @@ class SubjectSerializer(serializers.ModelSerializer):
     Serializer for Subject model with nested Course and Department information.
     
     Provides comprehensive subject information including related course
-    and department details.
+    and department details, plus faculty assignment information.
     """
     
     # Nested course serialization (which includes department)
@@ -294,6 +294,10 @@ class SubjectSerializer(serializers.ModelSerializer):
     
     # Write-only field for creating/updating subjects
     course_id = serializers.IntegerField(write_only=True)
+    
+    # Faculty information
+    faculty_info = serializers.SerializerMethodField()
+    faculty_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     
     # Read-only computed fields
     semester_display = serializers.CharField(source='get_semester_display', read_only=True)
@@ -307,6 +311,8 @@ class SubjectSerializer(serializers.ModelSerializer):
             'code',
             'course',
             'course_id',
+            'faculty_info',
+            'faculty_id',
             'semester',
             'semester_display',
             'credits',
@@ -318,6 +324,17 @@ class SubjectSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'total_timetable_entries']
     
+    def get_faculty_info(self, obj):
+        """Get faculty information if assigned."""
+        if obj.faculty:
+            return {
+                'id': obj.faculty.id,
+                'employee_id': obj.faculty.employee_id,
+                'name': obj.faculty.user.get_full_name() or obj.faculty.user.username,
+                'designation': obj.faculty.designation,
+            }
+        return None
+    
     def get_total_timetable_entries(self, obj):
         """Get the total number of timetable entries for this subject."""
         return obj.timetable_entries.count()
@@ -328,6 +345,16 @@ class SubjectSerializer(serializers.ModelSerializer):
             Course.objects.get(id=value)
         except Course.DoesNotExist:
             raise serializers.ValidationError("Course with this ID does not exist.")
+        return value
+    
+    def validate_faculty_id(self, value):
+        """Validate that the faculty exists."""
+        if value is not None:
+            from apps.users.models import FacultyProfile
+            try:
+                FacultyProfile.objects.get(id=value)
+            except FacultyProfile.DoesNotExist:
+                raise serializers.ValidationError("Faculty with this ID does not exist.")
         return value
     
     def validate(self, data):
@@ -350,18 +377,36 @@ class SubjectSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        """Create a new subject with the specified course."""
+        """Create a new subject with the specified course and faculty."""
         course_id = validated_data.pop('course_id')
+        faculty_id = validated_data.pop('faculty_id', None)
+        
         course = Course.objects.get(id=course_id)
         validated_data['course'] = course
+        
+        if faculty_id:
+            from apps.users.models import FacultyProfile
+            faculty = FacultyProfile.objects.get(id=faculty_id)
+            validated_data['faculty'] = faculty
+        
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        """Update subject with optional course change."""
+        """Update subject with optional course and faculty change."""
         if 'course_id' in validated_data:
             course_id = validated_data.pop('course_id')
             course = Course.objects.get(id=course_id)
             validated_data['course'] = course
+        
+        if 'faculty_id' in validated_data:
+            faculty_id = validated_data.pop('faculty_id')
+            if faculty_id:
+                from apps.users.models import FacultyProfile
+                faculty = FacultyProfile.objects.get(id=faculty_id)
+                validated_data['faculty'] = faculty
+            else:
+                validated_data['faculty'] = None
+        
         return super().update(instance, validated_data)
 
 

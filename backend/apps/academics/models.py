@@ -251,6 +251,14 @@ class Subject(models.Model):
         related_name='subjects',
         help_text="Course this subject belongs to"
     )
+    faculty = models.ForeignKey(
+        'users.FacultyProfile',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_subjects',
+        help_text="Faculty member assigned to teach this subject"
+    )
     semester = models.PositiveIntegerField(
         choices=SEMESTER_CHOICES,
         help_text="Semester in which this subject is taught"
