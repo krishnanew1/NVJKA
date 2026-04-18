@@ -1,6 +1,6 @@
 # Academic ERP System
 
-A comprehensive Django REST API for managing academic institutions, built with Django 6.0 and MySQL.
+A comprehensive, production-ready Django REST API for managing academic institutions with multi-tenant support, built with Django 6.0 and MySQL. Features include student management, faculty operations, attendance tracking, examination system, and automated timetable generation.
 
 ## 🚀 Quick Start
 
@@ -58,10 +58,11 @@ A comprehensive Django REST API for managing academic institutions, built with D
    python manage.py migrate
    ```
 
-7. **Create Superuser Account**
+7. **Seed Demo Data (Optional)**
    ```bash
-   python manage.py createsuperuser
+   python manage.py seed_data
    ```
+   This creates demo users, departments, courses, and sample data for testing.
 
 8. **Start Development Server**
    ```bash
@@ -231,25 +232,190 @@ python manage.py test tests.test_final_system --verbosity=2
 
 ## 📊 Key Features
 
-- **User Management**: Multi-role authentication system
-- **Academic Structure**: Departments → Courses → Subjects
-- **Student Management**: Enrollment, transcripts, GPA calculation
-- **Faculty Management**: Class assignments, subject allocation
-- **Attendance System**: Bulk marking with conflict detection
-- **Examination System**: Assessments, grades, automated GPA
+### Core Functionality
+- **User Management**: Multi-role authentication system (Admin, Faculty, Student)
+- **Academic Structure**: Departments → Courses → Subjects with hierarchical organization
+- **Student Management**: Enrollment, semester registration, transcripts, GPA calculation
+- **Faculty Management**: Class assignments, subject allocation, attendance marking
+- **Attendance System**: Bulk marking with conflict detection and percentage tracking
+- **Examination System**: Assessments, grades, automated GPA/CGPA calculation
 - **Auto-Generate Timetables**: Intelligent scheduling with conflict detection
-- **Communication**: Notice board, resource sharing
+- **Communication**: Notice board, resource sharing, file uploads
 - **API Documentation**: Auto-generated Swagger/OpenAPI docs
+
+### Multi-Tenant Architecture
+- **Dynamic Registration Fields**: Institutions can add custom fields (Aadhar, Passport, etc.) without code changes
+- **Flexible Programs**: Configure programs dynamically instead of hardcoded courses
+- **Custom Data Storage**: JSONField for institution-specific student data
+- **Scalable Design**: Supports multiple institutions with different requirements
+
+### Security & Performance
+- JWT Authentication with refresh tokens
+- Role-based permissions (RBAC)
+- Department-level access control
+- Audit logging for all API operations
+- CORS configuration for secure frontend integration
+- Database query optimization (select_related, prefetch_related)
+- Production-ready security settings
+
+## 📈 Database Overview
+
+### Current Seeded Data
+- **3 Users**: Admin, Faculty, Student (demo accounts)
+- **2 Departments**: Computer Science, Mathematics
+- **2 Courses**: B.Tech CS (4 years), M.Sc Math (2 years)
+- **3 Subjects**: Data Structures, Algorithm Design, Database Management
+- **2 Class Assignments**: Faculty assigned to subjects
+- **1 Enrollment**: Student enrolled in B.Tech CS
+- **18 Attendance Records**: Demo attendance data
+
+### Database Models (20+ Models)
+**Users**: CustomUser, StudentProfile, FacultyProfile, AuditLog  
+**Academics**: Department, Course, Program, Subject, Timetable, CustomRegistrationField  
+**Students**: Enrollment, SemesterRegistration, FeeTransaction, RegisteredCourse, AcademicHistory  
+**Faculty**: ClassAssignment  
+**Attendance**: Attendance, AttendanceReportSubmission  
+**Exams**: Assessment, Grade, StudentGrade  
+**Communication**: Notice, Resource
+
+## 🎯 Demo Credentials
+
+After running `python manage.py seed_data`, use these credentials:
+
+| Role | Username | Password |
+|------|----------|----------|
+| **Admin** | `admin_demo` | `Admin@2026` |
+| **Faculty** | `prof_smith` | `Faculty@2026` |
+| **Student** | `john_doe` | `Student@2026` |
 
 ## 🚀 Production Deployment
 
-See [DEPLOYMENT.md](backend/DEPLOYMENT.md) for detailed production setup instructions including:
-- Security configuration
-- Database optimization
-- Web server setup (Nginx + Gunicorn)
-- SSL/TLS configuration
-- Monitoring and logging
+### Quick Deployment Checklist
+
+1. **Generate SECRET_KEY**
+   ```bash
+   python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+   ```
+
+2. **Configure Production Environment**
+   ```bash
+   SECRET_KEY=your-generated-secret-key
+   DEBUG=False
+   ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+   DB_HOST=your-production-db-host
+   DB_NAME=academic_erp_prod
+   DB_USER=your-db-user
+   DB_PASSWORD=your-secure-password
+   ```
+
+3. **Run Security Check**
+   ```bash
+   python manage.py check --deploy
+   ```
+
+4. **Collect Static Files**
+   ```bash
+   python manage.py collectstatic --noinput
+   ```
+
+5. **Set Up Web Server**
+   - Use Nginx as reverse proxy
+   - Run with Gunicorn: `gunicorn config.wsgi:application`
+   - Configure SSL/TLS with Let's Encrypt
+
+6. **Database Optimization**
+   - Add indexes for frequently queried fields
+   - Set up automated backups
+   - Configure connection pooling
+
+7. **Monitoring**
+   - Set up application logging
+   - Configure health check endpoints
+   - Monitor database performance
+
+For detailed deployment instructions, see `backend/DEPLOYMENT.md`
+
+## 🔐 Multi-Tenant Features
+
+### Custom Registration Fields
+
+Institutions can add custom fields dynamically:
+
+```python
+from apps.academics.models import CustomRegistrationField
+
+CustomRegistrationField.objects.create(
+    field_name='aadhar_number',
+    field_label='Aadhar Number',
+    field_type='text',
+    is_required=True,
+    placeholder='1234-5678-9012',
+    order=1
+)
+```
+
+**API Endpoint**: `GET /api/academics/custom-fields/active_fields/`
+
+### Dynamic Programs
+
+Configure academic programs per institution:
+
+```python
+from apps.academics.models import Program
+
+Program.objects.create(
+    name='Bachelor of Technology',
+    code='BTECH',
+    department=cs_dept,
+    duration_years=4,
+    total_credits=160
+)
+```
+
+**API Endpoint**: `GET /api/academics/programs/`
+
+### Student Custom Data
+
+Store institution-specific data in JSONField:
+
+```json
+{
+  "custom_data": {
+    "aadhar_number": "1234-5678-9012",
+    "blood_group": "O+",
+    "parent_phone": "+91-9876543210"
+  }
+}
+```
 
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Framework**: Django 4.2+ with Django REST Framework 3.14+
+- **Authentication**: JWT (djangorestframework-simplejwt)
+- **Database**: MySQL 8.0+ (PostgreSQL compatible)
+- **API Documentation**: drf-yasg (Swagger/OpenAPI)
+- **Testing**: Django TestCase with 50+ test cases
+
+### Frontend
+- **Framework**: React 18+ with Vite 4+
+- **Routing**: React Router 6+
+- **HTTP Client**: Axios
+- **Styling**: CSS3 with CSS Variables
+- **Features**: Dark/Light mode, Responsive design, Role-based layouts
+
+### Development Tools
+- Python 3.11+
+- Node.js 16+
+- Git version control
+- VS Code (recommended)
+
+---
+
+**Status**: ✅ Production Ready | **Version**: 1.0.0 | **Last Updated**: April 2026

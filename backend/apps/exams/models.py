@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from apps.users.models import StudentProfile
+from apps.users.models import StudentProfile, FacultyProfile
 from apps.academics.models import Subject
 
 
@@ -192,6 +192,165 @@ class Grade(models.Model):
             return 'A'
         elif percentage >= 80:
             return 'B'
+        elif percentage >= 70:
+            return 'C'
+        elif percentage >= 60:
+            return 'D'
+        else:
+            return 'F'
+
+
+
+class StudentGrade(models.Model):
+    """
+    StudentGrade model for storing final subject grades.
+    Represents the overall grade for a student in a subject.
+    """
+    
+    GRADE_CHOICES = [
+        ('A+', 'A+ (Outstanding)'),
+        ('A', 'A (Excellent)'),
+        ('B+', 'B+ (Very Good)'),
+        ('B', 'B (Good)'),
+        ('C+', 'C+ (Above Average)'),
+        ('C', 'C (Average)'),
+        ('D', 'D (Pass)'),
+        ('F', 'F (Fail)'),
+    ]
+    
+    student = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name='subject_grades',
+        help_text='Student receiving the grade'
+    )
+    
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        related_name='student_grades',
+        help_text='Subject for which grade is given'
+    )
+    
+    faculty = models.ForeignKey(
+        FacultyProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='graded_students',
+        help_text='Faculty member who assigned the grade'
+    )
+    
+    marks_obtained = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text='Total marks obtained by the student'
+    )
+    
+    total_marks = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text='Total maximum marks for the subject'
+    )
+    
+    grade_letter = models.CharField(
+        max_length=2,
+        choices=GRADE_CHOICES,
+        help_text='Letter grade (A+, A, B+, B, C+, C, D, F)'
+    )
+    
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Additional remarks or feedback'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Student Grade'
+        verbose_name_plural = 'Student Grades'
+        ordering = ['-created_at']
+        unique_together = ['student', 'subject']
+        indexes = [
+            models.Index(fields=['student', 'subject']),
+            models.Index(fields=['subject']),
+            models.Index(fields=['grade_letter']),
+        ]
+    
+    def __str__(self):
+        return f"{self.student.enrollment_number} - {self.subject.code}: {self.grade_letter}"
+    
+    def clean(self):
+        """Validate grade data."""
+        super().clean()
+        
+        if self.marks_obtained is not None and self.marks_obtained < 0:
+            raise ValidationError({
+                'marks_obtained': 'Marks obtained cannot be negative'
+            })
+        
+        if self.total_marks is not None and self.total_marks <= 0:
+            raise ValidationError({
+                'total_marks': 'Total marks must be greater than 0'
+            })
+        
+        if self.marks_obtained is not None and self.total_marks is not None:
+            if self.marks_obtained > self.total_marks:
+                raise ValidationError({
+                    'marks_obtained': f'Marks obtained ({self.marks_obtained}) cannot exceed total marks ({self.total_marks})'
+                })
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean() for validation."""
+        self.clean()
+        super().save(*args, **kwargs)
+    
+    @property
+    def percentage(self):
+        """Calculate percentage score."""
+        if self.total_marks > 0:
+            return round((self.marks_obtained / self.total_marks) * 100, 2)
+        return 0.0
+    
+    @property
+    def grade_point(self):
+        """
+        Get grade point based on letter grade.
+        A+ = 10, A = 9, B+ = 8, B = 7, C+ = 6, C = 5, D = 4, F = 0
+        """
+        grade_points = {
+            'A+': 10,
+            'A': 9,
+            'B+': 8,
+            'B': 7,
+            'C+': 6,
+            'C': 5,
+            'D': 4,
+            'F': 0,
+        }
+        return grade_points.get(self.grade_letter, 0)
+    
+    @staticmethod
+    def calculate_letter_grade(percentage):
+        """
+        Calculate letter grade from percentage.
+        A+ (95-100), A (90-94), B+ (85-89), B (80-84), 
+        C+ (75-79), C (70-74), D (60-69), F (<60)
+        """
+        if percentage >= 95:
+            return 'A+'
+        elif percentage >= 90:
+            return 'A'
+        elif percentage >= 85:
+            return 'B+'
+        elif percentage >= 80:
+            return 'B'
+        elif percentage >= 75:
+            return 'C+'
         elif percentage >= 70:
             return 'C'
         elif percentage >= 60:

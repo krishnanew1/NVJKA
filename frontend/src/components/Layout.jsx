@@ -63,6 +63,7 @@ const Layout = () => {
           { path: '/admin/academics', label: '🏫 Academics', icon: '🏫' },
           { path: '/admin/attendance', label: '✓ Attendance', icon: '✓' },
           { path: '/admin/faculty', label: '👨‍🏫 Faculty', icon: '👨‍🏫' },
+          { path: '/admin/grades', label: '📝 Grades', icon: '📝' },
           { path: '/admin/timetables', label: '📅 Timetables', icon: '📅' },
           { path: '/admin/exams', label: '📝 Exams', icon: '📝' },
           { path: '/admin/reports', label: '📈 Reports', icon: '📈' },

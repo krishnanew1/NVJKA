@@ -418,24 +418,6 @@ const FacultyDashboard = () => {
           <p>Manage attendance and view schedules for your classes</p>
         </div>
 
-        {/* Debug Info */}
-        {process.env.NODE_ENV === 'development' && (
-          <div style={{ 
-            padding: '12px', 
-            background: 'var(--info-light)', 
-            border: '1px solid var(--info-color)',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            fontSize: '14px',
-            fontFamily: 'monospace'
-          }}>
-            <strong>🐛 Debug Info:</strong><br />
-            Assignments: {assignments ? assignments.length : 'null/undefined'}<br />
-            Type: {typeof assignments}<br />
-            Is Array: {Array.isArray(assignments) ? 'Yes' : 'No'}
-          </div>
-        )}
-
         {assignments && assignments.length > 0 ? (
           <div className="class-cards-grid">
             {assignments.map((subject) => (

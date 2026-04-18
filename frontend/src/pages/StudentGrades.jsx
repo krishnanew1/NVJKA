@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
+import api from '../api';
 import Toast from '../components/Toast';
 import Loader from '../components/Loader';
-import './Dashboard.css';
+import './StudentGrades.css';
 
 const StudentGrades = () => {
-  const [grades, setGrades] = useState([]);
-  const [cgpa, setCgpa] = useState(null);
-  const [sgpa, setSgpa] = useState(null);
+  // State management
   const [loading, setLoading] = useState(true);
+  const [gradesData, setGradesData] = useState(null);
   const [error, setError] = useState('');
 
   // Toast state
@@ -17,31 +17,24 @@ const StudentGrades = () => {
     type: 'info'
   });
 
-  // Fetch grades data
+  // Fetch student's grades
   const fetchGrades = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // For now, we'll create mock data since the backend endpoint might not be fully implemented
-      // In production, this would be: const response = await api.get('/api/exams/results/');
+      const response = await api.get('/api/exams/students/my-grades/');
       
-      const mockGrades = [];
-      
-      setGrades(mockGrades);
-      setCgpa(null);
-      setSgpa(null);
+      setGradesData(response.data);
     } catch (err) {
       console.error('Error fetching grades:', err);
       
       if (err.response?.status === 404) {
-        setGrades([]);
-        setError('');
-      } else if (err.response?.status === 401) {
-        setError('Authentication required. Please log in again.');
+        setGradesData({ grades: [], statistics: { total_subjects: 0, average_percentage: 0, cgpa: 0 } });
+      } else if (err.response?.status === 403) {
+        setError('Access denied. Student privileges required.');
       } else {
-        setError('');
-        setGrades([]);
+        setError('Failed to load grades. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -52,50 +45,50 @@ const StudentGrades = () => {
     fetchGrades();
   }, []);
 
+  // Toast helper functions
+  const showToast = (message, type = 'info') => {
+    setToast({
+      isVisible: true,
+      message,
+      type
+    });
+  };
+
   const hideToast = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
 
   // Get grade color class
-  const getGradeColor = (grade) => {
-    switch (grade) {
-      case 'A':
-      case 'A+':
-        return 'grade-a';
-      case 'B':
-      case 'B+':
-        return 'grade-b';
-      case 'C':
-      case 'C+':
-        return 'grade-c';
-      case 'D':
-        return 'grade-d';
-      case 'F':
-        return 'grade-f';
-      default:
-        return '';
-    }
+  const getGradeColorClass = (gradeLetter) => {
+    if (['A+', 'A'].includes(gradeLetter)) return 'grade-excellent';
+    if (['B+', 'B'].includes(gradeLetter)) return 'grade-good';
+    if (['C+', 'C'].includes(gradeLetter)) return 'grade-average';
+    if (gradeLetter === 'D') return 'grade-pass';
+    if (gradeLetter === 'F') return 'grade-fail';
+    return '';
   };
 
-  const LoadingSpinner = () => (
-    <Loader message="Loading your grades..." size="large" />
-  );
+  // Loading state
+  if (loading) {
+    return <Loader message="Loading your grades..." size="large" />;
+  }
 
-  const ErrorMessage = () => (
-    <div className="error-container">
-      <div className="error-icon">⚠️</div>
-      <p className="error-text">{error}</p>
-      <button onClick={() => window.location.reload()} className="retry-button">
-        Retry
-      </button>
-    </div>
-  );
-
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage />;
+  // Error state
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error-icon">⚠️</div>
+        <p className="error-text">{error}</p>
+        <button onClick={fetchGrades} className="retry-button">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="student-grades">
+      {/* Toast Notification */}
       <Toast
         message={toast.message}
         type={toast.type}
@@ -103,76 +96,118 @@ const StudentGrades = () => {
         onClose={hideToast}
       />
 
-      <div className="page-header">
-        <h1>📊 My Grades & Transcript</h1>
-        <p>View your academic performance</p>
+      {/* Page Header */}
+      <div className="grades-header">
+        <h1>🎓 My Grades</h1>
+        <p>View your academic performance and report card</p>
       </div>
 
-      {grades.length > 0 ? (
-        <>
-          {/* Transcript Summary */}
-          <div className="transcript-summary">
-            <div className="gpa-card">
-              <div className="gpa-icon">🎓</div>
-              <div className="gpa-content">
-                <h3>CGPA</h3>
-                <div className="gpa-value">{cgpa ? cgpa.toFixed(2) : 'N/A'}</div>
-                <p>Cumulative Grade Point Average</p>
-              </div>
-            </div>
-            <div className="gpa-card">
-              <div className="gpa-icon">📈</div>
-              <div className="gpa-content">
-                <h3>SGPA</h3>
-                <div className="gpa-value">{sgpa ? sgpa.toFixed(2) : 'N/A'}</div>
-                <p>Semester Grade Point Average</p>
-              </div>
+      {/* Student Info Card */}
+      {gradesData?.student && (
+        <div className="student-info-card">
+          <div className="info-icon">👨‍🎓</div>
+          <div className="info-content">
+            <h3>{gradesData.student.name}</h3>
+            <p>Enrollment: {gradesData.student.enrollment_number}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Statistics Cards */}
+      {gradesData?.statistics && (
+        <div className="statistics-section">
+          <div className="stat-card">
+            <div className="stat-icon">📚</div>
+            <div className="stat-content">
+              <h3 className="stat-number">{gradesData.statistics.total_subjects}</h3>
+              <p className="stat-label">Total Subjects</p>
             </div>
           </div>
-
-          {/* Grades Table */}
-          <div className="grades-section">
-            <div className="section-header">
-              <h2>Subject-wise Performance</h2>
+          <div className="stat-card">
+            <div className="stat-icon">📊</div>
+            <div className="stat-content">
+              <h3 className="stat-number">{gradesData.statistics.average_percentage}%</h3>
+              <p className="stat-label">Average Percentage</p>
             </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">⭐</div>
+            <div className="stat-content">
+              <h3 className="stat-number">{gradesData.statistics.cgpa}</h3>
+              <p className="stat-label">CGPA (out of 10)</p>
+            </div>
+          </div>
+        </div>
+      )}
 
-            <div className="grades-table-container">
-              <table className="grades-table">
-                <thead>
-                  <tr>
-                    <th>Subject Code</th>
-                    <th>Subject Name</th>
-                    <th>Marks Obtained</th>
-                    <th>Total Marks</th>
-                    <th>Percentage</th>
-                    <th>Grade</th>
+      {/* Grades Table */}
+      {gradesData?.grades && gradesData.grades.length > 0 ? (
+        <div className="report-card">
+          <div className="card-header">
+            <h2>📋 Report Card</h2>
+            <p>Your subject-wise grades and performance</p>
+          </div>
+
+          <div className="table-container">
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>Subject Code</th>
+                  <th>Subject Name</th>
+                  <th>Marks</th>
+                  <th>Percentage</th>
+                  <th>Grade</th>
+                  <th>Faculty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {gradesData.grades.map((grade) => (
+                  <tr key={grade.id}>
+                    <td className="subject-code-cell">{grade.subject_code}</td>
+                    <td className="subject-name-cell">{grade.subject_name}</td>
+                    <td className="marks-cell">
+                      {grade.marks_obtained} / {grade.total_marks}
+                    </td>
+                    <td className="percentage-cell">
+                      <span className={`percentage-badge ${getGradeColorClass(grade.grade_letter)}`}>
+                        {grade.percentage}%
+                      </span>
+                    </td>
+                    <td className="grade-cell">
+                      <span className={`grade-badge ${getGradeColorClass(grade.grade_letter)}`}>
+                        {grade.grade_letter}
+                      </span>
+                    </td>
+                    <td className="faculty-cell">{grade.faculty_name || 'N/A'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {grades.map((grade, index) => (
-                    <tr key={index}>
-                      <td className="subject-code">{grade.subjectCode}</td>
-                      <td className="subject-name">{grade.subjectName}</td>
-                      <td className="marks-obtained">{grade.marksObtained}</td>
-                      <td className="total-marks">{grade.totalMarks}</td>
-                      <td className="percentage">{grade.percentage}%</td>
-                      <td>
-                        <span className={`grade-badge ${getGradeColor(grade.grade)}`}>
-                          {grade.grade}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </>
+
+          {/* Remarks Section */}
+          {gradesData.grades.some(g => g.remarks) && (
+            <div className="remarks-section">
+              <h3>📝 Faculty Remarks</h3>
+              {gradesData.grades
+                .filter(g => g.remarks)
+                .map(grade => (
+                  <div key={grade.id} className="remark-item">
+                    <strong>{grade.subject_name}:</strong> {grade.remarks}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">📊</div>
-          <p>No grades available for this semester</p>
-          <p className="empty-subtext">Your exam results will appear here once they are published</p>
+          <div className="empty-icon">📝</div>
+          <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+            No grades available yet
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+            Your grades will appear here once your faculty submits them
+          </p>
         </div>
       )}
     </div>

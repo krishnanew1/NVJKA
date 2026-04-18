@@ -1,0 +1,488 @@
+/* Student Grades Page */
+.student-grades {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Page Header */
+.grades-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.grades-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.grades-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Student Info Card */
+.student-info-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--text-inverse);
+}
+
+.student-info-card .info-icon {
+  font-size: 48px;
+  opacity: 0.9;
+}
+
+.student-info-card .info-content h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text-inverse);
+}
+
+.student-info-card .info-content p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Statistics Section */
+.statistics-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px var(--card-shadow);
+}
+
+.stat-card .stat-icon {
+  font-size: 40px;
+  opacity: 0.8;
+}
+
+.stat-card .stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 4px 0;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Report Card */
+.report-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px var(--card-shadow);
+  overflow: hidden;
+}
+
+.report-card .card-header {
+  padding: 20px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.report-card .card-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+}
+
+.report-card .card-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+}
+
+/* Report Table */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table thead {
+  background: var(--bg-secondary);
+}
+
+.report-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.report-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.report-table tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Cells */
+.subject-code-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.subject-name-cell {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.marks-cell {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.percentage-cell,
+.grade-cell {
+  text-align: center;
+}
+
+.faculty-cell {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Percentage Badge */
+.percentage-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Grade Badge */
+.grade-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Grade Color Classes */
+.grade-excellent {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.grade-good {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.grade-average {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.grade-pass {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.grade-fail {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+/* Remarks Section */
+.remarks-section {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
+.remarks-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+}
+
+.remark-item {
+  padding: 12px;
+  background: var(--card-bg);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.remark-item:last-child {
+  margin-bottom: 0;
+}
+
+.remark-item strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Error Container */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-text {
+  color: var(--error-color);
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .student-grades {
+    padding: 20px;
+  }
+
+  .statistics-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-grades {
+    padding: 16px;
+  }
+
+  .grades-header h1 {
+    font-size: 28px;
+  }
+
+  .student-info-card {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .student-info-card .info-icon {
+    font-size: 40px;
+  }
+
+  .student-info-card .info-content h3 {
+    font-size: 20px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-number {
+    font-size: 28px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .grade-badge {
+    padding: 4px 10px;
+    font-size: 12px;
+    min-width: 40px;
+  }
+
+  .percentage-badge {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-grades {
+    padding: 12px;
+  }
+
+  .grades-header h1 {
+    font-size: 24px;
+  }
+
+  .grades-header p {
+    font-size: 14px;
+  }
+
+  .student-info-card {
+    padding: 16px;
+  }
+
+  .student-info-card .info-icon {
+    font-size: 36px;
+  }
+
+  .student-info-card .info-content h3 {
+    font-size: 18px;
+  }
+
+  .stat-card {
+    padding: 16px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .stat-card .stat-icon {
+    font-size: 32px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  /* Hide faculty column on very small screens */
+  .report-table th:last-child,
+  .report-table td:last-child {
+    display: none;
+  }
+
+  .grade-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 35px;
+  }
+
+  .percentage-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .remarks-section {
+    padding: 16px 20px;
+  }
+
+  .remarks-section h3 {
+    font-size: 14px;
+  }
+
+  .remark-item {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .empty-state {
+    padding: 60px 16px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+}

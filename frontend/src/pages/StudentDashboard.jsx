@@ -31,10 +31,10 @@ const StudentDashboard = () => {
       setLoading(true);
       setError('');
 
-      // Fetch student profile, enrollments, and attendance in parallel
-      const [profileResponse, enrollmentsResponse, attendanceResponse] = await Promise.all([
+      // Fetch student profile, semester registrations, and attendance in parallel
+      const [profileResponse, semesterRegResponse, attendanceResponse] = await Promise.all([
         api.get('/api/users/student/dashboard/').catch(() => null),
-        api.get('/api/students/enrollments/').catch(() => ({ data: [] })),
+        api.get('/api/students/semester-register/').catch(() => ({ data: [] })),
         api.get('/api/attendance/my-records/').catch(() => ({ data: { attendance: [] } }))
       ]);
 
@@ -43,9 +43,29 @@ const StudentDashboard = () => {
         setStudentProfile(profileResponse.data);
       }
 
-      // Set enrollments
-      const enrollmentsData = enrollmentsResponse.data.results || enrollmentsResponse.data || [];
-      setEnrollments(enrollmentsData);
+      // Extract registered subjects from semester registrations
+      const semesterRegData = semesterRegResponse.data.results || semesterRegResponse.data || [];
+      const registeredSubjects = [];
+      
+      // Flatten all registered courses from all semester registrations
+      semesterRegData.forEach(registration => {
+        if (registration.registered_courses && registration.registered_courses.length > 0) {
+          registration.registered_courses.forEach(course => {
+            if (course.subject) {
+              registeredSubjects.push({
+                id: course.id,
+                subject: course.subject,
+                is_backlog: course.is_backlog,
+                semester: registration.semester,
+                academic_year: registration.academic_year,
+                status: 'Active' // You can adjust this based on your logic
+              });
+            }
+          });
+        }
+      });
+
+      setEnrollments(registeredSubjects);
 
       // Set attendance data
       const attendanceInfo = attendanceResponse.data || {};
@@ -248,22 +268,24 @@ const StudentDashboard = () => {
                 <div className="subject-card-header">
                   <div className="subject-icon">📖</div>
                   <div className="subject-badge">
-                    {enrollment.course?.name || 'Course'}
+                    {enrollment.subject?.code || 'N/A'}
                   </div>
                 </div>
                 <div className="subject-card-body">
                   <h3 className="subject-name">
-                    {enrollment.course?.name || 'Course Name'}
+                    {enrollment.subject?.name || 'Subject Name'}
                   </h3>
-                  <p className="subject-code">{enrollment.course?.code || 'N/A'}</p>
+                  <p className="subject-code">
+                    {enrollment.subject?.credits ? `${enrollment.subject.credits} Credits` : 'N/A'}
+                  </p>
                   <div className="subject-info">
                     <span className="info-item">
                       <span className="info-icon">📅</span>
-                      Semester {enrollment.semester}
+                      {enrollment.semester || 'N/A'}
                     </span>
                     <span className="info-item">
                       <span className="info-icon">📊</span>
-                      {enrollment.status}
+                      {enrollment.is_backlog ? 'Backlog' : enrollment.status}
                     </span>
                   </div>
                 </div>
@@ -273,8 +295,8 @@ const StudentDashboard = () => {
         ) : (
           <div className="empty-state">
             <div className="empty-icon">📚</div>
-            <p>You are not enrolled in any courses yet</p>
-            <p className="empty-subtext">Please contact the administration for course enrollment</p>
+            <p>You are not enrolled in any subjects yet</p>
+            <p className="empty-subtext">Please complete your semester registration to enroll in subjects</p>
           </div>
         )}
       </div>

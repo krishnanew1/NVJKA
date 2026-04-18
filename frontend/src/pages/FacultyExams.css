@@ -1,0 +1,482 @@
+/* Faculty Exams Page */
+.faculty-exams {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Page Header */
+.exams-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.exams-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.exams-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Subject Selection Card */
+.subject-selection-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 10px var(--card-shadow);
+}
+
+.subject-selection-card label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.subject-selection-card select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.subject-selection-card select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.subject-selection-card select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Grades Table Card */
+.grades-table-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px var(--card-shadow);
+  overflow: hidden;
+}
+
+.grades-table-card .card-header {
+  padding: 20px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.grades-table-card .card-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+}
+
+.grades-table-card .card-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Table Loading */
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.table-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-light);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.table-loading p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Grades Table */
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grades-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+}
+
+.grades-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.grades-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.grades-table tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.grades-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Cells */
+.enrollment-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.name-cell {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.marks-cell input,
+.remarks-cell input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.marks-cell input {
+  max-width: 100px;
+}
+
+.marks-cell input:focus,
+.remarks-cell input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+}
+
+.marks-cell input:disabled,
+.remarks-cell input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.grade-cell {
+  text-align: center;
+}
+
+/* Grade Select Dropdown */
+.grade-select {
+  width: 100%;
+  max-width: 120px;
+  padding: 8px 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--input-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.grade-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+}
+
+.grade-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Style the selected grade option */
+.grade-select option {
+  padding: 8px;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+/* Table Actions */
+.table-actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Save Grades Button */
+.save-grades-btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.save-grades-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.save-grades-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.save-grades-btn.saving {
+  background: var(--info-color);
+  cursor: wait;
+}
+
+/* Button Spinner */
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid var(--text-inverse);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Error Container */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-text {
+  color: var(--error-color);
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.retry-button {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .faculty-exams {
+    padding: 20px;
+  }
+
+  .table-container {
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-exams {
+    padding: 16px;
+  }
+
+  .exams-header h1 {
+    font-size: 28px;
+  }
+
+  .subject-selection-card {
+    padding: 20px;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .marks-cell input {
+    max-width: 80px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .remarks-cell input {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .grade-select {
+    max-width: 100px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .table-actions {
+    padding: 16px 20px;
+  }
+
+  .save-grades-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .faculty-exams {
+    padding: 12px;
+  }
+
+  .exams-header h1 {
+    font-size: 24px;
+  }
+
+  .exams-header p {
+    font-size: 14px;
+  }
+
+  .subject-selection-card {
+    padding: 16px;
+  }
+
+  .subject-selection-card label {
+    font-size: 14px;
+  }
+
+  .subject-selection-card select {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  /* Hide remarks column on very small screens */
+  .grades-table th:last-child,
+  .grades-table td:last-child {
+    display: none;
+  }
+
+  .marks-cell input {
+    max-width: 70px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .grade-select {
+    max-width: 90px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .save-grades-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .empty-state {
+    padding: 60px 16px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+}

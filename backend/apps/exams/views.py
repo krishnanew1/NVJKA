@@ -156,3 +156,322 @@ class StudentTranscriptView(APIView):
                 {'error': f'Failed to generate transcript: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+
+# ── StudentGrade Management Views ─────────────────────────────────────────────
+
+class StudentGradeSerializer(drf_serializers.ModelSerializer):
+    """Serializer for StudentGrade model."""
+    student_name = drf_serializers.CharField(source='student.user.get_full_name', read_only=True)
+    student_enrollment = drf_serializers.CharField(source='student.enrollment_number', read_only=True)
+    subject_name = drf_serializers.CharField(source='subject.name', read_only=True)
+    subject_code = drf_serializers.CharField(source='subject.code', read_only=True)
+    faculty_name = drf_serializers.CharField(source='faculty.user.get_full_name', read_only=True)
+    percentage = drf_serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    
+    class Meta:
+        from .models import StudentGrade
+        model = StudentGrade
+        fields = [
+            'id', 'student', 'student_name', 'student_enrollment',
+            'subject', 'subject_name', 'subject_code',
+            'faculty', 'faculty_name',
+            'marks_obtained', 'total_marks', 'grade_letter',
+            'percentage', 'remarks', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class FacultyGradeManagementView(APIView):
+    """
+    Faculty endpoint to submit/update grades for their assigned subjects.
+    
+    POST /api/faculty/grades/
+    PUT /api/faculty/grades/
+    
+    Payload:
+    {
+        "subject_id": 1,
+        "grades": [
+            {
+                "student_id": 1,
+                "marks_obtained": 85,
+                "total_marks": 100,
+                "grade_letter": "A",
+                "remarks": "Excellent performance"
+            },
+            ...
+        ]
+    }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        return self._save_grades(request)
+    
+    def put(self, request):
+        return self._save_grades(request)
+    
+    def _save_grades(self, request):
+        """Common logic for POST and PUT."""
+        # Check if user is faculty
+        if request.user.role != 'FACULTY':
+            return Response(
+                {'error': 'This endpoint is only accessible to faculty members.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get faculty profile
+        try:
+            faculty_profile = request.user.faculty_profile
+        except Exception:
+            return Response(
+                {'error': 'Faculty profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get request data
+        subject_id = request.data.get('subject_id')
+        grades_data = request.data.get('grades', [])
+        
+        # Validate required fields
+        if not subject_id:
+            return Response(
+                {'error': 'subject_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not grades_data or not isinstance(grades_data, list):
+            return Response(
+                {'error': 'grades must be a non-empty list.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get subject
+        from apps.academics.models import Subject
+        try:
+            subject = Subject.objects.get(id=subject_id)
+        except Subject.DoesNotExist:
+            return Response(
+                {'error': f'Subject with id {subject_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Verify faculty is assigned to this subject
+        if subject.faculty != faculty_profile:
+            return Response(
+                {'error': 'You are not assigned to this subject.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Validate each grade entry
+        errors = []
+        for i, grade_data in enumerate(grades_data):
+            if 'student_id' not in grade_data:
+                errors.append({'index': i, 'error': 'student_id is required.'})
+            if 'marks_obtained' not in grade_data:
+                errors.append({'index': i, 'error': 'marks_obtained is required.'})
+            if 'total_marks' not in grade_data:
+                errors.append({'index': i, 'error': 'total_marks is required.'})
+            if 'grade_letter' not in grade_data:
+                errors.append({'index': i, 'error': 'grade_letter is required.'})
+        
+        if errors:
+            return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Process grades
+        from .models import StudentGrade
+        from django.db import transaction
+        
+        results = []
+        try:
+            with transaction.atomic():
+                for grade_data in grades_data:
+                    student_id = grade_data['student_id']
+                    
+                    # Get student
+                    try:
+                        student = StudentProfile.objects.get(id=student_id)
+                    except StudentProfile.DoesNotExist:
+                        raise ValueError(f'Student with id {student_id} not found.')
+                    
+                    # Create or update grade
+                    grade, created = StudentGrade.objects.update_or_create(
+                        student=student,
+                        subject=subject,
+                        defaults={
+                            'faculty': faculty_profile,
+                            'marks_obtained': grade_data['marks_obtained'],
+                            'total_marks': grade_data['total_marks'],
+                            'grade_letter': grade_data['grade_letter'],
+                            'remarks': grade_data.get('remarks', '')
+                        }
+                    )
+                    
+                    results.append({
+                        'student_id': student.id,
+                        'student_name': student.user.get_full_name() or student.user.username,
+                        'grade_letter': grade.grade_letter,
+                        'result': 'created' if created else 'updated'
+                    })
+        
+        except ValueError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to save grades: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return Response({
+            'success': True,
+            'message': f'Grades saved successfully for {len(results)} students.',
+            'subject': {
+                'id': subject.id,
+                'name': subject.name,
+                'code': subject.code
+            },
+            'results': results
+        }, status=status.HTTP_200_OK)
+
+
+class StudentMyGradesView(APIView):
+    """
+    Student endpoint to fetch their own grades.
+    
+    GET /api/students/my-grades/
+    
+    Returns all grades for the logged-in student.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Get grades for the current student."""
+        # Check if user is a student
+        if request.user.role != 'STUDENT':
+            return Response(
+                {'error': 'This endpoint is only accessible to students.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get student profile
+        try:
+            student_profile = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Student profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get all grades for this student
+        from .models import StudentGrade
+        grades = StudentGrade.objects.filter(
+            student=student_profile
+        ).select_related('subject', 'subject__course', 'faculty', 'faculty__user').order_by('-created_at')
+        
+        # Serialize grades
+        serializer = StudentGradeSerializer(grades, many=True)
+        
+        # Calculate overall statistics
+        total_grades = grades.count()
+        if total_grades > 0:
+            total_percentage = sum(g.percentage for g in grades) / total_grades
+            total_grade_points = sum(g.grade_point for g in grades) / total_grades
+        else:
+            total_percentage = 0
+            total_grade_points = 0
+        
+        return Response({
+            'student': {
+                'id': student_profile.id,
+                'name': request.user.get_full_name() or request.user.username,
+                'enrollment_number': student_profile.enrollment_number,
+            },
+            'grades': serializer.data,
+            'statistics': {
+                'total_subjects': total_grades,
+                'average_percentage': round(total_percentage, 2),
+                'cgpa': round(total_grade_points, 2)
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class AdminSubjectGradesView(APIView):
+    """
+    Admin endpoint to fetch all grades for a specific subject.
+    
+    GET /api/admin/subject-grades/?subject_id={id}
+    
+    Returns all student grades for the specified subject.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Get all grades for a specific subject."""
+        # Check if user is admin
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'This endpoint is only accessible to administrators.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get subject_id from query params
+        subject_id = request.query_params.get('subject_id')
+        
+        if not subject_id:
+            return Response(
+                {'error': 'subject_id query parameter is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get subject
+        from apps.academics.models import Subject
+        try:
+            subject = Subject.objects.select_related('course', 'faculty', 'faculty__user').get(id=subject_id)
+        except Subject.DoesNotExist:
+            return Response(
+                {'error': f'Subject with id {subject_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get all grades for this subject
+        from .models import StudentGrade
+        grades = StudentGrade.objects.filter(
+            subject=subject
+        ).select_related('student', 'student__user', 'faculty', 'faculty__user').order_by('student__enrollment_number')
+        
+        # Serialize grades
+        serializer = StudentGradeSerializer(grades, many=True)
+        
+        # Calculate statistics
+        total_students = grades.count()
+        if total_students > 0:
+            average_percentage = sum(g.percentage for g in grades) / total_students
+            pass_count = grades.exclude(grade_letter='F').count()
+            fail_count = grades.filter(grade_letter='F').count()
+        else:
+            average_percentage = 0
+            pass_count = 0
+            fail_count = 0
+        
+        return Response({
+            'subject': {
+                'id': subject.id,
+                'name': subject.name,
+                'code': subject.code,
+                'course': subject.course.name if subject.course else None,
+                'faculty': subject.faculty.user.get_full_name() if subject.faculty else None,
+            },
+            'grades': serializer.data,
+            'statistics': {
+                'total_students': total_students,
+                'average_percentage': round(average_percentage, 2),
+                'pass_count': pass_count,
+                'fail_count': fail_count,
+                'pass_rate': round((pass_count / total_students * 100), 2) if total_students > 0 else 0
+            }
+        }, status=status.HTTP_200_OK)
