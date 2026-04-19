@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',  # Use full config path to ensure ready() is called
     'apps.academics',
     'apps.attendance',
-    'apps.communication',
     'apps.exams',
     'apps.faculty',
     'apps.students',

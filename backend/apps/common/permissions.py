@@ -4,6 +4,25 @@ Shared custom permission classes used across multiple apps.
 from rest_framework.permissions import BasePermission
 
 
+class IsAdminUser(BasePermission):
+    """
+    Permission class that allows only users with ADMIN role.
+    
+    Usage:
+        permission_classes = [IsAdminUser]
+    """
+    
+    message = 'Only administrators can perform this action.'
+    
+    def has_permission(self, request, view):
+        """Check if user is authenticated and has ADMIN role."""
+        return (
+            request.user and
+            request.user.is_authenticated and
+            request.user.role == 'ADMIN'
+        )
+
+
 def _get_object_department(obj):
     """
     Walk common FK chains to find the department of a model instance.

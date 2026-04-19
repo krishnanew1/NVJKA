@@ -1,12 +1,10 @@
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import { tokenUtils } from '../api';
 import './Layout.css';
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, isDark, toggleTheme } = useTheme();
 
   // Get user role from localStorage
   const userRole = localStorage.getItem('user_role');
@@ -107,18 +105,6 @@ const Layout = () => {
             )}
           </div>
           <div className="header-right">
-            <button 
-              onClick={toggleTheme} 
-              className="theme-toggle-btn"
-              title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            >
-              <span className="theme-icon">
-                {isDark ? '☀️' : '🌙'}
-              </span>
-              <span className="theme-text">
-                {isDark ? 'Light' : 'Dark'}
-              </span>
-            </button>
             <button onClick={handleLogout} className="logout-btn">
               Logout
             </button>

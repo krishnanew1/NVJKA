@@ -5,73 +5,8 @@
   box-sizing: border-box;
 }
 
-/* Light Theme (Default) */
+/* Dark Theme (Default) */
 :root {
-  /* Background Colors */
-  --bg-color: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  
-  /* Text Colors */
-  --text-color: #1a202c;
-  --text-secondary: #4a5568;
-  --text-muted: #718096;
-  --text-inverse: #ffffff;
-  
-  /* Card and Surface Colors */
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --card-shadow: rgba(0, 0, 0, 0.1);
-  
-  /* Primary Colors */
-  --primary-color: #667eea;
-  --primary-hover: #5a6fd8;
-  --primary-light: #e6f3ff;
-  
-  /* Secondary Colors */
-  --secondary-color: #764ba2;
-  --secondary-hover: #6a4190;
-  
-  /* Status Colors */
-  --success-color: #48bb78;
-  --success-light: #f0fff4;
-  --warning-color: #ed8936;
-  --warning-light: #fffaf0;
-  --error-color: #f56565;
-  --error-light: #fed7d7;
-  --info-color: #4299e1;
-  --info-light: #ebf8ff;
-  
-  /* Border Colors */
-  --border-color: #e2e8f0;
-  --border-light: #f7fafc;
-  --border-dark: #cbd5e0;
-  
-  /* Interactive Colors */
-  --hover-bg: #f7fafc;
-  --active-bg: #edf2f7;
-  --focus-ring: #667eea;
-  
-  /* Input Colors */
-  --input-bg: #ffffff;
-  --input-border: #e2e8f0;
-  --input-focus: #667eea;
-  
-  /* Alpha Colors */
-  --primary-color-alpha: rgba(102, 126, 234, 0.15);
-  
-  /* Header Colors */
-  --header-bg: #f8fafc;
-  
-  /* Sidebar Colors */
-  --sidebar-bg: #2d3748;
-  --sidebar-text: #e2e8f0;
-  --sidebar-hover: #4a5568;
-  --sidebar-active: #667eea;
-}
-
-/* Dark Theme */
-[data-theme='dark'] {
   /* Background Colors */
   --bg-color: #0f172a;
   --bg-secondary: #1e293b;
@@ -181,7 +116,6 @@ select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px 12px;
@@ -204,22 +138,15 @@ select:disabled {
   background-color: var(--bg-tertiary);
 }
 
-/* Light Mode - Dropdown Options */
-:root select option {
-  background-color: #ffffff;
-  color: #1a202c;
-  padding: 8px 12px;
-}
-
-/* Dark Mode - Dropdown Options */
-[data-theme='dark'] select {
+/* Dark Mode - Dropdown Options (Default) */
+select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23818cf8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px 12px;
 }
 
-[data-theme='dark'] select option {
+select option {
   background-color: #1e293b;
   color: #f1f5f9;
   padding: 8px 12px;

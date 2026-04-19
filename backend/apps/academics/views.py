@@ -131,11 +131,25 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     
     Provides CRUD operations for departments with authentication,
     filtering, and search capabilities.
+    
+    Permissions:
+    - List/Retrieve: Any authenticated user
+    - Create/Update/Delete: Admin only
     """
     
     queryset = Department.objects.all().order_by('code')
     serializer_class = DepartmentSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        """
+        Allow only admins to create, update, or delete departments.
+        """
+        from apps.common.permissions import IsAdminUser
+        
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return super().get_permissions()
     
     # Filtering and search configuration
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -162,11 +176,25 @@ class CourseViewSet(viewsets.ModelViewSet):
     
     Provides CRUD operations for courses with nested department information,
     authentication, filtering, and search capabilities.
+    
+    Permissions:
+    - List/Retrieve: Any authenticated user
+    - Create/Update/Delete: Admin only
     """
     
     queryset = Course.objects.select_related('department').all().order_by('department__code', 'code')
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        """
+        Allow only admins to create, update, or delete courses.
+        """
+        from apps.common.permissions import IsAdminUser
+        
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return super().get_permissions()
     
     # Filtering and search configuration
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]

@@ -14,45 +14,24 @@ export const useTheme = () => {
 
 // Theme Provider Component
 export const ThemeProvider = ({ children }) => {
-  // Initialize theme from localStorage or default to 'light'
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme || 'light';
-  });
+  // Always use dark theme
+  const [theme] = useState('dark');
 
-  // Apply theme to document element and save to localStorage
+  // Apply dark theme to document element
   useEffect(() => {
-    // Apply theme to document
-    document.documentElement.setAttribute('data-theme', theme);
+    // Apply dark theme to document
+    document.documentElement.setAttribute('data-theme', 'dark');
     
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', theme);
-    
-    // Optional: Add theme class to body for additional styling
-    document.body.className = `theme-${theme}`;
-  }, [theme]);
+    // Add theme class to body for additional styling
+    document.body.className = 'theme-dark';
+  }, []);
 
-  // Toggle between light and dark themes
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
-  // Set specific theme
-  const setThemeMode = (newTheme) => {
-    if (newTheme === 'light' || newTheme === 'dark') {
-      setTheme(newTheme);
-    }
-  };
-
-  // Check if current theme is dark
-  const isDark = theme === 'dark';
-
-  // Context value
+  // Context value - keeping the same API for compatibility
   const value = {
-    theme,
-    isDark,
-    toggleTheme,
-    setThemeMode,
+    theme: 'dark',
+    isDark: true,
+    toggleTheme: () => {}, // No-op function for compatibility
+    setThemeMode: () => {}, // No-op function for compatibility
   };
 
   return (

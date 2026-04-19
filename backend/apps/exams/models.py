@@ -184,16 +184,23 @@ class Grade(models.Model):
     def get_letter_grade(self):
         """
         Get letter grade based on percentage.
-        Standard grading scale: A (90-100), B (80-89), C (70-79), D (60-69), F (<60)
+        Standard grading scale: A (93-100), A- (90-92), B (87-89), B- (83-86), 
+        C (77-79), C- (73-76), D (60-72), F (<60)
         """
         percentage = self.percentage
         
-        if percentage >= 90:
+        if percentage >= 93:
             return 'A'
-        elif percentage >= 80:
+        elif percentage >= 90:
+            return 'A-'
+        elif percentage >= 87:
             return 'B'
-        elif percentage >= 70:
+        elif percentage >= 83:
+            return 'B-'
+        elif percentage >= 77:
             return 'C'
+        elif percentage >= 73:
+            return 'C-'
         elif percentage >= 60:
             return 'D'
         else:
@@ -208,12 +215,12 @@ class StudentGrade(models.Model):
     """
     
     GRADE_CHOICES = [
-        ('A+', 'A+ (Outstanding)'),
         ('A', 'A (Excellent)'),
-        ('B+', 'B+ (Very Good)'),
+        ('A-', 'A- (Very Good)'),
         ('B', 'B (Good)'),
-        ('C+', 'C+ (Above Average)'),
+        ('B-', 'B- (Above Average)'),
         ('C', 'C (Average)'),
+        ('C-', 'C- (Below Average)'),
         ('D', 'D (Pass)'),
         ('F', 'F (Fail)'),
     ]
@@ -258,7 +265,7 @@ class StudentGrade(models.Model):
     grade_letter = models.CharField(
         max_length=2,
         choices=GRADE_CHOICES,
-        help_text='Letter grade (A+, A, B+, B, C+, C, D, F)'
+        help_text='Letter grade (A, A-, B, B-, C, C-, D, F)'
     )
     
     remarks = models.TextField(
@@ -319,40 +326,40 @@ class StudentGrade(models.Model):
     @property
     def grade_point(self):
         """
-        Get grade point based on letter grade.
-        A+ = 10, A = 9, B+ = 8, B = 7, C+ = 6, C = 5, D = 4, F = 0
+        Get grade point based on letter grade (10-point scale).
+        A = 10.0, A- = 9.0, B = 8.0, B- = 7.0, C = 6.0, C- = 5.0, D = 4.0, F = 0.0
         """
         grade_points = {
-            'A+': 10,
-            'A': 9,
-            'B+': 8,
-            'B': 7,
-            'C+': 6,
-            'C': 5,
-            'D': 4,
-            'F': 0,
+            'A': 10.0,
+            'A-': 9.0,
+            'B': 8.0,
+            'B-': 7.0,
+            'C': 6.0,
+            'C-': 5.0,
+            'D': 4.0,
+            'F': 0.0,
         }
-        return grade_points.get(self.grade_letter, 0)
+        return grade_points.get(self.grade_letter, 0.0)
     
     @staticmethod
     def calculate_letter_grade(percentage):
         """
         Calculate letter grade from percentage.
-        A+ (95-100), A (90-94), B+ (85-89), B (80-84), 
-        C+ (75-79), C (70-74), D (60-69), F (<60)
+        A (93-100), A- (90-92), B (87-89), B- (83-86), 
+        C (77-79), C- (73-76), D (60-72), F (<60)
         """
-        if percentage >= 95:
-            return 'A+'
-        elif percentage >= 90:
+        if percentage >= 93:
             return 'A'
-        elif percentage >= 85:
-            return 'B+'
-        elif percentage >= 80:
+        elif percentage >= 90:
+            return 'A-'
+        elif percentage >= 87:
             return 'B'
-        elif percentage >= 75:
-            return 'C+'
-        elif percentage >= 70:
+        elif percentage >= 83:
+            return 'B-'
+        elif percentage >= 77:
             return 'C'
+        elif percentage >= 73:
+            return 'C-'
         elif percentage >= 60:
             return 'D'
         else:

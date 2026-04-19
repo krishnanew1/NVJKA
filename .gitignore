@@ -137,3 +137,7 @@ cython_debug/
 
 # Local development files
 FRONTEND_PHASES.md
+.kiro/
+
+# Markdown files
+*.md
