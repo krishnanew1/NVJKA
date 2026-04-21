@@ -61,17 +61,17 @@ const FacultyExams = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
 
-  // Grade options for dropdown
+  // Grade options for dropdown - strict 10-point scale
   const gradeOptions = [
     { value: '', label: '-- Select Grade --' },
-    { value: 'A+', label: 'A+' },
-    { value: 'A', label: 'A' },
-    { value: 'B+', label: 'B+' },
-    { value: 'B', label: 'B' },
-    { value: 'C+', label: 'C+' },
-    { value: 'C', label: 'C' },
-    { value: 'D', label: 'D' },
-    { value: 'F', label: 'F' },
+    { value: 'A', label: 'A (10)' },
+    { value: 'A-', label: 'A- (9)' },
+    { value: 'B', label: 'B (8)' },
+    { value: 'B-', label: 'B- (7)' },
+    { value: 'C', label: 'C (6)' },
+    { value: 'C-', label: 'C- (5)' },
+    { value: 'D', label: 'D (4)' },
+    { value: 'F', label: 'Fail (0)' },
   ];
 
   // Handle subject selection
@@ -232,7 +232,7 @@ const FacultyExams = () => {
   if (error) {
     return (
       <div className="error-container">
-        <div className="error-icon">⚠️</div>
+        <div className="error-icon"></div>
         <p className="error-text">{error}</p>
         <button onClick={fetchSubjects} className="retry-button">
           Retry
@@ -253,7 +253,7 @@ const FacultyExams = () => {
 
       {/* Page Header */}
       <div className="exams-header">
-        <h1>📝 Exams & Grades</h1>
+        <h1>Exams & Grades</h1>
         <p>Submit and manage student grades for your subjects</p>
       </div>
 
@@ -371,7 +371,7 @@ const FacultyExams = () => {
                     </>
                   ) : (
                     <>
-                      💾 Save Grades
+                      Save Grades
                     </>
                   )}
                 </button>
@@ -379,7 +379,7 @@ const FacultyExams = () => {
             </>
           ) : (
             <div className="empty-state">
-              <div className="empty-icon">👥</div>
+              <div className="empty-icon"></div>
               <p>No students enrolled in this subject</p>
             </div>
           )}
@@ -389,7 +389,7 @@ const FacultyExams = () => {
       {/* Empty State - No Subject Selected */}
       {!selectedSubject && subjects.length > 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             Select a subject to begin
           </p>
@@ -402,7 +402,7 @@ const FacultyExams = () => {
       {/* Empty State - No Subjects */}
       {subjects.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             No subjects assigned
           </p>

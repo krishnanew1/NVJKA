@@ -9,13 +9,21 @@ import AdminStudents from './pages/AdminStudents';
 import AdminRegTracking from './pages/AdminRegTracking';
 import AdminFaculty from './pages/AdminFaculty';
 import AdminGrades from './pages/AdminGrades';
+import AdminReports from './pages/AdminReports';
+import AdminTimetables from './pages/AdminTimetables';
+import AdminAcademics from './pages/AdminAcademics';
+import AdminAttendance from './pages/AdminAttendance';
 import FacultyDashboard from './pages/FacultyDashboard';
 import FacultyAttendance from './pages/FacultyAttendance';
 import FacultyExams from './pages/FacultyExams';
+import FacultyReports from './pages/FacultyReports';
+import FacultyTimetable from './pages/FacultyTimetable';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentTimetable from './pages/StudentTimetable';
 import StudentGrades from './pages/StudentGrades';
 import StudentRegistration from './pages/StudentRegistration';
+import StudentAttendance from './pages/StudentAttendance';
+import StudentReports from './pages/StudentReports';
 import './App.css';
 
 function App() {
@@ -50,7 +58,11 @@ function App() {
             <Route path="students" element={<AdminStudents />} />
             <Route path="registration-tracking" element={<AdminRegTracking />} />
             <Route path="faculty" element={<AdminFaculty />} />
+            <Route path="academics" element={<AdminAcademics />} />
+            <Route path="attendance" element={<AdminAttendance />} />
             <Route path="grades" element={<AdminGrades />} />
+            <Route path="timetables" element={<AdminTimetables />} />
+            <Route path="reports" element={<AdminReports />} />
           </Route>
           
           <Route 
@@ -64,6 +76,8 @@ function App() {
             <Route index element={<FacultyDashboard />} />
             <Route path="attendance" element={<FacultyAttendance />} />
             <Route path="exams" element={<FacultyExams />} />
+            <Route path="timetable" element={<FacultyTimetable />} />
+            <Route path="reports" element={<FacultyReports />} />
           </Route>
           
           <Route 
@@ -77,7 +91,9 @@ function App() {
             <Route index element={<StudentDashboard />} />
             <Route path="register" element={<StudentRegistration />} />
             <Route path="timetable" element={<StudentTimetable />} />
+            <Route path="attendance" element={<StudentAttendance />} />
             <Route path="grades" element={<StudentGrades />} />
+            <Route path="reports" element={<StudentReports />} />
           </Route>
         </Routes>
       </div>

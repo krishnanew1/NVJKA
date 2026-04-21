@@ -9,7 +9,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     DepartmentViewSet, CourseViewSet, SubjectViewSet, TimetableViewSet,
-    CustomRegistrationFieldViewSet, ProgramViewSet, MySubjectsView
+    CustomRegistrationFieldViewSet, ProgramViewSet, MySubjectsView,
+    TimetablePDFUploadView, TimetablePDFListView, TimetablePDFDetailView
 )
 
 # Create a router and register our viewsets
@@ -26,6 +27,11 @@ app_name = 'academics'
 urlpatterns = [
     # Faculty-specific endpoints
     path('faculty/my-subjects/', MySubjectsView.as_view(), name='my-subjects'),
+    
+    # Timetable PDF endpoints
+    path('timetables/upload/', TimetablePDFUploadView.as_view(), name='timetable-upload'),
+    path('timetables/pdfs/', TimetablePDFListView.as_view(), name='timetable-pdfs'),
+    path('timetables/pdfs/<int:pk>/', TimetablePDFDetailView.as_view(), name='timetable-pdf-detail'),
     
     # Include all router URLs
     path('', include(router.urls)),

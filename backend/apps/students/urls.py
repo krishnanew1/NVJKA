@@ -3,7 +3,7 @@ from django.urls import path, include
 from .views import (
     EnrollmentViewSet, AcademicHistoryViewSet,
     SemesterRegistrationViewSet, RegistrationTrackingView,
-    StudentRegistrationDetailView
+    StudentRegistrationDetailView, ApproveRegistrationView
 )
 
 app_name = 'students'
@@ -19,4 +19,5 @@ urlpatterns = [
     path('registration-detail/<int:student_id>/<int:registration_id>/', 
          StudentRegistrationDetailView.as_view(), 
          name='registration-detail'),
+    path('approve-registration/', ApproveRegistrationView.as_view(), name='approve-registration'),
 ]

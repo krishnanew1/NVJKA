@@ -4,7 +4,7 @@ import Toast from '../components/Toast';
 import Loader from '../components/Loader';
 import './StudentTimetable.css';
 
-const StudentTimetable = () => {
+const FacultyTimetable = () => {
   const [loading, setLoading] = useState(true);
   const [timetables, setTimetables] = useState([]);
   const [error, setError] = useState('');
@@ -73,7 +73,7 @@ const StudentTimetable = () => {
 
       <div className="page-header">
         <h1>📅 My Timetable</h1>
-        <p>View your class schedule and timetable</p>
+        <p>View your teaching schedule and timetable</p>
       </div>
 
       {timetables.length > 0 ? (
@@ -136,4 +136,4 @@ const StudentTimetable = () => {
   );
 };
 
-export default StudentTimetable;
+export default FacultyTimetable;

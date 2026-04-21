@@ -219,7 +219,7 @@ const AdminFaculty = () => {
   if (loading) return <Loader message="Loading faculty data..." size="large" />;
   if (error) return (
     <div className="error-container">
-      <div className="error-icon">⚠️</div>
+      <div className="error-icon"></div>
       <p className="error-text">{error}</p>
       <button onClick={fetchData} className="retry-button">Retry</button>
     </div>
@@ -232,27 +232,27 @@ const AdminFaculty = () => {
       <Toast message={toast.message} type={toast.type} isVisible={toast.isVisible} onClose={hideToast} />
 
       <div className="dashboard-header">
-        <h1>👨‍🏫 Faculty Management</h1>
+        <h1>Faculty Management</h1>
         <p>Manage faculty members and subject assignments</p>
       </div>
 
       <div className="summary-section">
         <div className="summary-card">
-          <div className="card-icon">👨‍🏫</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">{faculty.length}</h3>
             <p className="card-label">Total Faculty</p>
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon">📚</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">{subjects.length}</h3>
             <p className="card-label">Total Subjects</p>
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon">✓</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">
               {subjects.filter(s => s.faculty_info).length}
@@ -261,7 +261,7 @@ const AdminFaculty = () => {
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon">⏳</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">
               {subjects.filter(s => !s.faculty_info).length}
@@ -319,7 +319,7 @@ const AdminFaculty = () => {
               </table>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">👨‍🏫</div>
+                <div className="empty-icon"></div>
                 <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                   No faculty members found
                 </p>
@@ -337,7 +337,7 @@ const AdminFaculty = () => {
         {/* Subject Assignment Section */}
         <div className="table-card" style={{ gridColumn: '1 / -1' }}>
           <div className="table-header">
-            <h2>📚 Assign Subjects to Faculty</h2>
+            <h2>Assign Subjects to Faculty</h2>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
               Select a faculty member for each subject and click Save Assignment
             </p>
@@ -347,7 +347,7 @@ const AdminFaculty = () => {
               <div className="assignment-section">
                 {Object.keys(groupedSubjects).sort().map(courseName => (
                   <div key={courseName} className="course-assignment-group">
-                    <h3 className="course-title">🎓 {courseName}</h3>
+                    <h3 className="course-title">{courseName}</h3>
                     <table className="data-table assignment-table">
                       <thead>
                         <tr>
@@ -402,11 +402,11 @@ const AdminFaculty = () => {
                                   disabled={savingAssignments[subject.id] || !hasChanged}
                                 >
                                   {savingAssignments[subject.id] ? (
-                                    '⏳ Saving...'
+                                    'Saving...'
                                   ) : hasChanged ? (
-                                    '💾 Save'
+                                    'Save'
                                   ) : (
-                                    '✓ Saved'
+                                    'Saved'
                                   )}
                                 </button>
                               </td>
@@ -420,7 +420,7 @@ const AdminFaculty = () => {
               </div>
             ) : subjects.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">📚</div>
+                <div className="empty-icon"></div>
                 <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                   No subjects found
                 </p>
@@ -430,7 +430,7 @@ const AdminFaculty = () => {
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">👨‍🏫</div>
+                <div className="empty-icon"></div>
                 <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                   No faculty members available
                 </p>

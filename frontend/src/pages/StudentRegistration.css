@@ -492,3 +492,42 @@
     padding: 0.5rem 0.25rem;
   }
 }
+
+
+/* File input styling */
+.file-input {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.file-input::-webkit-file-upload-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.file-input::-webkit-file-upload-button:hover {
+  background: var(--primary-dark);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.file-uploaded {
+  color: var(--success-color);
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}

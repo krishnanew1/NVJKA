@@ -20,6 +20,7 @@ const StudentRegistration = () => {
 
   // Fee transactions state (max 3)
   const [feeTransactions, setFeeTransactions] = useState([]);
+  const [receiptFiles, setReceiptFiles] = useState({});
 
   // Available subjects and selected courses
   const [availableSubjects, setAvailableSubjects] = useState([]);
@@ -104,6 +105,27 @@ const StudentRegistration = () => {
     ));
   };
 
+  // Handle receipt file upload
+  const handleReceiptUpload = (index, file) => {
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        showToast('Please upload a valid image (JPG, PNG) or PDF file', 'error');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size should not exceed 5MB', 'error');
+        return;
+      }
+      
+      setReceiptFiles(prev => ({ ...prev, [index]: file }));
+      showToast('Receipt uploaded successfully', 'success');
+    }
+  };
+
   // Toggle course selection
   const toggleCourseSelection = (subject, isBacklog = false) => {
     if (isBacklog) {
@@ -183,21 +205,41 @@ const StudentRegistration = () => {
         }))
       ];
 
-      // Prepare payload
-      const payload = {
-        academic_year: formData.academic_year,
-        semester: formData.semester,
-        institute_fee_paid: formData.institute_fee_paid,
-        hostel_fee_paid: formData.hostel_fee_paid,
-        hostel_room_no: formData.hostel_room_no || null,
-        total_credits: totalCredits,
-        fee_transactions: feeTransactions.filter(txn => 
-          txn.utr_no && txn.bank_name && txn.transaction_date && txn.amount
-        ),
-        registered_courses
-      };
+      // Use FormData for file upload
+      const submitData = new FormData();
+      submitData.append('academic_year', formData.academic_year);
+      submitData.append('semester', formData.semester);
+      submitData.append('institute_fee_paid', formData.institute_fee_paid);
+      submitData.append('hostel_fee_paid', formData.hostel_fee_paid);
+      if (formData.hostel_room_no) submitData.append('hostel_room_no', formData.hostel_room_no);
+      submitData.append('total_credits', totalCredits);
 
-      await api.post('/api/students/semester-register/', payload);
+      // Add fee transactions with receipts
+      feeTransactions.forEach((txn, index) => {
+        if (txn.utr_no && txn.bank_name && txn.transaction_date && txn.amount) {
+          submitData.append(`fee_transactions[${index}][utr_no]`, txn.utr_no);
+          submitData.append(`fee_transactions[${index}][bank_name]`, txn.bank_name);
+          submitData.append(`fee_transactions[${index}][transaction_date]`, txn.transaction_date);
+          submitData.append(`fee_transactions[${index}][amount]`, txn.amount);
+          submitData.append(`fee_transactions[${index}][account_debited]`, txn.account_debited);
+          submitData.append(`fee_transactions[${index}][account_credited]`, txn.account_credited);
+          
+          // Add receipt file if uploaded
+          if (receiptFiles[index]) {
+            submitData.append(`fee_transactions[${index}][receipt_image]`, receiptFiles[index]);
+          }
+        }
+      });
+
+      // Add registered courses
+      registered_courses.forEach((course, index) => {
+        submitData.append(`registered_courses[${index}][subject_id]`, course.subject_id);
+        submitData.append(`registered_courses[${index}][is_backlog]`, course.is_backlog);
+      });
+
+      await api.post('/api/students/semester-register/', submitData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       
       showToast('Semester registration successful!', 'success');
       
@@ -248,7 +290,7 @@ const StudentRegistration = () => {
       {/* Page Header */}
       <div className="registration-header">
         <div className="header-content">
-          <h1 className="page-title">📝 Semester Registration</h1>
+          <h1 className="page-title">Semester Registration</h1>
           <p className="page-subtitle">Register for the upcoming semester</p>
         </div>
       </div>
@@ -257,7 +299,7 @@ const StudentRegistration = () => {
         {/* Section 1: Academic Information */}
         <div className="form-section">
           <div className="section-header">
-            <h2 className="section-title">📚 Academic Information</h2>
+            <h2 className="section-title">Academic Information</h2>
             <p className="section-subtitle">Enter semester details</p>
           </div>
           
@@ -342,7 +384,7 @@ const StudentRegistration = () => {
         {/* Section 2: Fee Details */}
         <div className="form-section">
           <div className="section-header">
-            <h2 className="section-title">💰 Fee Transaction Details</h2>
+            <h2 className="section-title">Fee Transaction Details</h2>
             <p className="section-subtitle">Add up to 3 fee transactions (optional)</p>
           </div>
 
@@ -426,6 +468,24 @@ const StudentRegistration = () => {
                     className="form-input"
                   />
                 </div>
+
+                <div className="form-group full-width">
+                  <label className="form-label">
+                    Fee Receipt Screenshot <span className="required">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,application/pdf"
+                    onChange={(e) => handleReceiptUpload(index, e.target.files[0])}
+                    className="form-input file-input"
+                  />
+                  <small className="form-hint">
+                    Upload fee receipt (JPG, PNG, or PDF - Max 5MB)
+                    {receiptFiles[index] && (
+                      <span className="file-uploaded"> ✓ {receiptFiles[index].name}</span>
+                    )}
+                  </small>
+                </div>
               </div>
             </div>
           ))}
@@ -436,7 +496,7 @@ const StudentRegistration = () => {
               onClick={addFeeTransaction}
               className="add-transaction-btn"
             >
-              ➕ Add Fee Transaction
+              + Add Fee Transaction
             </button>
           )}
         </div>
@@ -444,7 +504,7 @@ const StudentRegistration = () => {
         {/* Section 3: Course Selection */}
         <div className="form-section">
           <div className="section-header">
-            <h2 className="section-title">📖 Course Selection</h2>
+            <h2 className="section-title">Course Selection</h2>
             <p className="section-subtitle">Select courses for this semester</p>
           </div>
 
@@ -498,7 +558,7 @@ const StudentRegistration = () => {
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">📚</div>
+                <div className="empty-icon"></div>
                 <p>No courses available</p>
               </div>
             )}
@@ -541,7 +601,7 @@ const StudentRegistration = () => {
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">✅</div>
+                <div className="empty-icon"></div>
                 <p>No backlog courses</p>
               </div>
             )}
@@ -563,7 +623,7 @@ const StudentRegistration = () => {
             className="submit-btn"
             disabled={submitting || isCreditsExceeded}
           >
-            {submitting ? 'Submitting...' : '✓ Submit Registration'}
+            {submitting ? 'Submitting...' : 'Submit Registration'}
           </button>
         </div>
       </form>

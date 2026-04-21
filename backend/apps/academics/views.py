@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError
+from django.db import models
 
 from .models import Department, Course, Subject, Timetable, CustomRegistrationField, Program
 from .serializers import (
@@ -654,3 +655,189 @@ class TimetableViewSet(viewsets.ModelViewSet):
                 'error': f'Failed to retrieve timetable: {str(e)}',
                 'code': 500
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# ── Timetable PDF Views ────────────────────────────────────────────────────
+
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import TimetablePDF
+from rest_framework import serializers as drf_serializers
+
+
+class TimetablePDFSerializer(drf_serializers.ModelSerializer):
+    """Serializer for TimetablePDF model."""
+    uploaded_by_name = drf_serializers.CharField(source='uploaded_by.get_full_name', read_only=True)
+    department_name = drf_serializers.CharField(source='department.name', read_only=True)
+    pdf_url = drf_serializers.SerializerMethodField()
+    is_active = drf_serializers.BooleanField(default=True, required=False)
+    
+    class Meta:
+        model = TimetablePDF
+        fields = [
+            'id', 'title', 'academic_year', 'semester', 'department', 
+            'department_name', 'pdf_file', 'pdf_url', 'uploaded_by', 
+            'uploaded_by_name', 'is_active', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'uploaded_by', 'created_at', 'updated_at']
+    
+    def get_pdf_url(self, obj):
+        """Get the full URL for the PDF file."""
+        if obj.pdf_file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.pdf_file.url)
+            return obj.pdf_file.url
+        return None
+
+
+class TimetablePDFUploadView(APIView):
+    """
+    Admin endpoint to upload timetable PDFs.
+    
+    POST /api/academics/timetables/upload/
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def post(self, request):
+        """Upload a new timetable PDF."""
+        # Check if user is admin
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Only administrators can upload timetables.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Create serializer with request data
+        serializer = TimetablePDFSerializer(data=request.data, context={'request': request})
+        
+        if serializer.is_valid():
+            # Save with uploaded_by set to current user
+            serializer.save(uploaded_by=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TimetablePDFListView(APIView):
+    """
+    Endpoint to list all active timetable PDFs.
+    Accessible to all authenticated users (students, faculty, admin).
+    
+    GET /api/academics/timetables/pdfs/
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get all active timetable PDFs."""
+        # Get query parameters for filtering
+        academic_year = request.query_params.get('academic_year')
+        semester = request.query_params.get('semester')
+        department_id = request.query_params.get('department')
+        
+        # Base queryset - only active timetables
+        queryset = TimetablePDF.objects.filter(is_active=True)
+        
+        # Apply filters if provided
+        if academic_year:
+            queryset = queryset.filter(academic_year=academic_year)
+        if semester:
+            queryset = queryset.filter(semester=semester)
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+        
+        # For students and faculty, also show institution-wide timetables
+        if request.user.role in ['STUDENT', 'FACULTY']:
+            # Get user's department if available
+            user_department = None
+            if request.user.role == 'STUDENT' and hasattr(request.user, 'student_profile'):
+                user_department = request.user.student_profile.department
+            elif request.user.role == 'FACULTY' and hasattr(request.user, 'faculty_profile'):
+                user_department = request.user.faculty_profile.department
+            
+            # Show timetables for user's department or institution-wide (null department)
+            if user_department:
+                queryset = queryset.filter(
+                    models.Q(department=user_department) | models.Q(department__isnull=True)
+                )
+            else:
+                queryset = queryset.filter(department__isnull=True)
+        
+        # Serialize and return
+        serializer = TimetablePDFSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TimetablePDFDetailView(APIView):
+    """
+    Endpoint to get, update, or delete a specific timetable PDF.
+    
+    GET /api/academics/timetables/pdfs/<id>/
+    PUT /api/academics/timetables/pdfs/<id>/
+    DELETE /api/academics/timetables/pdfs/<id>/
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def get(self, request, pk):
+        """Get a specific timetable PDF."""
+        try:
+            timetable = TimetablePDF.objects.get(pk=pk, is_active=True)
+            serializer = TimetablePDFSerializer(timetable, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TimetablePDF.DoesNotExist:
+            return Response(
+                {'error': 'Timetable not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    def put(self, request, pk):
+        """Update a timetable PDF (admin only)."""
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Only administrators can update timetables.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            timetable = TimetablePDF.objects.get(pk=pk)
+            serializer = TimetablePDFSerializer(
+                timetable, 
+                data=request.data, 
+                partial=True,
+                context={'request': request}
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TimetablePDF.DoesNotExist:
+            return Response(
+                {'error': 'Timetable not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    def delete(self, request, pk):
+        """Delete a timetable PDF (admin only)."""
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Only administrators can delete timetables.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            timetable = TimetablePDF.objects.get(pk=pk)
+            timetable.delete()
+            return Response(
+                {'message': 'Timetable deleted successfully.'},
+                status=status.HTTP_200_OK
+            )
+        except TimetablePDF.DoesNotExist:
+            return Response(
+                {'error': 'Timetable not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )

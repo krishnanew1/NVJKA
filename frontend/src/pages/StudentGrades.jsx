@@ -58,11 +58,11 @@ const StudentGrades = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
 
-  // Get grade color class
+  // Get grade color class - updated for new grade scale
   const getGradeColorClass = (gradeLetter) => {
-    if (['A+', 'A'].includes(gradeLetter)) return 'grade-excellent';
-    if (['B+', 'B'].includes(gradeLetter)) return 'grade-good';
-    if (['C+', 'C'].includes(gradeLetter)) return 'grade-average';
+    if (['A', 'A-'].includes(gradeLetter)) return 'grade-excellent';
+    if (['B', 'B-'].includes(gradeLetter)) return 'grade-good';
+    if (['C', 'C-'].includes(gradeLetter)) return 'grade-average';
     if (gradeLetter === 'D') return 'grade-pass';
     if (gradeLetter === 'F') return 'grade-fail';
     return '';
@@ -77,7 +77,7 @@ const StudentGrades = () => {
   if (error) {
     return (
       <div className="error-container">
-        <div className="error-icon">⚠️</div>
+        <div className="error-icon"></div>
         <p className="error-text">{error}</p>
         <button onClick={fetchGrades} className="retry-button">
           Retry
@@ -98,14 +98,14 @@ const StudentGrades = () => {
 
       {/* Page Header */}
       <div className="grades-header">
-        <h1>🎓 My Grades</h1>
+        <h1>My Grades</h1>
         <p>View your academic performance and report card</p>
       </div>
 
       {/* Student Info Card */}
       {gradesData?.student && (
         <div className="student-info-card">
-          <div className="info-icon">👨‍🎓</div>
+          <div className="info-icon"></div>
           <div className="info-content">
             <h3>{gradesData.student.name}</h3>
             <p>Enrollment: {gradesData.student.enrollment_number}</p>
@@ -117,21 +117,21 @@ const StudentGrades = () => {
       {gradesData?.statistics && (
         <div className="statistics-section">
           <div className="stat-card">
-            <div className="stat-icon">📚</div>
+            <div className="stat-icon"></div>
             <div className="stat-content">
               <h3 className="stat-number">{gradesData.statistics.total_subjects}</h3>
               <p className="stat-label">Total Subjects</p>
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">📊</div>
+            <div className="stat-icon"></div>
             <div className="stat-content">
               <h3 className="stat-number">{gradesData.statistics.average_percentage}%</h3>
               <p className="stat-label">Average Percentage</p>
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">⭐</div>
+            <div className="stat-icon"></div>
             <div className="stat-content">
               <h3 className="stat-number">{gradesData.statistics.cgpa}</h3>
               <p className="stat-label">CGPA (out of 10)</p>
@@ -144,7 +144,7 @@ const StudentGrades = () => {
       {gradesData?.grades && gradesData.grades.length > 0 ? (
         <div className="report-card">
           <div className="card-header">
-            <h2>📋 Report Card</h2>
+            <h2>Report Card</h2>
             <p>Your subject-wise grades and performance</p>
           </div>
 
@@ -169,14 +169,10 @@ const StudentGrades = () => {
                       {grade.marks_obtained} / {grade.total_marks}
                     </td>
                     <td className="percentage-cell">
-                      <span className={`percentage-badge ${getGradeColorClass(grade.grade_letter)}`}>
-                        {grade.percentage}%
-                      </span>
+                      {grade.percentage}%
                     </td>
                     <td className="grade-cell">
-                      <span className={`grade-badge ${getGradeColorClass(grade.grade_letter)}`}>
-                        {grade.grade_letter}
-                      </span>
+                      {grade.grade_letter}
                     </td>
                     <td className="faculty-cell">{grade.faculty_name || 'N/A'}</td>
                   </tr>
@@ -188,7 +184,7 @@ const StudentGrades = () => {
           {/* Remarks Section */}
           {gradesData.grades.some(g => g.remarks) && (
             <div className="remarks-section">
-              <h3>📝 Faculty Remarks</h3>
+              <h3>Faculty Remarks</h3>
               {gradesData.grades
                 .filter(g => g.remarks)
                 .map(grade => (
@@ -201,7 +197,7 @@ const StudentGrades = () => {
         </div>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">📝</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             No grades available yet
           </p>

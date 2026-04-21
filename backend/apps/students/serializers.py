@@ -95,16 +95,28 @@ class FeeTransactionSerializer(serializers.ModelSerializer):
     Serializer for FeeTransaction model.
     
     Used as a nested serializer within SemesterRegistrationSerializer.
+    Handles receipt image upload.
     """
     transaction_date = serializers.DateField(format='%Y-%m-%d')
+    receipt_url = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = FeeTransaction
         fields = [
             'id', 'utr_no', 'bank_name', 'transaction_date',
-            'amount', 'account_debited', 'account_credited'
+            'amount', 'account_debited', 'account_credited',
+            'receipt_image', 'receipt_url'
         ]
         read_only_fields = ['id']
+    
+    def get_receipt_url(self, obj):
+        """Get the full URL for the receipt image."""
+        if obj.receipt_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.receipt_image.url)
+            return obj.receipt_image.url
+        return None
 
 
 class RegisteredCourseSerializer(serializers.ModelSerializer):
@@ -153,20 +165,29 @@ class SemesterRegistrationSerializer(serializers.ModelSerializer):
     fee_transactions = FeeTransactionSerializer(many=True, required=False)
     registered_courses = RegisteredCourseSerializer(many=True, required=False)
     student_name = serializers.SerializerMethodField(read_only=True)
+    approved_by_name = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = SemesterRegistration
         fields = [
             'id', 'student', 'student_name', 'academic_year', 'semester',
             'institute_fee_paid', 'hostel_fee_paid', 'hostel_room_no',
-            'total_credits', 'fee_transactions', 'registered_courses',
+            'total_credits', 'approval_status', 'approved_by', 'approved_by_name',
+            'approved_at', 'admin_notes', 'fee_transactions', 'registered_courses',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'approval_status', 'approved_by', 'approved_at', 
+                           'admin_notes', 'created_at', 'updated_at']
     
     def get_student_name(self, obj):
         """Return student's full name."""
         return obj.student.user.get_full_name() or obj.student.user.username
+    
+    def get_approved_by_name(self, obj):
+        """Return approver's full name."""
+        if obj.approved_by:
+            return obj.approved_by.get_full_name() or obj.approved_by.username
+        return None
     
     def validate_fee_transactions(self, value):
         """Validate that there are at most 3 fee transactions."""

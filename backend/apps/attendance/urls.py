@@ -7,7 +7,9 @@ from .views import (
     StudentAttendanceView, 
     AttendanceRecordsView,
     FacultyAttendanceSummaryView,
-    SubmitAttendanceReportView
+    SubmitAttendanceReportView,
+    AdminReportsView,
+    FacultyReportsView
 )
 
 app_name = 'attendance'
@@ -23,4 +25,8 @@ urlpatterns = [
     path('faculty/summary/', FacultyAttendanceSummaryView.as_view(), name='faculty_attendance_summary'),
     # Submit attendance report endpoint
     path('faculty/submit-report/', SubmitAttendanceReportView.as_view(), name='submit_attendance_report'),
+    # Faculty reports history endpoint
+    path('faculty/reports/', FacultyReportsView.as_view(), name='faculty_reports'),
+    # Admin reports review endpoint
+    path('admin/reports/', AdminReportsView.as_view(), name='admin_reports'),
 ]

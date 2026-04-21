@@ -300,7 +300,7 @@ const AdminStudents = () => {
   if (loading) return <Loader message="Loading students..." size="large" />;
   if (error) return (
     <div className="error-container">
-      <div className="error-icon">⚠️</div>
+      <div className="error-icon"></div>
       <p className="error-text">{error}</p>
       <button onClick={fetchData} className="retry-button">Retry</button>
     </div>
@@ -314,27 +314,27 @@ const AdminStudents = () => {
       <Toast message={toast.message} type={toast.type} isVisible={toast.isVisible} onClose={hideToast} />
 
       <div className="dashboard-header">
-        <h1>👨‍🎓 Student Management</h1>
+        <h1>Student Management</h1>
         <p>Manage student registrations with dynamic fields</p>
       </div>
 
       <div className="summary-section">
         <div className="summary-card">
-          <div className="card-icon">👨‍🎓</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">{students.length}</h3>
             <p className="card-label">Total Students</p>
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon">🎓</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">{programs.length}</h3>
             <p className="card-label">Active Programs</p>
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon">📝</div>
+          <div className="card-icon"></div>
           <div className="card-content">
             <h3 className="card-number">{customFields.length}</h3>
             <p className="card-label">Custom Fields</p>
@@ -357,7 +357,7 @@ const AdminStudents = () => {
                   <div key={year} className="year-group">
                     <div className="year-header" onClick={() => toggleYear(year)}>
                       <span className="expand-icon">{expandedYears[year] ? '▼' : '▶'}</span>
-                      <span className="year-title">📅 Year {year}</span>
+                      <span className="year-title">Year {year}</span>
                       <span className="year-count">({Object.values(groupedStudents[year]).flat().length} students)</span>
                     </div>
                     {expandedYears[year] && (
@@ -369,7 +369,7 @@ const AdminStudents = () => {
                             <div key={programKey} className="program-group">
                               <div className="program-header" onClick={() => toggleProgram(year, programName)}>
                                 <span className="expand-icon">{expandedPrograms[programKey] ? '▼' : '▶'}</span>
-                                <span className="program-title">🎓 {programName}</span>
+                                <span className="program-title">{programName}</span>
                                 <span className="program-count">({programStudents.length} students)</span>
                               </div>
                               {expandedPrograms[programKey] && (
@@ -408,7 +408,7 @@ const AdminStudents = () => {
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">👨‍🎓</div>
+                <div className="empty-icon"></div>
                 <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>No students found</p>
                 <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
                   Click "Add Student" to register the first batch!

@@ -1,24 +1,24 @@
-/* Student Grades Page */
-.student-grades {
+/* Student Reports Page */
+.student-reports {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
 }
 
 /* Page Header */
-.grades-header {
+.reports-header {
   text-align: center;
   margin-bottom: 32px;
 }
 
-.grades-header h1 {
+.reports-header h1 {
   font-size: 32px;
   font-weight: 700;
   color: var(--text-color);
   margin: 0 0 8px 0;
 }
 
-.grades-header p {
+.reports-header p {
   font-size: 16px;
   color: var(--text-secondary);
   margin: 0;
@@ -55,23 +55,32 @@
   opacity: 0.9;
 }
 
-/* Statistics Section */
-.statistics-section {
+/* Overall Statistics */
+.overall-stats {
+  margin-bottom: 40px;
+}
+
+.overall-stats h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 20px 0;
+}
+
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px var(--card-shadow);
+  padding: 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   transition: all 0.3s ease;
 }
 
@@ -80,24 +89,40 @@
   box-shadow: 0 4px 15px var(--card-shadow);
 }
 
-.stat-card .stat-icon {
-  font-size: 40px;
+.stat-card.excellent-card {
+  border-left: 4px solid var(--success-color);
+}
+
+.stat-card.good-card {
+  border-left: 4px solid #3b82f6;
+}
+
+.stat-card.average-card {
+  border-left: 4px solid var(--warning-color);
+}
+
+.stat-card.poor-card {
+  border-left: 4px solid var(--error-color);
+}
+
+.stat-icon {
+  font-size: 36px;
   opacity: 0.8;
 }
 
-.stat-card .stat-content {
+.stat-content {
   flex: 1;
 }
 
 .stat-number {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--primary-color);
   margin: 0 0 4px 0;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0;
@@ -105,40 +130,29 @@
   letter-spacing: 0.5px;
 }
 
-/* Report Card */
-.report-card {
+/* Report Section */
+.report-section {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
-  box-shadow: 0 2px 10px var(--card-shadow);
-  overflow: hidden;
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
-.report-card .card-header {
-  padding: 20px 24px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.report-card .card-header h2 {
+.report-section h2 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-color);
-  margin: 0 0 4px 0;
-}
-
-.report-card .card-header p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Table Container */
-.table-container {
-  overflow-x: auto;
+  margin: 0 0 20px 0;
 }
 
 /* Report Table */
+.report-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
 .report-table {
   width: 100%;
   border-collapse: collapse;
@@ -149,7 +163,7 @@
 }
 
 .report-table th {
-  padding: 14px 16px;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 600;
   color: #f1f5f9;
@@ -159,7 +173,7 @@
 }
 
 .report-table td {
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid #475569;
   font-size: 14px;
   color: #e2e8f0;
@@ -173,66 +187,54 @@
   border-bottom: none;
 }
 
-/* Table Cells */
-.subject-code-cell {
-  font-family: 'Courier New', monospace;
-  font-weight: 600;
-  color: var(--primary-color);
-}
-
-.subject-name-cell {
+/* Table Cell Styles */
+.subject-name {
   font-weight: 500;
   color: #f1f5f9;
 }
 
-.marks-cell {
-  font-weight: 500;
-  color: #e2e8f0;
+.subject-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 13px;
 }
 
-.percentage-cell,
-.grade-cell {
+.center-text {
   text-align: center;
-  font-weight: 500;
-  color: var(--text-color);
 }
 
-.faculty-cell {
+.success-text {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.danger-text {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+.warning-text {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.faculty-name {
   color: var(--text-secondary);
   font-style: italic;
+  font-size: 13px;
 }
 
-/* Remarks Section */
-.remarks-section {
-  padding: 20px 24px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+/* Empty Section */
+.empty-section {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
 }
 
-.remarks-section h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-color);
-  margin: 0 0 16px 0;
-}
-
-.remark-item {
-  padding: 12px;
-  background: var(--card-bg);
-  border-left: 4px solid var(--primary-color);
-  border-radius: 4px;
-  margin-bottom: 12px;
+.empty-section p {
+  margin: 0;
   font-size: 14px;
-  color: var(--text-color);
-}
-
-.remark-item:last-child {
-  margin-bottom: 0;
-}
-
-.remark-item strong {
-  color: var(--primary-color);
-  font-weight: 600;
 }
 
 /* Empty State */
@@ -254,6 +256,8 @@
 .empty-state p {
   color: var(--text-secondary);
   margin: 0;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 /* Error Container */
@@ -298,30 +302,62 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .student-grades {
+  .student-reports {
     padding: 20px;
   }
 
-  .statistics-section {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .student-grades {
+  .student-reports {
     padding: 16px;
   }
 
-  .grades-header h1 {
+  .reports-header h1 {
     font-size: 28px;
   }
 
   .student-info-card {
-    padding: 20px;
     flex-direction: column;
     text-align: center;
-    gap: 16px;
+    padding: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-section {
+    padding: 20px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Hide some columns on mobile */
+  .report-table th:nth-child(6),
+  .report-table td:nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-reports {
+    padding: 12px;
+  }
+
+  .reports-header h1 {
+    font-size: 24px;
+  }
+
+  .student-info-card {
+    padding: 16px;
   }
 
   .student-info-card .info-icon {
@@ -333,90 +369,28 @@
   }
 
   .stat-card {
-    padding: 20px;
-  }
-
-  .stat-number {
-    font-size: 28px;
-  }
-
-  .report-table th,
-  .report-table td {
-    padding: 12px 14px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 480px) {
-  .student-grades {
-    padding: 12px;
-  }
-
-  .grades-header h1 {
-    font-size: 24px;
-  }
-
-  .grades-header p {
-    font-size: 14px;
-  }
-
-  .student-info-card {
     padding: 16px;
   }
 
-  .student-info-card .info-icon {
-    font-size: 36px;
+  .stat-number {
+    font-size: 24px;
   }
 
-  .student-info-card .info-content h3 {
+  .report-section {
+    padding: 16px;
+  }
+
+  .report-section h2 {
     font-size: 18px;
   }
 
-  .stat-card {
-    padding: 16px;
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
-  }
-
-  .stat-card .stat-icon {
-    font-size: 32px;
-  }
-
-  .stat-number {
-    font-size: 24px;
-  }
-
-  .report-table th,
-  .report-table td {
-    padding: 10px 12px;
-    font-size: 12px;
-  }
-
-  /* Hide faculty column on very small screens */
-  .report-table th:last-child,
-  .report-table td:last-child {
+  /* Further hide columns on very small screens */
+  .report-table th:nth-child(3),
+  .report-table td:nth-child(3),
+  .report-table th:nth-child(4),
+  .report-table td:nth-child(4),
+  .report-table th:nth-child(5),
+  .report-table td:nth-child(5) {
     display: none;
-  }
-
-  .remarks-section {
-    padding: 16px 20px;
-  }
-
-  .remarks-section h3 {
-    font-size: 14px;
-  }
-
-  .remark-item {
-    padding: 10px;
-    font-size: 13px;
-  }
-
-  .empty-state {
-    padding: 60px 16px;
-  }
-
-  .empty-icon {
-    font-size: 48px;
   }
 }

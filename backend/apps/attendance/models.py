@@ -74,11 +74,18 @@ class AttendanceReportSubmission(models.Model):
         subject:              The subject for which attendance is being reported.
         batch_string:         The batch identifier (e.g., '2024-IMG', '2023-CSE').
         submitted_at:         Timestamp when the report was submitted.
+        status:               Status of the submission (pending/approved/rejected).
         is_reviewed_by_admin: Whether an admin has reviewed this submission.
         reviewed_at:          Timestamp when the report was reviewed (optional).
         reviewed_by:          The admin user who reviewed the report (optional).
         notes:                Optional notes from admin review.
     """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
     
     faculty = models.ForeignKey(
         FacultyProfile,
@@ -95,6 +102,12 @@ class AttendanceReportSubmission(models.Model):
         help_text="Batch identifier (e.g., '2024-IMG', '2023-CSE')"
     )
     submitted_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text="Current status of the submission"
+    )
     is_reviewed_by_admin = models.BooleanField(default=False)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(
@@ -111,8 +124,13 @@ class AttendanceReportSubmission(models.Model):
         indexes = [
             models.Index(fields=['faculty', 'subject']),
             models.Index(fields=['batch_string']),
+            models.Index(fields=['status']),
             models.Index(fields=['is_reviewed_by_admin']),
         ]
     
     def __str__(self):
-        return f"{self.faculty.user.get_full_name()} - {self.subject.code} - {self.batch_string} ({self.submitted_at.strftime('%Y-%m-%d')})"
+        return f"{self.faculty.user.get_full_name()} - {self.subject.code} - {self.batch_string} ({self.submitted_at.strftime('%Y-%m-%d')}) - {self.status}"
+    
+    def is_locked(self):
+        """Check if this submission is approved and attendance is locked."""
+        return self.status == 'approved'

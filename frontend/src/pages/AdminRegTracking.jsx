@@ -149,7 +149,7 @@ const AdminRegTracking = () => {
       {/* Page Header */}
       <div className="tracking-header">
         <div className="header-content">
-          <h1 className="page-title">📋 Registration Tracking</h1>
+          <h1 className="page-title">Registration Tracking</h1>
           <p className="page-subtitle">Monitor semester registration status</p>
         </div>
       </div>
@@ -199,7 +199,7 @@ const AdminRegTracking = () => {
       {trackingData && (
         <div className="summary-section">
           <div className="summary-card total">
-            <div className="card-icon">👥</div>
+            <div className="card-icon"></div>
             <div className="card-content">
               <div className="card-value">{trackingData.summary.total_students}</div>
               <div className="card-label">Total Students</div>
@@ -207,7 +207,7 @@ const AdminRegTracking = () => {
           </div>
 
           <div className="summary-card registered">
-            <div className="card-icon">✅</div>
+            <div className="card-icon"></div>
             <div className="card-content">
               <div className="card-value">{trackingData.summary.registered}</div>
               <div className="card-label">Registered</div>
@@ -215,7 +215,7 @@ const AdminRegTracking = () => {
           </div>
 
           <div className="summary-card pending">
-            <div className="card-icon">⏳</div>
+            <div className="card-icon"></div>
             <div className="card-content">
               <div className="card-value">{trackingData.summary.pending}</div>
               <div className="card-label">Pending</div>
@@ -223,7 +223,7 @@ const AdminRegTracking = () => {
           </div>
 
           <div className="summary-card percentage">
-            <div className="card-icon">📊</div>
+            <div className="card-icon"></div>
             <div className="card-content">
               <div className="card-value">{trackingData.summary.registration_percentage}%</div>
               <div className="card-label">Registration Rate</div>
@@ -292,7 +292,7 @@ const AdminRegTracking = () => {
                         </span>
                       ) : (
                         <span className="status-badge pending">
-                          ⏳ Pending
+                          Pending
                         </span>
                       )}
                     </td>
@@ -302,7 +302,7 @@ const AdminRegTracking = () => {
                           onClick={() => handleViewForm(student)}
                           className="view-btn"
                         >
-                          👁️ View Form
+                          View Form
                         </button>
                       ) : (
                         <span className="no-action">—</span>
@@ -316,7 +316,7 @@ const AdminRegTracking = () => {
         </div>
       ) : trackingData && filteredStudents.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📋</div>
+          <div className="empty-icon"></div>
           <p>No students found for the selected filter</p>
         </div>
       ) : null}
@@ -324,7 +324,7 @@ const AdminRegTracking = () => {
       {/* Error State */}
       {error && !trackingData && (
         <div className="error-state">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon"></div>
           <p>{error}</p>
           <button onClick={fetchTrackingData} className="retry-btn">
             Retry

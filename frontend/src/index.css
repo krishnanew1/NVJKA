@@ -1,3 +1,6 @@
+/* Import Alice Font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Alice&display=swap');
+
 /* CSS Reset and Base Styles */
 * {
   margin: 0;
@@ -28,9 +31,9 @@
   --primary-hover: #6366f1;
   --primary-light: #312e81;
   
-  /* Secondary Colors */
-  --secondary-color: #a78bfa;
-  --secondary-hover: #8b5cf6;
+  /* Secondary Colors - Changed to Dark Red */
+  --secondary-color: #7f1d1d;
+  --secondary-hover: #991b1b;
   
   /* Status Colors */
   --success-color: #34d399;
@@ -77,15 +80,23 @@ html {
 
 body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Alice', serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color: #f1f5f9;
   line-height: 1.6;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global text color override */
+* {
+  color: inherit;
+}
+
+/* Ensure all text elements are light */
+h1, h2, h3, h4, h5, h6, p, span, div, a, li, td, th, label {
+  color: #f1f5f9;
 }
 
 #root {
@@ -96,9 +107,15 @@ body {
 
 /* Remove default button and input styles */
 button, input, textarea, select {
-  font-family: inherit;
+  font-family: 'Alice', serif !important;
   font-size: inherit;
   transition: all 0.3s ease;
+  color: #f1f5f9;
+}
+
+/* Force Alice font globally */
+* {
+  font-family: 'Alice', serif !important;
 }
 
 button {
@@ -108,7 +125,7 @@ button {
 /* Global Select and Option Styling */
 select {
   background-color: var(--input-bg);
-  color: var(--text-color);
+  color: #f1f5f9;
   border: 2px solid var(--input-border);
   padding: 8px 12px;
   border-radius: 8px;
@@ -155,7 +172,7 @@ select option {
 /* Input Styling */
 input, textarea {
   background-color: var(--input-bg);
-  color: var(--text-color);
+  color: #f1f5f9;
   border: 2px solid var(--input-border);
   padding: 8px 12px;
   border-radius: 8px;

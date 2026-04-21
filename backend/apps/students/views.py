@@ -2,6 +2,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from apps.common.permissions import IsDepartmentHead
 from .models import (
@@ -113,6 +116,7 @@ class SemesterRegistrationViewSet(viewsets.ModelViewSet):
     """
     serializer_class = SemesterRegistrationSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_queryset(self):
         """
@@ -337,6 +341,10 @@ class StudentRegistrationDetailView(APIView):
                 'hostel_fee_paid': registration.hostel_fee_paid,
                 'hostel_room_no': registration.hostel_room_no,
                 'total_credits': registration.total_credits,
+                'approval_status': registration.approval_status,
+                'approved_by_name': registration.approved_by.get_full_name() if registration.approved_by else None,
+                'approved_at': registration.approved_at.isoformat() if registration.approved_at else None,
+                'admin_notes': registration.admin_notes,
                 'created_at': registration.created_at.isoformat(),
                 'updated_at': registration.updated_at.isoformat()
             },
@@ -391,3 +399,166 @@ class StudentRegistrationDetailView(APIView):
         }
         
         return Response(response_data)
+
+
+class ApproveRegistrationView(APIView):
+    """
+    Admin API endpoint to approve or reject a semester registration.
+    
+    **Permissions**: Admin only
+    
+    **POST Data**:
+    - registration_id: ID of the semester registration
+    - action: 'approve' or 'reject'
+    - notes: Optional admin notes
+    
+    **On Approval**:
+    - Updates registration status to 'approved'
+    - Creates Enrollment records for all registered subjects
+    - Updates student's current semester
+    - Records admin and timestamp
+    
+    **On Rejection**:
+    - Updates registration status to 'rejected'
+    - Records admin notes and timestamp
+    
+    **Example**:
+    POST /api/students/approve-registration/
+    {
+        "registration_id": 1,
+        "action": "approve",
+        "notes": "All documents verified"
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        # Check if user is admin
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Admin privileges required.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        registration_id = request.data.get('registration_id')
+        action = request.data.get('action')  # 'approve' or 'reject'
+        notes = request.data.get('notes', '')
+        
+        # Validate input
+        if not registration_id:
+            return Response(
+                {'error': 'registration_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if action not in ['approve', 'reject']:
+            return Response(
+                {'error': 'action must be either "approve" or "reject".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get the registration
+        try:
+            registration = SemesterRegistration.objects.select_related(
+                'student', 'student__user'
+            ).prefetch_related(
+                'registered_courses__subject__course'
+            ).get(id=registration_id)
+        except SemesterRegistration.DoesNotExist:
+            return Response(
+                {'error': 'Registration not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if already processed
+        if registration.approval_status != 'pending':
+            return Response(
+                {'error': f'Registration has already been {registration.approval_status}.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        from django.utils import timezone
+        from django.db import transaction
+        
+        try:
+            with transaction.atomic():
+                # Update registration status
+                registration.approval_status = 'approved' if action == 'approve' else 'rejected'
+                registration.approved_by = request.user
+                registration.approved_at = timezone.now()
+                registration.admin_notes = notes
+                registration.save()
+                
+                # If approved, create enrollments and update student semester
+                if action == 'approve':
+                    student = registration.student
+                    registered_courses = registration.registered_courses.all()
+                    
+                    # Extract semester number from registration
+                    # Assuming semester format like "Jan-Jun 2026" or similar
+                    # We'll increment the student's current semester
+                    new_semester = student.current_semester + 1 if student.current_semester else 1
+                    
+                    # Create enrollment records for each registered subject
+                    enrollments_created = []
+                    for reg_course in registered_courses:
+                        # Check if enrollment already exists
+                        enrollment, created = Enrollment.objects.get_or_create(
+                            student=student,
+                            course=reg_course.subject.course,
+                            semester=new_semester,
+                            defaults={
+                                'status': 'Active',
+                                'date_enrolled': timezone.now().date()
+                            }
+                        )
+                        
+                        if created:
+                            enrollments_created.append({
+                                'subject': reg_course.subject.name,
+                                'subject_code': reg_course.subject.code,
+                                'credits': reg_course.subject.credits,
+                                'is_backlog': reg_course.is_backlog
+                            })
+                    
+                    # Update student's current semester
+                    student.current_semester = new_semester
+                    student.save()
+                    
+                    return Response({
+                        'success': True,
+                        'message': 'Registration approved successfully.',
+                        'registration': {
+                            'id': registration.id,
+                            'status': registration.approval_status,
+                            'approved_by': request.user.get_full_name() or request.user.username,
+                            'approved_at': registration.approved_at.isoformat(),
+                            'notes': registration.admin_notes
+                        },
+                        'student': {
+                            'id': student.id,
+                            'name': student.user.get_full_name() or student.user.username,
+                            'new_semester': new_semester
+                        },
+                        'enrollments_created': enrollments_created,
+                        'total_enrollments': len(enrollments_created)
+                    }, status=status.HTTP_200_OK)
+                
+                else:  # rejected
+                    return Response({
+                        'success': True,
+                        'message': 'Registration rejected.',
+                        'registration': {
+                            'id': registration.id,
+                            'status': registration.approval_status,
+                            'approved_by': request.user.get_full_name() or request.user.username,
+                            'approved_at': registration.approved_at.isoformat(),
+                            'notes': registration.admin_notes
+                        }
+                    }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to process registration: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

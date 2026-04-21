@@ -190,7 +190,7 @@ const FacultyAttendance = () => {
   if (error) {
     return (
       <div className="error-container">
-        <div className="error-icon">⚠️</div>
+        <div className="error-icon"></div>
         <p className="error-text">{error}</p>
         <button onClick={fetchAttendanceSummary} className="retry-button">
           Retry
@@ -211,14 +211,14 @@ const FacultyAttendance = () => {
 
       {/* Page Header */}
       <div className="attendance-header">
-        <h1>📋 Master Attendance Report</h1>
+        <h1>Master Attendance Report</h1>
         <p>View and submit attendance reports by batch and branch</p>
       </div>
 
       {/* Faculty Info */}
       {attendanceData?.faculty && (
         <div className="faculty-info-card">
-          <div className="info-icon">👨‍🏫</div>
+          <div className="info-icon"></div>
           <div className="info-content">
             <h3>{attendanceData.faculty.name}</h3>
             <p>Employee ID: {attendanceData.faculty.employee_id}</p>
@@ -385,11 +385,11 @@ const FacultyAttendance = () => {
                                               </>
                                             ) : isSubmitted ? (
                                               <>
-                                                ✓ Report Sent to Admin
+                                                Report Sent to Admin
                                               </>
                                             ) : (
                                               <>
-                                                📤 Send Report to Admin
+                                                Send Report to Admin
                                               </>
                                             )}
                                           </button>
@@ -412,7 +412,7 @@ const FacultyAttendance = () => {
         </div>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">📋</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             No attendance data available
           </p>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
-import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import Loader from '../components/Loader';
 import './Dashboard.css';
@@ -12,11 +12,6 @@ const StudentDashboard = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSubjectDetails, setSelectedSubjectDetails] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
 
   // Toast state
   const [toast, setToast] = useState({
@@ -33,13 +28,15 @@ const StudentDashboard = () => {
 
       // Fetch student profile, semester registrations, and attendance in parallel
       const [profileResponse, semesterRegResponse, attendanceResponse] = await Promise.all([
-        api.get('/api/users/student/dashboard/').catch(() => null),
+        api.get('/api/users/dashboard/student/').catch(() => null),
         api.get('/api/students/semester-register/').catch(() => ({ data: [] })),
         api.get('/api/attendance/my-records/').catch(() => ({ data: { attendance: [] } }))
       ]);
 
+      
       // Set student profile
       if (profileResponse && profileResponse.data) {
+        console.log("Student Profile Data:", profileResponse.data);
         setStudentProfile(profileResponse.data);
       }
 
@@ -108,76 +105,31 @@ const StudentDashboard = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
 
-  // Fetch detailed attendance records for a subject
-  const fetchAttendanceDetails = async (subjectId) => {
-    try {
-      setLoadingDetails(true);
-      
-      const response = await api.get('/api/attendance/my-records/', {
-        params: { details: 'true' }
-      });
-
-      const attendanceInfo = response.data || {};
-      const allAttendance = attendanceInfo.attendance || [];
-      
-      // Find the specific subject's details
-      const subjectDetails = allAttendance.find(item => item.subject.id === subjectId);
-      
-      if (subjectDetails) {
-        setSelectedSubjectDetails(subjectDetails);
-        setIsModalOpen(true);
-      } else {
-        showToast('No attendance details found for this subject', 'warning');
-      }
-    } catch (err) {
-      console.error('Error fetching attendance details:', err);
-      showToast('Failed to load attendance details', 'error');
-    } finally {
-      setLoadingDetails(false);
-    }
-  };
-
-  // Handle view details button click
-  const handleViewDetails = (subjectId) => {
-    fetchAttendanceDetails(subjectId);
-  };
-
-  // Close modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedSubjectDetails(null);
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
-
-  // Get status color class
-  const getStatusColorClass = (status) => {
-    switch (status) {
-      case 'Present':
-        return 'status-present';
-      case 'Absent':
-        return 'status-absent';
-      case 'Late':
-        return 'status-late';
-      default:
-        return '';
-    }
-  };
-
-  // Get attendance percentage color
+  // Get attendance percentage color (updated thresholds)
   const getAttendanceColor = (percentage) => {
-    if (percentage >= 75) return 'success';
-    if (percentage >= 60) return 'warning';
+    if (percentage >= 90) return 'success';
+    if (percentage >= 75) return 'warning';
     return 'danger';
+  };
+
+  // Calculate overall attendance percentage
+  const calculateOverallAttendance = () => {
+    if (attendanceData.length === 0) return 0;
+    
+    let totalClasses = 0;
+    let totalPresent = 0;
+    
+    attendanceData.forEach(record => {
+      totalClasses += record.total_classes;
+      totalPresent += record.present + record.late; // Count late as present
+    });
+    
+    return totalClasses > 0 ? Math.round((totalPresent / totalClasses) * 100) : 0;
   };
 
   // Get attendance status text
   const getAttendanceStatus = (percentage) => {
+    if (percentage >= 90) return 'Excellent';
     if (percentage >= 75) return 'Good';
     if (percentage >= 60) return 'Average';
     return 'Low';
@@ -214,9 +166,10 @@ const StudentDashboard = () => {
                       `${userInfo.first_name || ''} ${userInfo.last_name || ''}`.trim() || 
                       userInfo.username || 
                       'Student';
-  const enrollmentNumber = studentProfile?.enrollment_number || 'N/A';
+  const rollNumber = studentProfile?.roll_number || studentProfile?.enrollment_number || 'N/A';
   const currentSemester = studentProfile?.current_semester || 'N/A';
   const departmentName = studentProfile?.department?.name || 'N/A';
+  const overallAttendance = calculateOverallAttendance();
 
   return (
     <div className="student-dashboard">
@@ -237,7 +190,7 @@ const StudentDashboard = () => {
             <div className="hero-details">
               <span className="hero-detail">
                 <span className="detail-label">Roll No:</span>
-                <span className="detail-value">{enrollmentNumber}</span>
+                <span className="detail-value">{rollNumber}</span>
               </span>
               <span className="hero-divider">•</span>
               <span className="hero-detail">
@@ -301,79 +254,59 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* Attendance Overview Section */}
+      {/* Attendance Overview Section - Minimalist Widget */}
       {attendanceData.length > 0 && (
         <div className="attendance-section">
           <div className="section-header">
             <h2>📊 Attendance Overview</h2>
-            <p>Your attendance across all subjects</p>
+            <p>Your overall attendance performance</p>
           </div>
 
-          <div className="attendance-grid">
-            {attendanceData.map((record) => (
-              <div key={record.subject.id} className="attendance-card">
-                <div className="attendance-card-header">
-                  <h3 className="attendance-subject-name">{record.subject.name}</h3>
-                  <span className="attendance-subject-code">{record.subject.code}</span>
-                </div>
-                <div className="attendance-card-body">
-                  <div className="attendance-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">Total Classes</span>
-                      <span className="stat-value">{record.total_classes}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Present</span>
-                      <span className="stat-value success">{record.present}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Absent</span>
-                      <span className="stat-value danger">{record.absent}</span>
-                    </div>
-                    {record.late > 0 && (
-                      <div className="stat-item">
-                        <span className="stat-label">Late</span>
-                        <span className="stat-value warning">{record.late}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="attendance-progress">
-                    <div className="progress-header">
-                      <span className="progress-label">Attendance</span>
-                      <span className={`progress-percentage ${getAttendanceColor(record.percentage)}`}>
-                        {record.percentage}%
-                      </span>
-                    </div>
-                    <div className="progress-bar-container">
-                      <div 
-                        className={`progress-bar ${getAttendanceColor(record.percentage)}`}
-                        style={{ width: `${record.percentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="progress-status">
-                      <span className={`status-badge ${getAttendanceColor(record.percentage)}`}>
-                        {getAttendanceStatus(record.percentage)}
-                      </span>
-                      {record.percentage < 75 && (
-                        <span className="status-warning">
-                          ⚠️ Below required 75%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* View Details Button */}
-                  <button
-                    className="view-details-btn"
-                    onClick={() => handleViewDetails(record.subject.id)}
-                    disabled={loadingDetails}
-                  >
-                    {loadingDetails ? 'Loading...' : '📋 View Details'}
-                  </button>
+          <div className="attendance-widget">
+            <div className="attendance-widget-content">
+              <div className="attendance-circle">
+                <svg className="attendance-progress-ring" width="200" height="200">
+                  <circle
+                    className="attendance-progress-ring-circle-bg"
+                    stroke="#e0e0e0"
+                    strokeWidth="20"
+                    fill="transparent"
+                    r="80"
+                    cx="100"
+                    cy="100"
+                  />
+                  <circle
+                    className={`attendance-progress-ring-circle ${getAttendanceColor(overallAttendance)}`}
+                    stroke="currentColor"
+                    strokeWidth="20"
+                    fill="transparent"
+                    r="80"
+                    cx="100"
+                    cy="100"
+                    strokeDasharray={`${(overallAttendance / 100) * 502.4} 502.4`}
+                    strokeDashoffset="0"
+                    transform="rotate(-90 100 100)"
+                  />
+                </svg>
+                <div className="attendance-percentage-display">
+                  <span className={`attendance-percentage-value ${getAttendanceColor(overallAttendance)}`}>
+                    {overallAttendance}%
+                  </span>
+                  <span className="attendance-percentage-label">Overall</span>
                 </div>
               </div>
-            ))}
+              <div className="attendance-widget-info">
+                <h3 className="attendance-widget-title">Overall Attendance</h3>
+                <p className="attendance-widget-description">
+                  {overallAttendance >= 90 && '🎉 Excellent! Keep up the great work!'}
+                  {overallAttendance >= 75 && overallAttendance < 90 && '👍 Good attendance. Stay consistent!'}
+                  {overallAttendance < 75 && '⚠️ Below required 75%. Please improve!'}
+                </p>
+                <Link to="/student/attendance" className="view-details-btn-primary">
+                  📋 View Detailed Attendance
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -383,7 +316,7 @@ const StudentDashboard = () => {
         <div className="attendance-section">
           <div className="section-header">
             <h2>📊 Attendance Overview</h2>
-            <p>Your attendance across all subjects</p>
+            <p>Your overall attendance performance</p>
           </div>
           <div className="empty-state">
             <div className="empty-icon">📋</div>
@@ -392,73 +325,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       )}
-
-      {/* Attendance Details Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        title={selectedSubjectDetails ? `Attendance Details - ${selectedSubjectDetails.subject.name}` : 'Attendance Details'}
-      >
-        {selectedSubjectDetails && (
-          <div className="attendance-details-modal">
-            {/* Subject Info Header */}
-            <div className="modal-subject-header">
-              <div className="modal-subject-info">
-                <h3>{selectedSubjectDetails.subject.name}</h3>
-                <span className="modal-subject-code">{selectedSubjectDetails.subject.code}</span>
-              </div>
-              <div className="modal-subject-stats">
-                <div className="modal-stat">
-                  <span className="modal-stat-label">Attendance</span>
-                  <span className={`modal-stat-value ${getAttendanceColor(selectedSubjectDetails.percentage)}`}>
-                    {selectedSubjectDetails.percentage}%
-                  </span>
-                </div>
-                <div className="modal-stat">
-                  <span className="modal-stat-label">Total Classes</span>
-                  <span className="modal-stat-value">{selectedSubjectDetails.total_classes}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Attendance Records Table */}
-            {selectedSubjectDetails.records && selectedSubjectDetails.records.length > 0 ? (
-              <div className="attendance-details-table-container">
-                <table className="attendance-details-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Recorded By</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedSubjectDetails.records.map((record, index) => (
-                      <tr key={index}>
-                        <td className="detail-date">{formatDate(record.date)}</td>
-                        <td>
-                          <span className={`detail-status ${getStatusColorClass(record.status)}`}>
-                            {record.status === 'Present' && '✓ '}
-                            {record.status === 'Absent' && '✗ '}
-                            {record.status === 'Late' && '⏰ '}
-                            {record.status}
-                          </span>
-                        </td>
-                        <td className="detail-recorded-by">{record.recorded_by}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="modal-empty-state">
-                <div className="modal-empty-icon">📋</div>
-                <p>No attendance records found for this subject</p>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

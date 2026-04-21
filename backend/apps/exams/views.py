@@ -345,7 +345,7 @@ class StudentMyGradesView(APIView):
     
     GET /api/students/my-grades/
     
-    Returns all grades for the logged-in student.
+    Returns all grades for the logged-in student with calculated CGPA.
     """
     permission_classes = [permissions.IsAuthenticated]
     
@@ -376,14 +376,29 @@ class StudentMyGradesView(APIView):
         # Serialize grades
         serializer = StudentGradeSerializer(grades, many=True)
         
-        # Calculate overall statistics
+        # Calculate CGPA properly using credits
         total_grades = grades.count()
-        if total_grades > 0:
-            total_percentage = sum(g.percentage for g in grades) / total_grades
-            total_grade_points = sum(g.grade_point for g in grades) / total_grades
+        total_earned_points = 0.0
+        total_attempted_credits = 0.0
+        
+        for grade in grades:
+            # Get subject credits (default to 3 if not set)
+            subject_credits = float(grade.subject.credits) if grade.subject.credits else 3.0
+            # Get grade point (10-point scale)
+            grade_point = grade.grade_point
+            # Calculate earned points for this subject
+            earned_points = grade_point * subject_credits
+            
+            total_earned_points += earned_points
+            total_attempted_credits += subject_credits
+        
+        # Calculate CGPA
+        if total_attempted_credits > 0:
+            cgpa = total_earned_points / total_attempted_credits
+            average_percentage = sum(g.percentage for g in grades) / total_grades
         else:
-            total_percentage = 0
-            total_grade_points = 0
+            cgpa = 0.0
+            average_percentage = 0.0
         
         return Response({
             'student': {
@@ -394,8 +409,8 @@ class StudentMyGradesView(APIView):
             'grades': serializer.data,
             'statistics': {
                 'total_subjects': total_grades,
-                'average_percentage': round(total_percentage, 2),
-                'cgpa': round(total_grade_points, 2)
+                'average_percentage': round(average_percentage, 2),
+                'cgpa': round(cgpa, 2)
             }
         }, status=status.HTTP_200_OK)
 

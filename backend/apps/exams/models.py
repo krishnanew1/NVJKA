@@ -215,14 +215,14 @@ class StudentGrade(models.Model):
     """
     
     GRADE_CHOICES = [
-        ('A', 'A (Excellent)'),
-        ('A-', 'A- (Very Good)'),
-        ('B', 'B (Good)'),
-        ('B-', 'B- (Above Average)'),
-        ('C', 'C (Average)'),
-        ('C-', 'C- (Below Average)'),
-        ('D', 'D (Pass)'),
-        ('F', 'F (Fail)'),
+        ('A', 'A (10)'),
+        ('A-', 'A- (9)'),
+        ('B', 'B (8)'),
+        ('B-', 'B- (7)'),
+        ('C', 'C (6)'),
+        ('C-', 'C- (5)'),
+        ('D', 'D (4)'),
+        ('F', 'Fail (0)'),
     ]
     
     student = models.ForeignKey(

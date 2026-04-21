@@ -99,11 +99,11 @@ const AdminGrades = () => {
     }
   };
 
-  // Get grade color class
+  // Get grade color class - updated for new grade scale
   const getGradeColorClass = (gradeLetter) => {
-    if (['A+', 'A'].includes(gradeLetter)) return 'grade-excellent';
-    if (['B+', 'B'].includes(gradeLetter)) return 'grade-good';
-    if (['C+', 'C'].includes(gradeLetter)) return 'grade-average';
+    if (['A', 'A-'].includes(gradeLetter)) return 'grade-excellent';
+    if (['B', 'B-'].includes(gradeLetter)) return 'grade-good';
+    if (['C', 'C-'].includes(gradeLetter)) return 'grade-average';
     if (gradeLetter === 'D') return 'grade-pass';
     if (gradeLetter === 'F') return 'grade-fail';
     return '';
@@ -118,7 +118,7 @@ const AdminGrades = () => {
   if (error) {
     return (
       <div className="error-container">
-        <div className="error-icon">⚠️</div>
+        <div className="error-icon"></div>
         <p className="error-text">{error}</p>
         <button onClick={fetchSubjects} className="retry-button">
           Retry
@@ -139,7 +139,7 @@ const AdminGrades = () => {
 
       {/* Page Header */}
       <div className="grades-header">
-        <h1>📊 Grades Overview</h1>
+        <h1>Grades Overview</h1>
         <p>View and monitor student grades across all subjects</p>
       </div>
 
@@ -179,35 +179,35 @@ const AdminGrades = () => {
           {/* Statistics Cards */}
           <div className="statistics-section">
             <div className="stat-card">
-              <div className="stat-icon">👥</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <h3 className="stat-number">{gradesData.statistics.total_students}</h3>
                 <p className="stat-label">Total Students</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">📊</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <h3 className="stat-number">{gradesData.statistics.average_percentage}%</h3>
                 <p className="stat-label">Class Average</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <h3 className="stat-number">{gradesData.statistics.pass_count}</h3>
                 <p className="stat-label">Passed</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">❌</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <h3 className="stat-number">{gradesData.statistics.fail_count}</h3>
                 <p className="stat-label">Failed</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">📈</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <h3 className="stat-number">{gradesData.statistics.pass_rate}%</h3>
                 <p className="stat-label">Pass Rate</p>
@@ -269,7 +269,7 @@ const AdminGrades = () => {
             </div>
           ) : (
             <div className="empty-state">
-              <div className="empty-icon">📝</div>
+              <div className="empty-icon"></div>
               <p>No grades submitted for this subject yet</p>
             </div>
           )}
@@ -279,7 +279,7 @@ const AdminGrades = () => {
       {/* Empty State - No Subject Selected */}
       {!selectedSubject && subjects.length > 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             Select a subject to view grades
           </p>
@@ -292,7 +292,7 @@ const AdminGrades = () => {
       {/* Empty State - No Subjects */}
       {subjects.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon"></div>
           <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
             No subjects available
           </p>

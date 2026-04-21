@@ -1,24 +1,19 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { tokenUtils } from '../api';
 import './Layout.css';
 
 const RoleBasedLayout = ({ role = 'admin' }) => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleLogout = () => {
     tokenUtils.clearTokens();
     navigate('/');
   };
 
-  const isActiveRoute = (path) => {
-    return location.pathname.startsWith(path);
-  };
-
   // Navigation items based on role
   const getNavigationItems = () => {
     const baseItems = [
-      { path: `/${role}`, label: '📊 Dashboard', icon: '📊' }
+      { path: `/${role}`, label: '📊 Dashboard', icon: '📊', isDashboard: true }
     ];
 
     switch (role) {
@@ -83,12 +78,13 @@ const RoleBasedLayout = ({ role = 'admin' }) => {
             <ul className="nav-list">
               {navigationItems.map((item) => (
                 <li key={item.path} className="nav-item">
-                  <a 
-                    href={item.path}
-                    className={`nav-link ${isActiveRoute(item.path) ? 'active' : ''}`}
+                  <NavLink 
+                    to={item.path}
+                    end={item.isDashboard}
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   >
                     {item.label}
-                  </a>
+                  </NavLink>
                 </li>
               ))}
             </ul>

@@ -399,6 +399,20 @@ class AttendanceRecordsView(APIView):
                     {'error': 'You are not assigned to this subject and cannot update its attendance.'},
                     status=status.HTTP_403_FORBIDDEN
                 )
+            
+            # Check if attendance is locked (approved by admin)
+            from .models import AttendanceReportSubmission
+            approved_submissions = AttendanceReportSubmission.objects.filter(
+                faculty=faculty_profile,
+                subject=subject,
+                status='approved'
+            )
+            
+            if approved_submissions.exists():
+                return Response(
+                    {'error': 'Attendance for this subject has been approved by admin and is now locked. You cannot edit it anymore.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         
         # Validate each record
         errors = []
@@ -505,44 +519,60 @@ class FacultyAttendanceSummaryView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        """Get attendance summary for faculty's assigned subjects."""
-        # Check if user is faculty
-        if request.user.role != 'FACULTY':
+        """Get attendance summary for faculty's assigned subjects or admin view."""
+        # Check if user is faculty or admin
+        if request.user.role not in ['FACULTY', 'ADMIN']:
             return Response(
-                {'error': 'This endpoint is only accessible to faculty members.'},
+                {'error': 'This endpoint is only accessible to faculty members and admins.'},
                 status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Get faculty profile
-        try:
-            faculty_profile = request.user.faculty_profile
-        except ObjectDoesNotExist:
-            return Response(
-                {'error': 'Faculty profile not found.'},
-                status=status.HTTP_404_NOT_FOUND
             )
         
         # Get query parameters
         subject_id_filter = request.query_params.get('subject_id')
         batch_filter = request.query_params.get('batch')
         
-        # Get subjects assigned to this faculty
-        subjects_query = Subject.objects.filter(faculty=faculty_profile).select_related('course')
-        
-        if subject_id_filter:
-            subjects_query = subjects_query.filter(id=subject_id_filter)
+        # For admin, allow viewing any subject
+        # For faculty, only show their assigned subjects
+        if request.user.role == 'ADMIN':
+            # Admin can view any subject
+            if subject_id_filter:
+                subjects_query = Subject.objects.filter(id=subject_id_filter).select_related('course', 'faculty', 'faculty__user')
+            else:
+                subjects_query = Subject.objects.all().select_related('course', 'faculty', 'faculty__user')
+            
+            faculty_info = {
+                'id': None,
+                'name': 'Admin',
+                'employee_id': 'ADMIN'
+            }
+        else:
+            # Faculty - get their profile and assigned subjects
+            try:
+                faculty_profile = request.user.faculty_profile
+            except ObjectDoesNotExist:
+                return Response(
+                    {'error': 'Faculty profile not found.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            subjects_query = Subject.objects.filter(faculty=faculty_profile).select_related('course')
+            
+            if subject_id_filter:
+                subjects_query = subjects_query.filter(id=subject_id_filter)
+            
+            faculty_info = {
+                'id': faculty_profile.id,
+                'name': request.user.get_full_name() or request.user.username,
+                'employee_id': faculty_profile.employee_id
+            }
         
         subjects = list(subjects_query)
         
         if not subjects:
             return Response({
-                'faculty': {
-                    'id': faculty_profile.id,
-                    'name': request.user.get_full_name() or request.user.username,
-                    'employee_id': faculty_profile.employee_id
-                },
+                'faculty': faculty_info,
                 'subjects': [],
-                'message': 'No subjects assigned to this faculty member.'
+                'message': 'No subjects found.'
             }, status=status.HTTP_200_OK)
         
         # Build response data
@@ -636,11 +666,7 @@ class FacultyAttendanceSummaryView(APIView):
             })
         
         return Response({
-            'faculty': {
-                'id': faculty_profile.id,
-                'name': request.user.get_full_name() or request.user.username,
-                'employee_id': faculty_profile.employee_id
-            },
+            'faculty': faculty_info,
             'subjects': subjects_data
         }, status=status.HTTP_200_OK)
 
@@ -754,3 +780,168 @@ class SubmitAttendanceReportView(APIView):
                 {'error': 'Failed to submit attendance report.', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminReportsView(APIView):
+    """
+    GET /api/attendance/admin/reports/
+    
+    Get all attendance report submissions for admin review.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get all report submissions."""
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Admin privileges required.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        from .models import AttendanceReportSubmission
+        
+        submissions = AttendanceReportSubmission.objects.select_related(
+            'faculty__user', 'subject', 'reviewed_by'
+        ).all()
+        
+        reports = []
+        for submission in submissions:
+            reports.append({
+                'id': submission.id,
+                'faculty': {
+                    'name': submission.faculty.user.get_full_name(),
+                    'employee_id': submission.faculty.employee_id
+                },
+                'subject': {
+                    'id': submission.subject.id,
+                    'name': submission.subject.name,
+                    'code': submission.subject.code
+                },
+                'batch_string': submission.batch_string,
+                'submitted_at': submission.submitted_at.isoformat(),
+                'status': submission.status,
+                'is_reviewed': submission.is_reviewed_by_admin,
+                'reviewed_at': submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+                'reviewed_by': submission.reviewed_by.get_full_name() if submission.reviewed_by else None,
+                'notes': submission.notes
+            })
+        
+        return Response({
+            'reports': reports,
+            'total': len(reports),
+            'pending': len([r for r in reports if r['status'] == 'pending']),
+            'approved': len([r for r in reports if r['status'] == 'approved']),
+            'rejected': len([r for r in reports if r['status'] == 'rejected'])
+        })
+    
+    def patch(self, request):
+        """Review a report submission - approve or reject."""
+        if request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Admin privileges required.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        from .models import AttendanceReportSubmission
+        from django.utils import timezone
+        
+        report_id = request.data.get('report_id')
+        action = request.data.get('action')  # 'approve' or 'reject'
+        notes = request.data.get('notes', '')
+        
+        if not report_id:
+            return Response(
+                {'error': 'report_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if action not in ['approve', 'reject']:
+            return Response(
+                {'error': 'action must be either "approve" or "reject".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            submission = AttendanceReportSubmission.objects.get(id=report_id)
+            
+            # Update submission status
+            submission.is_reviewed_by_admin = True
+            submission.reviewed_at = timezone.now()
+            submission.reviewed_by = request.user
+            submission.notes = notes
+            submission.status = 'approved' if action == 'approve' else 'rejected'
+            submission.save()
+            
+            return Response({
+                'success': True,
+                'message': f'Report {action}d successfully.',
+                'submission': {
+                    'id': submission.id,
+                    'status': submission.status,
+                    'reviewed_at': submission.reviewed_at.isoformat(),
+                    'reviewed_by': request.user.get_full_name(),
+                    'notes': submission.notes
+                }
+            })
+        except AttendanceReportSubmission.DoesNotExist:
+            return Response(
+                {'error': 'Report not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class FacultyReportsView(APIView):
+    """
+    GET /api/attendance/faculty/reports/
+    
+    Get faculty's own report submission history.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get faculty's report submissions."""
+        if request.user.role != 'FACULTY':
+            return Response(
+                {'error': 'Faculty privileges required.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            faculty_profile = request.user.faculty_profile
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': 'Faculty profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        from .models import AttendanceReportSubmission
+        
+        submissions = AttendanceReportSubmission.objects.filter(
+            faculty=faculty_profile
+        ).select_related('subject', 'reviewed_by').order_by('-submitted_at')
+        
+        reports = []
+        for submission in submissions:
+            reports.append({
+                'id': submission.id,
+                'subject': {
+                    'id': submission.subject.id,
+                    'name': submission.subject.name,
+                    'code': submission.subject.code
+                },
+                'batch_string': submission.batch_string,
+                'submitted_at': submission.submitted_at.isoformat(),
+                'status': submission.status,
+                'is_reviewed': submission.is_reviewed_by_admin,
+                'reviewed_at': submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+                'reviewed_by': submission.reviewed_by.get_full_name() if submission.reviewed_by else None,
+                'notes': submission.notes
+            })
+        
+        return Response({
+            'reports': reports,
+            'total': len(reports),
+            'pending': len([r for r in reports if r['status'] == 'pending']),
+            'approved': len([r for r in reports if r['status'] == 'approved']),
+            'rejected': len([r for r in reports if r['status'] == 'rejected'])
+        })

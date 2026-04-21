@@ -54,6 +54,9 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     # Custom data field for dynamic registration fields
     custom_data = serializers.JSONField(required=False, default=dict)
     
+    # Alias for enrollment_number (commonly referred to as roll_number)
+    roll_number = serializers.CharField(read_only=True, source='enrollment_number')
+    
     class Meta:
         model = StudentProfile
         fields = [
@@ -61,6 +64,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             'user',
             'reg_no',
             'enrollment_number',
+            'roll_number',
             'dob',
             'gender',
             'phone',

@@ -1,10 +1,9 @@
-import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
+import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { tokenUtils } from '../api';
 import './Layout.css';
 
 const Layout = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Get user role from localStorage
   const userRole = localStorage.getItem('user_role');
@@ -31,10 +30,6 @@ const Layout = () => {
     navigate('/');
   };
 
-  const isActiveRoute = (path) => {
-    return location.pathname.startsWith(path);
-  };
-
   // Get dashboard path based on role
   const getDashboardPath = () => {
     switch (userRole) {
@@ -54,37 +49,38 @@ const Layout = () => {
     switch (userRole) {
       case 'ADMIN':
         return [
-          { path: '/admin', label: '📊 Dashboard', icon: '📊' },
-          { path: '/admin/settings', label: '⚙️ Settings', icon: '⚙️' },
-          { path: '/admin/students', label: '👨‍🎓 Students', icon: '👨‍🎓' },
-          { path: '/admin/registration-tracking', label: '📋 Reg. Tracking', icon: '📋' },
-          { path: '/admin/academics', label: '🏫 Academics', icon: '🏫' },
-          { path: '/admin/attendance', label: '✓ Attendance', icon: '✓' },
-          { path: '/admin/faculty', label: '👨‍🏫 Faculty', icon: '👨‍🏫' },
-          { path: '/admin/grades', label: '📝 Grades', icon: '📝' },
-          { path: '/admin/timetables', label: '📅 Timetables', icon: '📅' },
-          { path: '/admin/exams', label: '📝 Exams', icon: '📝' },
-          { path: '/admin/reports', label: '📈 Reports', icon: '📈' },
+          { path: '/admin', label: 'Dashboard', icon: '', isDashboard: true },
+          { path: '/admin/settings', label: 'Settings', icon: '' },
+          { path: '/admin/students', label: 'Students', icon: '' },
+          { path: '/admin/registration-tracking', label: 'Reg. Tracking', icon: '' },
+          { path: '/admin/academics', label: 'Academics', icon: '' },
+          { path: '/admin/attendance', label: 'Attendance', icon: '' },
+          { path: '/admin/faculty', label: 'Faculty', icon: '' },
+          { path: '/admin/grades', label: 'Grades', icon: '' },
+          { path: '/admin/timetables', label: 'Timetables', icon: '' },
+          { path: '/admin/exams', label: 'Exams', icon: '' },
+          { path: '/admin/reports', label: 'Reports', icon: '' },
         ];
       case 'FACULTY':
         return [
-          { path: '/faculty', label: '📊 Dashboard', icon: '📊' },
-          { path: '/faculty/attendance', label: '📋 Attendance', icon: '📋' },
-          { path: '/faculty/exams', label: '📝 Exams', icon: '📝' },
-          { path: '/faculty/timetable', label: '📅 My Timetable', icon: '📅' },
+          { path: '/faculty', label: 'Dashboard', icon: '', isDashboard: true },
+          { path: '/faculty/attendance', label: 'Attendance', icon: '' },
+          { path: '/faculty/exams', label: 'Exams', icon: '' },
+          { path: '/faculty/reports', label: 'Reports', icon: '' },
+          { path: '/faculty/timetable', label: 'My Timetable', icon: '' },
         ];
       case 'STUDENT':
         return [
-          { path: '/student', label: '📊 Dashboard', icon: '📊' },
-          { path: '/student/register', label: '📝 Semester Reg.', icon: '📝' },
-          { path: '/student/timetable', label: '📅 Timetable', icon: '📅' },
-          { path: '/student/attendance', label: '📋 My Attendance', icon: '📋' },
-          { path: '/student/grades', label: '🎓 Grades', icon: '🎓' },
-          { path: '/student/reports', label: '📈 Reports', icon: '📈' },
+          { path: '/student', label: 'Dashboard', icon: '', isDashboard: true },
+          { path: '/student/register', label: 'Semester Reg.', icon: '' },
+          { path: '/student/timetable', label: 'Timetable', icon: '' },
+          { path: '/student/attendance', label: 'My Attendance', icon: '' },
+          { path: '/student/grades', label: 'Grades', icon: '' },
+          { path: '/student/reports', label: 'Reports', icon: '' },
         ];
       default:
         return [
-          { path: '/admin', label: '📊 Dashboard', icon: '📊' },
+          { path: '/admin', label: '📊 Dashboard', icon: '📊', isDashboard: true },
         ];
     }
   };
@@ -119,12 +115,13 @@ const Layout = () => {
             <ul className="nav-list">
               {navigationItems.map((item) => (
                 <li key={item.path} className="nav-item">
-                  <Link 
-                    to={item.path} 
-                    className={`nav-link ${isActiveRoute(item.path) ? 'active' : ''}`}
+                  <NavLink 
+                    to={item.path}
+                    end={item.isDashboard}
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   >
                     {item.label}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>

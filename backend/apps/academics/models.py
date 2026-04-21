@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import FileExtensionValidator
 
 
 class CustomRegistrationField(models.Model):
@@ -457,3 +458,63 @@ class Timetable(models.Model):
             ['subject', 'class_name', 'day_of_week', 'start_time', 'academic_year']
         ]
         ordering = ['day_of_week', 'start_time', 'class_name']
+
+
+
+class TimetablePDF(models.Model):
+    """
+    Model for storing uploaded timetable PDFs.
+    Allows admins to upload complete timetable documents.
+    """
+    title = models.CharField(
+        max_length=200,
+        help_text="Title/description of the timetable (e.g., 'Fall 2024 Timetable')"
+    )
+    academic_year = models.CharField(
+        max_length=10,
+        help_text="Academic year (e.g., '2024-25')"
+    )
+    semester = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Semester number (optional)"
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='timetable_pdfs',
+        help_text="Department (optional - leave blank for institution-wide timetable)"
+    )
+    pdf_file = models.FileField(
+        upload_to='timetables/%Y/%m/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+        help_text="Upload timetable PDF file"
+    )
+    uploaded_by = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='uploaded_timetables',
+        help_text="Admin who uploaded this timetable"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this timetable is currently active/visible"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes or instructions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} ({self.academic_year})"
+    
+    class Meta:
+        verbose_name = "Timetable PDF"
+        verbose_name_plural = "Timetable PDFs"
+        ordering = ['-created_at']
