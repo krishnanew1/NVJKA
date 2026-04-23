@@ -572,6 +572,12 @@ const StudentRegistration = () => {
                     onChange={(e) => handleReceiptUpload(index, e.target.files[0])}
                     className="form-input file-input"
                   />
+                  {receiptFiles[index] && (
+                    <div className="file-preview">
+                      <span className="file-name">📄 {receiptFiles[index].name}</span>
+                      <span className="file-size">({(receiptFiles[index].size / 1024 / 1024).toFixed(2)} MB)</span>
+                    </div>
+                  )}
                   <small className="form-hint">
                     Upload fee receipt (JPG, PNG, or PDF - Max 5MB)
                     {receiptFiles[index] && (

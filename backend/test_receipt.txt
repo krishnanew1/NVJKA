@@ -1,0 +1,9 @@
+This is a test receipt file for testing file upload functionality.
+
+Transaction Details:
+UTR: TEST123456789
+Amount: ₹50,000
+Date: 2026-04-24
+Bank: Test Bank
+
+This file is used to test the fee receipt upload and display functionality in the Academic ERP system.

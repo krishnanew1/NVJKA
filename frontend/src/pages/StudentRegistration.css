@@ -515,6 +515,27 @@
   background: var(--primary-dark);
 }
 
+.file-preview {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #10b981;
+}
+
+.file-size {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .form-hint {
   display: block;
   margin-top: 0.5rem;

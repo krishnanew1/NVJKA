@@ -32,6 +32,10 @@ const AdminRegTracking = () => {
   const [registrationDetail, setRegistrationDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // Receipt modal state
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
   // Toast state
   const [toast, setToast] = useState({
     isVisible: false,
@@ -154,6 +158,21 @@ const AdminRegTracking = () => {
     setIsModalOpen(false);
     setSelectedStudent(null);
     setRegistrationDetail(null);
+  };
+
+  // Handle receipt view
+  const handleViewReceipt = (receiptUrl, transactionInfo) => {
+    setSelectedReceipt({
+      url: receiptUrl,
+      transaction: transactionInfo
+    });
+    setIsReceiptModalOpen(true);
+  };
+
+  // Close receipt modal
+  const closeReceiptModal = () => {
+    setIsReceiptModalOpen(false);
+    setSelectedReceipt(null);
   };
 
   // Format date
@@ -488,6 +507,36 @@ const AdminRegTracking = () => {
                           <span className="detail-label">Credited To:</span>
                           <span className="detail-value">{txn.account_credited}</span>
                         </div>
+                        {txn.has_receipt && (
+                          <div className="detail-row">
+                            <span className="detail-label">Receipt:</span>
+                            <div className="receipt-actions">
+                              <button
+                                onClick={() => handleViewReceipt(txn.receipt_url, {
+                                  utr: txn.utr_no,
+                                  amount: txn.amount,
+                                  date: txn.transaction_date
+                                })}
+                                className="receipt-link view-receipt"
+                              >
+                                📄 View Receipt
+                              </button>
+                              <a
+                                href={txn.receipt_url}
+                                download
+                                className="receipt-link download-receipt"
+                              >
+                                💾 Download
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                        {!txn.has_receipt && (
+                          <div className="detail-row">
+                            <span className="detail-label">Receipt:</span>
+                            <span className="detail-value no-receipt">No receipt uploaded</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -560,6 +609,79 @@ const AdminRegTracking = () => {
         ) : (
           <div className="modal-error">
             <p>Failed to load registration details</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Receipt Viewer Modal */}
+      <Modal
+        isOpen={isReceiptModalOpen}
+        onClose={closeReceiptModal}
+        title={selectedReceipt ? `Receipt - UTR: ${selectedReceipt.transaction.utr}` : 'Receipt Viewer'}
+      >
+        {selectedReceipt && (
+          <div className="receipt-viewer">
+            <div className="receipt-info">
+              <div className="receipt-meta">
+                <span><strong>UTR:</strong> {selectedReceipt.transaction.utr}</span>
+                <span><strong>Amount:</strong> ₹{parseFloat(selectedReceipt.transaction.amount).toLocaleString()}</span>
+                <span><strong>Date:</strong> {formatDate(selectedReceipt.transaction.date)}</span>
+              </div>
+            </div>
+            
+            <div className="receipt-content">
+              {selectedReceipt.url.toLowerCase().includes('.pdf') ? (
+                <div className="pdf-viewer">
+                  <p>📄 PDF Receipt</p>
+                  <iframe
+                    src={selectedReceipt.url}
+                    width="100%"
+                    height="500px"
+                    title="Receipt PDF"
+                  />
+                  <div className="pdf-actions">
+                    <a
+                      href={selectedReceipt.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pdf-action-btn"
+                    >
+                      🔗 Open in New Tab
+                    </a>
+                    <a
+                      href={selectedReceipt.url}
+                      download
+                      className="pdf-action-btn"
+                    >
+                      💾 Download PDF
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="image-viewer">
+                  <img
+                    src={selectedReceipt.url}
+                    alt="Fee Receipt"
+                    className="receipt-image"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div className="image-error" style={{ display: 'none' }}>
+                    <p>❌ Failed to load image</p>
+                    <a
+                      href={selectedReceipt.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="fallback-link"
+                    >
+                      🔗 Open in New Tab
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </Modal>

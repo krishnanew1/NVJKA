@@ -175,6 +175,109 @@ class SemesterRegistrationViewSet(viewsets.ModelViewSet):
         # Save with the current student
         serializer.save(student=student_profile)
 
+    def create(self, request, *args, **kwargs):
+        """
+        Create semester registration with file upload support.
+        """
+        # Check if this is a multipart request with files
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            return self._create_with_files(request)
+        else:
+            return super().create(request, *args, **kwargs)
+    
+    def _create_with_files(self, request):
+        """Handle creation with file uploads."""
+        user = request.user
+        
+        # Ensure user is a student
+        if user.role != 'STUDENT':
+            raise PermissionDenied('Only students can create semester registrations.')
+        
+        # Get the student profile
+        try:
+            student_profile = user.student_profile
+        except StudentProfile.DoesNotExist:
+            return Response(
+                {'error': 'Student profile not found for this user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Extract basic registration data
+        registration_data = {
+            'student': student_profile,
+            'academic_year': request.data.get('academic_year'),
+            'semester': request.data.get('semester'),
+            'institute_fee_paid': request.data.get('institute_fee_paid') == 'true',
+            'hostel_fee_paid': request.data.get('hostel_fee_paid') == 'true',
+            'hostel_room_no': request.data.get('hostel_room_no') or None,
+            'total_credits': int(request.data.get('total_credits', 0))
+        }
+        
+        # Check for duplicate registration
+        if SemesterRegistration.objects.filter(
+            student=student_profile,
+            academic_year=registration_data['academic_year'],
+            semester=registration_data['semester']
+        ).exists():
+            return Response(
+                {'error': 'You have already registered for this semester.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Create the semester registration
+            semester_registration = SemesterRegistration.objects.create(**registration_data)
+            
+            # Process fee transactions
+            fee_transaction_count = 0
+            while f'fee_transactions[{fee_transaction_count}][utr_no]' in request.data:
+                txn_data = {
+                    'utr_no': request.data.get(f'fee_transactions[{fee_transaction_count}][utr_no]'),
+                    'bank_name': request.data.get(f'fee_transactions[{fee_transaction_count}][bank_name]'),
+                    'transaction_date': request.data.get(f'fee_transactions[{fee_transaction_count}][transaction_date]'),
+                    'amount': request.data.get(f'fee_transactions[{fee_transaction_count}][amount]'),
+                    'account_debited': request.data.get(f'fee_transactions[{fee_transaction_count}][account_debited]'),
+                    'account_credited': request.data.get(f'fee_transactions[{fee_transaction_count}][account_credited]'),
+                }
+                
+                # Handle receipt file
+                receipt_file = request.FILES.get(f'fee_transactions[{fee_transaction_count}][receipt_image]')
+                if receipt_file:
+                    txn_data['receipt_image'] = receipt_file
+                
+                FeeTransaction.objects.create(
+                    semester_registration=semester_registration,
+                    **txn_data
+                )
+                fee_transaction_count += 1
+            
+            # Process registered courses
+            course_count = 0
+            while f'registered_courses[{course_count}][subject_id]' in request.data:
+                course_data = {
+                    'subject_id': int(request.data.get(f'registered_courses[{course_count}][subject_id]')),
+                    'is_backlog': request.data.get(f'registered_courses[{course_count}][is_backlog]') == 'true'
+                }
+                
+                RegisteredCourse.objects.create(
+                    semester_registration=semester_registration,
+                    **course_data
+                )
+                course_count += 1
+            
+            # Serialize and return the created registration
+            serializer = self.get_serializer(semester_registration, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            # Clean up if something went wrong
+            if 'semester_registration' in locals():
+                semester_registration.delete()
+            return Response(
+                {'error': f'Failed to create registration: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 
 from rest_framework.views import APIView
@@ -361,6 +464,9 @@ class StudentRegistrationDetailView(APIView):
                     'amount': str(txn.amount),
                     'account_debited': txn.account_debited,
                     'account_credited': txn.account_credited,
+                    'receipt_image': txn.receipt_image.url if txn.receipt_image else None,
+                    'receipt_url': request.build_absolute_uri(txn.receipt_image.url) if txn.receipt_image else None,
+                    'has_receipt': bool(txn.receipt_image),
                     'created_at': txn.created_at.isoformat()
                 }
                 for txn in registration.fee_transactions.all()
