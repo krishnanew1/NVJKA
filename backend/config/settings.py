@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'apps.exams',
     'apps.faculty',
     'apps.students',
+    'apps.assignments.apps.AssignmentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -110,16 +111,27 @@ MySQLdb.version_info = (2, 2, 2, 'final', 0)
 MySQLdb.__version__ = '2.2.2'
 
 # 3. Database Configuration
-DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.mysql'),
-        'NAME': config('DB_NAME', default='academic_erp'),
-        'USER': config('DB_USER', default='root'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='3306'),
+# Default to SQLite for local dev unless explicitly configured.
+DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
+
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': config('DB_NAME', default='academic_erp'),
+            'USER': config('DB_USER', default='root'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='3306'),
+        }
+    }
 
 
 # Password validation

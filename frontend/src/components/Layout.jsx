@@ -65,9 +65,11 @@ const Layout = () => {
         return [
           { path: '/faculty', label: 'Dashboard', icon: '', isDashboard: true },
           { path: '/faculty/attendance', label: 'Attendance', icon: '' },
+          { path: '/faculty/assignments', label: 'Assignments', icon: '' },
           { path: '/faculty/exams', label: 'Exams', icon: '' },
           { path: '/faculty/reports', label: 'Reports', icon: '' },
           { path: '/faculty/timetable', label: 'My Timetable', icon: '' },
+          { path: '/faculty/works', label: 'My Works', icon: '' },
         ];
       case 'STUDENT':
         return [
@@ -75,6 +77,8 @@ const Layout = () => {
           { path: '/student/register', label: 'Semester Reg.', icon: '' },
           { path: '/student/timetable', label: 'Timetable', icon: '' },
           { path: '/student/attendance', label: 'My Attendance', icon: '' },
+          { path: '/student/assignments', label: 'Assignments', icon: '' },
+          { path: '/student/faculty', label: 'Faculty', icon: '' },
           { path: '/student/grades', label: 'Grades', icon: '' },
           { path: '/student/reports', label: 'Reports', icon: '' },
         ];

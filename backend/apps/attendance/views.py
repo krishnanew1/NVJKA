@@ -77,7 +77,15 @@ class BulkAttendanceView(APIView):
             except Exception:
                 return Response({'error': 'Faculty profile not found for this user.'}, status=status.HTTP_403_FORBIDDEN)
 
-            if not ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists():
+            # Support both assignment mechanisms:
+            # - `ClassAssignment` records (older / more explicit mapping)
+            # - `Subject.faculty` FK (used by current admin UI)
+            is_assigned = (
+                ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists()
+                or subject.faculty_id == faculty_profile.id
+            )
+
+            if not is_assigned:
                 return Response(
                     {'error': 'You are not assigned to this subject and cannot mark its attendance.'},
                     status=status.HTTP_403_FORBIDDEN

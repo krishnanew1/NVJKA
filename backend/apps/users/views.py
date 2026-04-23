@@ -5,12 +5,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import CustomUser, StudentProfile, FacultyProfile
-from .serializers import StudentProfileSerializer, FacultyProfileSerializer
+from .models import CustomUser, StudentProfile, FacultyProfile, FacultyWork
+from .serializers import StudentProfileSerializer, FacultyProfileSerializer, FacultyWorkSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -492,3 +493,56 @@ class FacultyListView(APIView):
                 },
                 status=status.HTTP_200_OK  # Still return 200 to prevent frontend error state
             )
+
+
+class FacultyWorkListCreateView(APIView):
+    """
+    Faculty manages their own works (papers/projects) shown under their bio.
+    """
+
+    permission_classes = [IsFaculty]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request):
+        works = FacultyWork.objects.filter(faculty=request.user.faculty_profile).order_by('-created_at')
+        serializer = FacultyWorkSerializer(works, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = FacultyWorkSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            work = serializer.save(faculty=request.user.faculty_profile)
+            out = FacultyWorkSerializer(work, context={'request': request})
+            return Response(out.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FacultyWorkDetailView(APIView):
+    permission_classes = [IsFaculty]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self, request, pk):
+        return get_object_or_404(FacultyWork, pk=pk, faculty=request.user.faculty_profile)
+
+    def patch(self, request, pk):
+        work = self.get_object(request, pk)
+        serializer = FacultyWorkSerializer(work, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        work = self.get_object(request, pk)
+        work.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FacultyPublicWorksView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, faculty_id):
+        faculty = get_object_or_404(FacultyProfile, pk=faculty_id)
+        works = FacultyWork.objects.filter(faculty=faculty, is_public=True).order_by('-created_at')
+        serializer = FacultyWorkSerializer(works, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

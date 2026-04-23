@@ -2,7 +2,7 @@
 Serializers for user profiles and authentication.
 """
 from rest_framework import serializers
-from .models import CustomUser, StudentProfile, FacultyProfile
+from .models import CustomUser, StudentProfile, FacultyProfile, FacultyWork
 from apps.academics.models import Department
 
 
@@ -189,3 +189,32 @@ class FacultyProfileSerializer(serializers.ModelSerializer):
         if FacultyProfile.objects.filter(employee_id=value).exclude(pk=instance.pk if instance else None).exists():
             raise serializers.ValidationError("This employee ID is already in use.")
         return value
+
+
+class FacultyWorkSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FacultyWork
+        fields = [
+            'id',
+            'faculty',
+            'kind',
+            'title',
+            'description',
+            'external_url',
+            'file',
+            'file_url',
+            'is_public',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'faculty', 'file_url', 'created_at', 'updated_at']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if not obj.file:
+            return None
+        if request:
+            return request.build_absolute_uri(obj.file.url)
+        return obj.file.url

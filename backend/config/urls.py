@@ -69,6 +69,7 @@ urlpatterns = [
     path('api/attendance/', include('apps.attendance.urls')),
     path('api/faculty/', include('apps.faculty.urls')),
     path('api/exams/', include('apps.exams.urls')),
+    path('api/', include('apps.assignments.urls')),
     
     # Swagger/OpenAPI documentation endpoints
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),

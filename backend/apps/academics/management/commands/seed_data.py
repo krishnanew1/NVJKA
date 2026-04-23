@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     }
                 )
                 
-                self.stdout.write(self.style.SUCCESS(f'✓ Created departments: {cs_dept.code}, {math_dept.code}'))
+                self.stdout.write(self.style.SUCCESS(f'OK Created departments: {cs_dept.code}, {math_dept.code}'))
 
                 # Create Courses
                 self.stdout.write('Creating courses...')
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                     }
                 )
                 
-                self.stdout.write(self.style.SUCCESS(f'✓ Created courses: {btech_cs.code}, {msc_math.code}'))
+                self.stdout.write(self.style.SUCCESS(f'OK Created courses: {btech_cs.code}, {msc_math.code}'))
 
                 # Create Subjects
                 self.stdout.write('Creating subjects...')
@@ -102,7 +102,7 @@ class Command(BaseCommand):
                     }
                 )
                 
-                self.stdout.write(self.style.SUCCESS(f'✓ Created subjects: {ds_subject.code}, {algo_subject.code}, {db_subject.code}'))
+                self.stdout.write(self.style.SUCCESS(f'OK Created subjects: {ds_subject.code}, {algo_subject.code}, {db_subject.code}'))
 
                 # Create Users
                 self.stdout.write('Creating users...')
@@ -123,9 +123,9 @@ class Command(BaseCommand):
                 if created:
                     admin_user.set_password('Admin@2026')
                     admin_user.save()
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created admin user: {admin_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created admin user: {admin_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Admin user already exists: {admin_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Admin user already exists: {admin_user.username}'))
 
                 # Faculty user
                 faculty_user, created = CustomUser.objects.get_or_create(
@@ -142,9 +142,9 @@ class Command(BaseCommand):
                 if created:
                     faculty_user.set_password('Faculty@2026')
                     faculty_user.save()
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created faculty user: {faculty_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created faculty user: {faculty_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Faculty user already exists: {faculty_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Faculty user already exists: {faculty_user.username}'))
 
                 # Create Faculty Profile
                 faculty_profile, created = FacultyProfile.objects.get_or_create(
@@ -158,9 +158,9 @@ class Command(BaseCommand):
                     }
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created faculty profile for: {faculty_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created faculty profile for: {faculty_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Faculty profile already exists for: {faculty_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Faculty profile already exists for: {faculty_user.username}'))
 
                 # Student user
                 student_user, created = CustomUser.objects.get_or_create(
@@ -176,9 +176,9 @@ class Command(BaseCommand):
                 if created:
                     student_user.set_password('Student@2026')
                     student_user.save()
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created student user: {student_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created student user: {student_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Student user already exists: {student_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Student user already exists: {student_user.username}'))
 
                 # Create Student Profile
                 student_profile, created = StudentProfile.objects.get_or_create(
@@ -191,9 +191,9 @@ class Command(BaseCommand):
                     }
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created student profile for: {student_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created student profile for: {student_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Student profile already exists for: {student_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Student profile already exists for: {student_user.username}'))
 
                 # Create Class Assignments for Faculty
                 self.stdout.write('Creating class assignments...')
@@ -206,9 +206,9 @@ class Command(BaseCommand):
                     defaults={}
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Assigned {ds_subject.code} to {faculty_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Assigned {ds_subject.code} to {faculty_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Assignment already exists: {ds_subject.code}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Assignment already exists: {ds_subject.code}'))
 
                 assignment2, created = ClassAssignment.objects.get_or_create(
                     faculty=faculty_profile,
@@ -218,9 +218,9 @@ class Command(BaseCommand):
                     defaults={}
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Assigned {algo_subject.code} to {faculty_user.username}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Assigned {algo_subject.code} to {faculty_user.username}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Assignment already exists: {algo_subject.code}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Assignment already exists: {algo_subject.code}'))
 
                 # Create Student Enrollment
                 from apps.students.models import Enrollment
@@ -234,9 +234,9 @@ class Command(BaseCommand):
                     }
                 )
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Enrolled {student_user.username} in {btech_cs.code}'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Enrolled {student_user.username} in {btech_cs.code}'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Enrollment already exists for {student_user.username}'))
+                    self.stdout.write(self.style.WARNING(f'WARN Enrollment already exists for {student_user.username}'))
 
                 # Create Attendance Records for Student
                 self.stdout.write('Creating attendance records...')
@@ -293,9 +293,9 @@ class Command(BaseCommand):
                         attendance_records_created += 1
                 
                 if attendance_records_created > 0:
-                    self.stdout.write(self.style.SUCCESS(f'✓ Created {attendance_records_created} attendance records'))
+                    self.stdout.write(self.style.SUCCESS(f'OK Created {attendance_records_created} attendance records'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'⚠ Attendance records already exist'))
+                    self.stdout.write(self.style.WARNING(f'WARN Attendance records already exist'))
 
                 self.stdout.write(self.style.SUCCESS('\n' + '='*60))
                 self.stdout.write(self.style.SUCCESS('Database seeding completed successfully!'))
@@ -307,5 +307,5 @@ class Command(BaseCommand):
                 self.stdout.write('\nYou can now log in with these credentials!')
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'\n✗ Error during seeding: {str(e)}'))
+            self.stdout.write(self.style.ERROR(f'\nERROR during seeding: {str(e)}'))
             raise

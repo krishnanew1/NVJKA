@@ -12,7 +12,10 @@ from .views import (
     FacultyDashboardView,
     RegisterUserView,
     StudentListView,
-    FacultyListView
+    FacultyListView,
+    FacultyWorkListCreateView,
+    FacultyWorkDetailView,
+    FacultyPublicWorksView,
 )
 
 app_name = 'users'
@@ -28,6 +31,11 @@ urlpatterns = [
     # List endpoints
     path('students/', StudentListView.as_view(), name='student_list'),
     path('faculty/', FacultyListView.as_view(), name='faculty_list'),
+
+    # Faculty works (research papers/projects)
+    path('faculty/works/', FacultyWorkListCreateView.as_view(), name='faculty_works'),
+    path('faculty/works/<int:pk>/', FacultyWorkDetailView.as_view(), name='faculty_work_detail'),
+    path('faculty/<int:faculty_id>/works/', FacultyPublicWorksView.as_view(), name='faculty_public_works'),
     
     # Dashboard endpoints
     path('dashboard/student/', StudentDashboardView.as_view(), name='student_dashboard'),

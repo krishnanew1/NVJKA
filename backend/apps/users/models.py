@@ -225,5 +225,40 @@ class FacultyProfile(models.Model):
         ordering = ['department', 'designation']
 
 
+class FacultyWork(models.Model):
+    KIND_CHOICES = [
+        ('PAPER', 'Research Paper'),
+        ('PROJECT', 'Project'),
+        ('OTHER', 'Other'),
+    ]
+
+    faculty = models.ForeignKey(
+        FacultyProfile,
+        on_delete=models.CASCADE,
+        related_name='works',
+    )
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='PAPER')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    external_url = models.URLField(blank=True)
+    file = models.FileField(
+        upload_to='faculty_works/%Y/%m/',
+        null=True,
+        blank=True,
+    )
+    is_public = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['faculty', 'is_public']),
+        ]
+
+    def __str__(self):
+        return f"{self.faculty_id} - {self.title}"
+
+
 # Import audit model
 from apps.users.audit_models import AuditLog

@@ -6,8 +6,10 @@ import './StudentTimetable.css';
 
 const FacultyTimetable = () => {
   const [loading, setLoading] = useState(true);
-  const [timetables, setTimetables] = useState([]);
+  const [pdfs, setPdfs] = useState([]);
+  const [entries, setEntries] = useState([]);
   const [error, setError] = useState('');
+  const [facultyProfile, setFacultyProfile] = useState(null);
 
   // Toast state
   const [toast, setToast] = useState({
@@ -24,12 +26,25 @@ const FacultyTimetable = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await api.get('/api/academics/timetables/pdfs/');
-      setTimetables(response.data);
+      const profileRes = await api.get('/api/users/dashboard/faculty/');
+      setFacultyProfile(profileRes.data);
+      const facultyId = profileRes.data?.id;
+
+      const [pdfRes, entriesRes] = await Promise.all([
+        api.get('/api/academics/timetables/pdfs/').catch(() => ({ data: [] })),
+        facultyId
+          ? api.get('/api/academics/timetables/', { params: { faculty_id: facultyId, is_active: true } }).catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      setPdfs(pdfRes.data || []);
+      const eData = entriesRes.data?.results || entriesRes.data || [];
+      setEntries(Array.isArray(eData) ? eData : []);
     } catch (err) {
       console.error('Error fetching timetables:', err);
       if (err.response?.status === 404) {
-        setTimetables([]);
+        setPdfs([]);
+        setEntries([]);
       } else {
         setError('Failed to load timetables. Please try again.');
       }
@@ -62,6 +77,19 @@ const FacultyTimetable = () => {
     );
   }
 
+  const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const grouped = entries.reduce((acc, e) => {
+    const day = e.day_of_week || 'UNKNOWN';
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(e);
+    return acc;
+  }, {});
+  dayOrder.forEach(d => {
+    if (grouped[d]) {
+      grouped[d] = grouped[d].slice().sort((a, b) => String(a.start_time).localeCompare(String(b.start_time)));
+    }
+  });
+
   return (
     <div className="student-timetable">
       <Toast
@@ -76,9 +104,57 @@ const FacultyTimetable = () => {
         <p>View your teaching schedule and timetable</p>
       </div>
 
-      {timetables.length > 0 ? (
+      {/* Structured timetable entries */}
+      {entries.length > 0 ? (
+        <div className="timetables-grid" style={{ gridTemplateColumns: '1fr' }}>
+          {dayOrder.filter(d => grouped[d] && grouped[d].length > 0).map(day => (
+            <div key={day} className="timetable-card">
+              <div className="card-header">
+                <div className="header-left">
+                  <div className="card-icon">🗓️</div>
+                  <h3 className="card-title">{day}</h3>
+                </div>
+                <div className="card-badge">{grouped[day].length} classes</div>
+              </div>
+              <div className="card-body">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {grouped[day].map(e => (
+                    <div key={e.id} className="detail-item" style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                      <div>
+                        <div style={{ fontWeight: 700 }}>
+                          {e.start_time} - {e.end_time} • {e.subject?.code} ({e.class_name})
+                        </div>
+                        <div style={{ opacity: 0.85 }}>
+                          {e.subject?.name} • {e.classroom || e.room_number || '—'}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', opacity: 0.8 }}>
+                        <div>{e.academic_year}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-icon">🗓️</div>
+          <p>No structured timetable entries yet</p>
+          <p className="empty-subtext">If your admin uploads entries, they will show here.</p>
+        </div>
+      )}
+
+      {/* PDF fallback */}
+      <div className="page-header" style={{ marginTop: 18 }}>
+        <h2 style={{ margin: 0 }}>📄 Timetable PDFs</h2>
+        <p style={{ marginTop: 6 }}>Optional PDF schedules uploaded by the administration</p>
+      </div>
+
+      {pdfs.length > 0 ? (
         <div className="timetables-grid">
-          {timetables.map(timetable => (
+          {pdfs.map(timetable => (
             <div key={timetable.id} className="timetable-card">
               <div className="card-header">
                 <div className="header-left">
@@ -127,9 +203,8 @@ const FacultyTimetable = () => {
         </div>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">📅</div>
-          <p>No timetables available yet</p>
-          <p className="empty-subtext">Your timetable will appear here once uploaded by the administration</p>
+          <div className="empty-icon">📄</div>
+          <p>No timetable PDFs available</p>
         </div>
       )}
     </div>
