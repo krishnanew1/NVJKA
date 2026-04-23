@@ -90,7 +90,9 @@ const Login = () => {
       console.error('Login error:', err);
       
       if (err.response?.status === 401) {
-        setError('Invalid username or password. Please try again.');
+        setError('Invalid username or password. Please check your credentials and try again.');
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
       } else if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else if (err.message === 'Network Error') {

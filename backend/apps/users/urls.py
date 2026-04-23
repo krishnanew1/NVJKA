@@ -12,7 +12,9 @@ from .views import (
     FacultyDashboardView,
     RegisterUserView,
     StudentListView,
+    StudentDetailView,
     FacultyListView,
+    FacultyDetailView,
     FacultyWorkListCreateView,
     FacultyWorkDetailView,
     FacultyPublicWorksView,
@@ -30,7 +32,9 @@ urlpatterns = [
     
     # List endpoints
     path('students/', StudentListView.as_view(), name='student_list'),
+    path('students/<int:pk>/', StudentDetailView.as_view(), name='student_detail'),
     path('faculty/', FacultyListView.as_view(), name='faculty_list'),
+    path('faculty/<int:pk>/', FacultyDetailView.as_view(), name='faculty_detail'),
 
     # Faculty works (research papers/projects)
     path('faculty/works/', FacultyWorkListCreateView.as_view(), name='faculty_works'),

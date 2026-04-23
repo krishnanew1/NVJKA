@@ -167,7 +167,11 @@ class SemesterRegistrationTestCase(TestCase):
         response = self.client.post('/api/students/semester-register/', data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('fee_transactions', response.data)
+        # Check if the error is in the response data structure
+        if 'detail' in response.data and 'fee_transactions' in response.data['detail']:
+            self.assertIn('fee_transactions', response.data['detail'])
+        else:
+            self.assertIn('fee_transactions', response.data)
     
     def test_student_can_only_view_own_registrations(self):
         """Test that students can only see their own registrations."""
@@ -209,8 +213,13 @@ class SemesterRegistrationTestCase(TestCase):
         response = self.client.get('/api/students/semester-register/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['id'], reg1.id)
+        # Handle paginated response
+        if 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], reg1.id)
     
     def test_admin_can_view_all_registrations(self):
         """Test that admin can view all registrations."""
@@ -227,7 +236,12 @@ class SemesterRegistrationTestCase(TestCase):
         response = self.client.get('/api/students/semester-register/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        # Handle paginated response
+        if 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertEqual(len(results), 1)
     
     def test_non_student_cannot_create_registration(self):
         """Test that non-students cannot create semester registrations."""

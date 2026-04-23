@@ -16,7 +16,11 @@ const AdminFaculty = () => {
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState({ username: '', password: '', email: '' });
+  const [facultyToDelete, setFacultyToDelete] = useState(null);
 
   // Form state
   const [facultyForm, setFacultyForm] = useState({
@@ -135,11 +139,22 @@ const AdminFaculty = () => {
         }
       };
 
-      await api.post('/api/users/register/', data);
+      const response = await api.post('/api/users/register/', data);
+      
+      // Store credentials to show in modal
+      const createdUsername = response.data.user?.username || username;
+      setCreatedCredentials({
+        username: createdUsername,
+        password: facultyForm.password,
+        email: facultyForm.email
+      });
+      
       setIsAddModalOpen(false);
       resetForm();
       await fetchData();
-      showToast('Faculty member added successfully!', 'success');
+      
+      // Show credentials modal
+      setIsCredentialsModalOpen(true);
     } catch (err) {
       console.error('Error adding faculty:', err);
       const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to add faculty member.';
@@ -156,6 +171,36 @@ const AdminFaculty = () => {
       email: '',
       password: ''
     });
+  };
+
+  // Delete faculty handlers
+  const handleDeleteClick = (member) => {
+    setFacultyToDelete(member);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!facultyToDelete) return;
+
+    setIsSubmitting(true);
+    try {
+      await api.delete(`/api/users/faculty/${facultyToDelete.id}/`);
+      setIsDeleteModalOpen(false);
+      setFacultyToDelete(null);
+      await fetchData();
+      showToast(`${facultyToDelete.user?.full_name || facultyToDelete.user?.username} deleted successfully!`, 'success');
+    } catch (err) {
+      console.error('Error deleting faculty:', err);
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to delete faculty member.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setFacultyToDelete(null);
   };
 
   // Subject assignment handlers
@@ -291,6 +336,7 @@ const AdminFaculty = () => {
                     <th>Designation</th>
                     <th>Department</th>
                     <th>Subjects</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,6 +357,15 @@ const AdminFaculty = () => {
                           <span className="badge badge-info">
                             {assignedSubjects.length} subject{assignedSubjects.length !== 1 ? 's' : ''}
                           </span>
+                        </td>
+                        <td>
+                          <button
+                            className="btn-small btn-danger"
+                            onClick={() => handleDeleteClick(member)}
+                            title="Delete faculty member"
+                          >
+                            🗑️ Delete
+                          </button>
                         </td>
                       </tr>
                     );
@@ -530,6 +585,224 @@ const AdminFaculty = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Credentials Display Modal */}
+      <Modal 
+        isOpen={isCredentialsModalOpen} 
+        onClose={() => setIsCredentialsModalOpen(false)} 
+        title="✅ Faculty Account Created Successfully"
+      >
+        <div style={{ padding: '20px' }}>
+          <div style={{ 
+            backgroundColor: '#f0f9ff', 
+            border: '2px solid #3b82f6', 
+            borderRadius: '8px', 
+            padding: '20px',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ 
+              color: '#1e40af', 
+              marginBottom: '16px',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}>
+              📋 Login Credentials
+            </h3>
+            <div style={{ marginBottom: '12px' }}>
+              <strong style={{ color: '#374151', display: 'block', marginBottom: '4px' }}>
+                Email:
+              </strong>
+              <code style={{ 
+                backgroundColor: '#fff', 
+                padding: '8px 12px', 
+                borderRadius: '4px',
+                display: 'block',
+                fontSize: '14px',
+                border: '1px solid #e5e7eb'
+              }}>
+                {createdCredentials.email}
+              </code>
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong style={{ color: '#374151', display: 'block', marginBottom: '4px' }}>
+                Username (for login):
+              </strong>
+              <code style={{ 
+                backgroundColor: '#fff', 
+                padding: '8px 12px', 
+                borderRadius: '4px',
+                display: 'block',
+                fontSize: '14px',
+                border: '1px solid #e5e7eb',
+                color: '#dc2626',
+                fontWeight: '600'
+              }}>
+                {createdCredentials.username}
+              </code>
+            </div>
+            <div>
+              <strong style={{ color: '#374151', display: 'block', marginBottom: '4px' }}>
+                Temporary Password:
+              </strong>
+              <code style={{ 
+                backgroundColor: '#fff', 
+                padding: '8px 12px', 
+                borderRadius: '4px',
+                display: 'block',
+                fontSize: '14px',
+                border: '1px solid #e5e7eb',
+                color: '#dc2626',
+                fontWeight: '600'
+              }}>
+                {createdCredentials.password}
+              </code>
+            </div>
+          </div>
+          
+          <div style={{ 
+            backgroundColor: '#fef3c7', 
+            border: '1px solid #f59e0b', 
+            borderRadius: '6px', 
+            padding: '12px',
+            marginBottom: '20px'
+          }}>
+            <p style={{ 
+              margin: 0, 
+              fontSize: '13px', 
+              color: '#92400e',
+              lineHeight: '1.5'
+            }}>
+              ⚠️ <strong>Important:</strong> Please share these credentials with the faculty member. 
+              They must use the <strong>username</strong> (not email) to login. 
+              The faculty member can change their password after first login.
+            </p>
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                // Copy credentials to clipboard
+                const text = `Faculty Login Credentials\n\nUsername: ${createdCredentials.username}\nPassword: ${createdCredentials.password}\n\nPlease use the username (not email) to login.`;
+                navigator.clipboard.writeText(text).then(() => {
+                  showToast('Credentials copied to clipboard!', 'success');
+                });
+              }}
+              style={{ marginRight: '10px' }}
+            >
+              📋 Copy Credentials
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setIsCredentialsModalOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={handleDeleteCancel} 
+        title="⚠️ Confirm Delete Faculty"
+      >
+        <div style={{ padding: '20px' }}>
+          {facultyToDelete && (
+            <>
+              <div style={{ 
+                backgroundColor: '#fef2f2', 
+                border: '2px solid #ef4444', 
+                borderRadius: '8px', 
+                padding: '16px',
+                marginBottom: '20px'
+              }}>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '15px', 
+                  color: '#991b1b',
+                  lineHeight: '1.6'
+                }}>
+                  <strong>Warning:</strong> You are about to delete the following faculty member:
+                </p>
+                <div style={{ 
+                  marginTop: '12px',
+                  padding: '12px',
+                  backgroundColor: '#fff',
+                  borderRadius: '4px',
+                  border: '1px solid #fecaca'
+                }}>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Name:</strong> {facultyToDelete.user?.full_name || facultyToDelete.user?.username}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Employee ID:</strong> {facultyToDelete.employee_id}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Email:</strong> {facultyToDelete.user?.email}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Department:</strong> {facultyToDelete.department?.name || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ 
+                backgroundColor: '#fffbeb', 
+                border: '1px solid #f59e0b', 
+                borderRadius: '6px', 
+                padding: '12px',
+                marginBottom: '20px'
+              }}>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '13px', 
+                  color: '#92400e',
+                  lineHeight: '1.5'
+                }}>
+                  ⚠️ <strong>This action cannot be undone.</strong> Deleting this faculty member will:
+                </p>
+                <ul style={{ 
+                  margin: '8px 0 0 0',
+                  paddingLeft: '20px',
+                  fontSize: '13px',
+                  color: '#92400e',
+                  lineHeight: '1.5'
+                }}>
+                  <li>Remove their user account and profile</li>
+                  <li>Delete their class assignments</li>
+                  <li>Delete their research papers and projects</li>
+                  <li>Unassign them from all subjects</li>
+                  <li>Remove their attendance and grade records</li>
+                </ul>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleDeleteCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteConfirm}
+                  disabled={isSubmitting}
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                >
+                  {isSubmitting ? 'Deleting...' : 'Yes, Delete Faculty'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </Modal>
     </div>
   );

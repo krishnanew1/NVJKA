@@ -18,6 +18,21 @@ const StudentRegistration = () => {
     total_credits: 0
   });
 
+  // Semester options
+  const semesterOptions = [
+    { value: 'Jan-Jun 2026', label: 'Jan-Jun 2026' },
+    { value: 'Jul-Dec 2026', label: 'Jul-Dec 2026' },
+    { value: 'Jan-Jun 2027', label: 'Jan-Jun 2027' },
+    { value: 'Jul-Dec 2027', label: 'Jul-Dec 2027' }
+  ];
+
+  // Academic year options
+  const academicYearOptions = [
+    { value: '2025-26', label: '2025-26' },
+    { value: '2026-27', label: '2026-27' },
+    { value: '2027-28', label: '2027-28' }
+  ];
+
   // Fee transactions state (max 3)
   const [feeTransactions, setFeeTransactions] = useState([]);
   const [receiptFiles, setReceiptFiles] = useState({});
@@ -30,7 +45,6 @@ const StudentRegistration = () => {
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   // Toast state
   const [toast, setToast] = useState({
@@ -53,7 +67,6 @@ const StudentRegistration = () => {
     } catch (err) {
       console.error('Error fetching subjects:', err);
       showToast('Failed to load subjects', 'error');
-      setError('Failed to load subjects. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -205,41 +218,69 @@ const StudentRegistration = () => {
         }))
       ];
 
-      // Use FormData for file upload
-      const submitData = new FormData();
-      submitData.append('academic_year', formData.academic_year);
-      submitData.append('semester', formData.semester);
-      submitData.append('institute_fee_paid', formData.institute_fee_paid);
-      submitData.append('hostel_fee_paid', formData.hostel_fee_paid);
-      if (formData.hostel_room_no) submitData.append('hostel_room_no', formData.hostel_room_no);
-      submitData.append('total_credits', totalCredits);
+      // Prepare fee transactions
+      const fee_transactions = feeTransactions
+        .filter(txn => txn.utr_no && txn.bank_name && txn.transaction_date && txn.amount)
+        .map(txn => ({
+          utr_no: txn.utr_no,
+          bank_name: txn.bank_name,
+          transaction_date: txn.transaction_date,
+          amount: parseFloat(txn.amount),
+          account_debited: txn.account_debited,
+          account_credited: txn.account_credited
+        }));
 
-      // Add fee transactions with receipts
-      feeTransactions.forEach((txn, index) => {
-        if (txn.utr_no && txn.bank_name && txn.transaction_date && txn.amount) {
-          submitData.append(`fee_transactions[${index}][utr_no]`, txn.utr_no);
-          submitData.append(`fee_transactions[${index}][bank_name]`, txn.bank_name);
-          submitData.append(`fee_transactions[${index}][transaction_date]`, txn.transaction_date);
-          submitData.append(`fee_transactions[${index}][amount]`, txn.amount);
-          submitData.append(`fee_transactions[${index}][account_debited]`, txn.account_debited);
-          submitData.append(`fee_transactions[${index}][account_credited]`, txn.account_credited);
+      // Check if we have any file uploads
+      const hasFileUploads = Object.keys(receiptFiles).length > 0;
+
+      if (hasFileUploads) {
+        // Use FormData for file uploads
+        const submitData = new FormData();
+        submitData.append('academic_year', formData.academic_year);
+        submitData.append('semester', formData.semester);
+        submitData.append('institute_fee_paid', formData.institute_fee_paid);
+        submitData.append('hostel_fee_paid', formData.hostel_fee_paid);
+        if (formData.hostel_room_no) submitData.append('hostel_room_no', formData.hostel_room_no);
+        submitData.append('total_credits', totalCredits);
+
+        // Add fee transactions with receipts
+        fee_transactions.forEach((txn, index) => {
+          Object.keys(txn).forEach(key => {
+            submitData.append(`fee_transactions[${index}][${key}]`, txn[key]);
+          });
           
           // Add receipt file if uploaded
           if (receiptFiles[index]) {
             submitData.append(`fee_transactions[${index}][receipt_image]`, receiptFiles[index]);
           }
-        }
-      });
+        });
 
-      // Add registered courses
-      registered_courses.forEach((course, index) => {
-        submitData.append(`registered_courses[${index}][subject_id]`, course.subject_id);
-        submitData.append(`registered_courses[${index}][is_backlog]`, course.is_backlog);
-      });
+        // Add registered courses
+        registered_courses.forEach((course, index) => {
+          submitData.append(`registered_courses[${index}][subject_id]`, course.subject_id);
+          submitData.append(`registered_courses[${index}][is_backlog]`, course.is_backlog);
+        });
 
-      await api.post('/api/students/semester-register/', submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+        await api.post('/api/students/semester-register/', submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        // Use JSON for simpler data without files
+        const submitData = {
+          academic_year: formData.academic_year,
+          semester: formData.semester,
+          institute_fee_paid: formData.institute_fee_paid,
+          hostel_fee_paid: formData.hostel_fee_paid,
+          hostel_room_no: formData.hostel_room_no || null,
+          total_credits: totalCredits,
+          fee_transactions: fee_transactions,
+          registered_courses: registered_courses
+        };
+
+        await api.post('/api/students/semester-register/', submitData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
       
       showToast('Semester registration successful!', 'success');
       
@@ -250,9 +291,51 @@ const StudentRegistration = () => {
 
     } catch (err) {
       console.error('Error submitting registration:', err);
-      const errorMessage = err.response?.data?.detail || 
-                          err.response?.data?.message ||
-                          'Failed to submit registration. Please try again.';
+      
+      // Handle different types of errors
+      let errorMessage = 'Failed to submit registration. Please try again.';
+      
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Handle validation errors
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (typeof errorData === 'object') {
+          // Check for common error fields in order of priority
+          if (errorData.detail && typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail;
+          } else if (errorData.message && typeof errorData.message === 'string') {
+            errorMessage = errorData.message;
+          } else if (errorData.non_field_errors) {
+            if (Array.isArray(errorData.non_field_errors)) {
+              errorMessage = errorData.non_field_errors.join(', ');
+            } else if (typeof errorData.non_field_errors === 'string') {
+              errorMessage = errorData.non_field_errors;
+            } else {
+              errorMessage = 'Validation error occurred.';
+            }
+          } else {
+            // Handle field-specific errors
+            const fieldErrors = [];
+            Object.keys(errorData).forEach(field => {
+              const fieldValue = errorData[field];
+              if (Array.isArray(fieldValue)) {
+                fieldErrors.push(`${field}: ${fieldValue.join(', ')}`);
+              } else if (typeof fieldValue === 'string') {
+                fieldErrors.push(`${field}: ${fieldValue}`);
+              } else if (typeof fieldValue === 'object' && fieldValue !== null) {
+                // Handle nested error objects
+                fieldErrors.push(`${field}: ${JSON.stringify(fieldValue)}`);
+              }
+            });
+            if (fieldErrors.length > 0) {
+              errorMessage = fieldErrors.join('; ');
+            }
+          }
+        }
+      }
+      
       showToast(errorMessage, 'error');
     } finally {
       setSubmitting(false);
@@ -308,32 +391,42 @@ const StudentRegistration = () => {
               <label htmlFor="academic_year" className="form-label">
                 Academic Year <span className="required">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 id="academic_year"
                 name="academic_year"
                 value={formData.academic_year}
                 onChange={handleInputChange}
-                placeholder="e.g., 2025-26"
                 className="form-input"
                 required
-              />
+              >
+                <option value="">Select Academic Year</option>
+                {academicYearOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
               <label htmlFor="semester" className="form-label">
                 Semester <span className="required">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 id="semester"
                 name="semester"
                 value={formData.semester}
                 onChange={handleInputChange}
-                placeholder="e.g., Jan-Jun 2026"
                 className="form-input"
                 required
-              />
+              >
+                <option value="">Select Semester</option>
+                {semesterOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

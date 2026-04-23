@@ -455,6 +455,141 @@ class StudentListView(APIView):
             )
 
 
+class StudentDetailView(APIView):
+    """
+    API endpoint to retrieve, update, or delete a specific student.
+    
+    Permissions: IsAuthenticated
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self, pk):
+        """Get student profile by ID."""
+        try:
+            return StudentProfile.objects.select_related('user', 'department', 'program').get(pk=pk)
+        except StudentProfile.DoesNotExist:
+            return None
+    
+    def get(self, request, pk):
+        """Get a specific student's profile."""
+        student = self.get_object(pk)
+        if not student:
+            return Response(
+                {
+                    'error': 'Student not found',
+                    'detail': 'No student exists with this ID.'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = StudentProfileSerializer(student)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def patch(self, request, pk):
+        """
+        Update a student's profile (partial update).
+        
+        Allows updating student profile information and associated user details.
+        """
+        student = self.get_object(pk)
+        if not student:
+            return Response(
+                {
+                    'error': 'Student not found',
+                    'detail': 'No student exists with this ID.'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Extract user data if provided
+        user_data = request.data.pop('user', None)
+        
+        # Update user information if provided
+        if user_data:
+            user = student.user
+            if 'first_name' in user_data:
+                user.first_name = user_data['first_name']
+            if 'last_name' in user_data:
+                user.last_name = user_data['last_name']
+            if 'email' in user_data:
+                # Check if email is already in use by another user
+                if CustomUser.objects.filter(email=user_data['email']).exclude(id=user.id).exists():
+                    return Response(
+                        {
+                            'error': 'Email already in use',
+                            'detail': 'This email is already registered to another user.'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                user.email = user_data['email']
+            if 'phone_number' in user_data:
+                user.phone_number = user_data['phone_number']
+            user.save()
+        
+        # Update student profile
+        serializer = StudentProfileSerializer(
+            student,
+            data=request.data,
+            partial=True
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @transaction.atomic
+    def delete(self, request, pk):
+        """
+        Delete a student and their associated user account.
+        
+        This will:
+        1. Delete the student profile
+        2. Delete the associated user account
+        3. Cascade delete related records (enrollments, registrations, etc.)
+        4. Set NULL on records with SET_NULL (attendance, grades, etc.)
+        """
+        student = self.get_object(pk)
+        if not student:
+            return Response(
+                {
+                    'error': 'Student not found',
+                    'detail': 'No student exists with this ID.'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Store info for response
+        student_name = student.user.get_full_name() or student.user.username
+        reg_no = student.reg_no
+        user = student.user
+        
+        try:
+            # Delete student profile (will cascade to related records)
+            student.delete()
+            
+            # Delete the user account
+            user.delete()
+            
+            return Response(
+                {
+                    'message': 'Student deleted successfully',
+                    'detail': f'{student_name} (Reg No: {reg_no}) has been removed from the system.'
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {
+                    'error': 'Failed to delete student',
+                    'detail': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class FacultyListView(APIView):
     """
     API endpoint to list all faculty members.
@@ -492,6 +627,86 @@ class FacultyListView(APIView):
                     'error': 'Failed to fetch faculty'
                 },
                 status=status.HTTP_200_OK  # Still return 200 to prevent frontend error state
+            )
+
+
+class FacultyDetailView(APIView):
+    """
+    API endpoint to retrieve, update, or delete a specific faculty member.
+    
+    Permissions: IsAuthenticated
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self, pk):
+        """Get faculty profile by ID."""
+        try:
+            return FacultyProfile.objects.select_related('user', 'department').get(pk=pk)
+        except FacultyProfile.DoesNotExist:
+            return None
+    
+    def get(self, request, pk):
+        """Get a specific faculty member's profile."""
+        faculty = self.get_object(pk)
+        if not faculty:
+            return Response(
+                {
+                    'error': 'Faculty not found',
+                    'detail': 'No faculty member exists with this ID.'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = FacultyProfileSerializer(faculty)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def delete(self, request, pk):
+        """
+        Delete a faculty member and their associated user account.
+        
+        This will:
+        1. Delete the faculty profile
+        2. Delete the associated user account
+        3. Cascade delete related records (class assignments, works, etc.)
+        4. Set NULL on records with SET_NULL (attendance marked_by, grades graded_by, etc.)
+        """
+        faculty = self.get_object(pk)
+        if not faculty:
+            return Response(
+                {
+                    'error': 'Faculty not found',
+                    'detail': 'No faculty member exists with this ID.'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Store info for response
+        faculty_name = faculty.user.get_full_name() or faculty.user.username
+        employee_id = faculty.employee_id
+        user = faculty.user
+        
+        try:
+            # Delete faculty profile (will cascade to related records)
+            faculty.delete()
+            
+            # Delete the user account
+            user.delete()
+            
+            return Response(
+                {
+                    'message': 'Faculty member deleted successfully',
+                    'detail': f'{faculty_name} (Employee ID: {employee_id}) has been removed from the system.'
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {
+                    'error': 'Failed to delete faculty',
+                    'detail': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 

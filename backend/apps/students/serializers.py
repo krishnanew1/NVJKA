@@ -10,7 +10,10 @@ from .models import (
     FeeTransaction, RegisteredCourse
 )
 from apps.academics.models import Course, Subject
+from apps.users.models import StudentProfile
 from apps.users.serializers import UserBasicSerializer
+import json
+import re
 
 
 class StudentNestedSerializer(serializers.Serializer):
@@ -176,7 +179,7 @@ class SemesterRegistrationSerializer(serializers.ModelSerializer):
             'approved_at', 'admin_notes', 'fee_transactions', 'registered_courses',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'approval_status', 'approved_by', 'approved_at', 
+        read_only_fields = ['id', 'student', 'approval_status', 'approved_by', 'approved_at', 
                            'admin_notes', 'created_at', 'updated_at']
     
     def get_student_name(self, obj):
@@ -196,6 +199,90 @@ class SemesterRegistrationSerializer(serializers.ModelSerializer):
                 'A semester registration cannot have more than 3 fee transactions.'
             )
         return value
+    
+    def validate(self, attrs):
+        """
+        Validate the semester registration data.
+        
+        Checks for duplicate registrations for the same student, academic year, and semester.
+        """
+        # Check for duplicate registration if this is a new instance
+        if not self.instance:
+            user = self.context['request'].user
+            
+            # Only check for duplicates if user has a student profile
+            try:
+                student = user.student_profile
+                academic_year = attrs.get('academic_year')
+                semester = attrs.get('semester')
+                
+                if SemesterRegistration.objects.filter(
+                    student=student,
+                    academic_year=academic_year,
+                    semester=semester
+                ).exists():
+                    raise serializers.ValidationError(
+                        'You have already registered for this semester.'
+                    )
+            except StudentProfile.DoesNotExist:
+                # This will be caught by the view's perform_create method
+                pass
+        
+        return attrs
+    
+    def to_internal_value(self, data):
+        """
+        Custom method to handle both JSON and FormData inputs.
+        
+        For FormData, we need to parse nested arrays manually.
+        """
+        # If it's already a dict (JSON), use default behavior
+        if isinstance(data, dict) and not hasattr(data, 'getlist'):
+            return super().to_internal_value(data)
+        
+        # Handle FormData - convert to dict format
+        parsed_data = {}
+        fee_transactions = {}
+        registered_courses = {}
+        
+        # Handle both QueryDict (FormData) and regular dict
+        items = data.items() if hasattr(data, 'items') else []
+        
+        for key, value in items:
+            if key.startswith('fee_transactions['):
+                # Parse fee_transactions[0][field_name] format
+                match = re.match(r'fee_transactions\[(\d+)\]\[(\w+)\]', key)
+                if match:
+                    index, field = match.groups()
+                    index = int(index)
+                    if index not in fee_transactions:
+                        fee_transactions[index] = {}
+                    fee_transactions[index][field] = value
+            elif key.startswith('registered_courses['):
+                # Parse registered_courses[0][field_name] format
+                match = re.match(r'registered_courses\[(\d+)\]\[(\w+)\]', key)
+                if match:
+                    index, field = match.groups()
+                    index = int(index)
+                    if index not in registered_courses:
+                        registered_courses[index] = {}
+                    registered_courses[index][field] = value
+            else:
+                # Regular field
+                parsed_data[key] = value
+        
+        # Convert indexed dicts to lists
+        if fee_transactions:
+            parsed_data['fee_transactions'] = [
+                fee_transactions[i] for i in sorted(fee_transactions.keys())
+            ]
+        
+        if registered_courses:
+            parsed_data['registered_courses'] = [
+                registered_courses[i] for i in sorted(registered_courses.keys())
+            ]
+        
+        return super().to_internal_value(parsed_data)
     
     def create(self, validated_data):
         """Create semester registration with nested transactions and courses."""

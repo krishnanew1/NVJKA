@@ -224,14 +224,11 @@ const AdminSettings = () => {
 
       <div className="dashboard-header">
         <h1>⚙️ Institute Settings</h1>
-        <p>Manage programs, custom registration fields, and student registration</p>
+        <p>Manage programs and custom registration fields</p>
       </div>
 
-      {/* Two-Section Layout Container */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        
-        {/* TOP SECTION: Programs and Custom Fields */}
-        <div className="tables-section">
+      {/* Programs and Custom Fields Section */}
+      <div className="tables-section">
           {/* Programs Section */}
           <div className="table-card">
             <div className="table-header">
@@ -334,61 +331,6 @@ const AdminSettings = () => {
             </div>
           </div>
         </div>
-
-        {/* BOTTOM SECTION: Manual Student Registration */}
-        <div className="table-card">
-          <div className="table-header">
-            <h2>👨‍🎓 Manual Student Registration</h2>
-            <button className="add-btn" onClick={() => {
-              // TODO: Open student registration modal
-              showToast('Student registration modal coming soon!', 'info');
-            }}>
-              + Add Student
-            </button>
-          </div>
-          <div className="table-container">
-            <div className="info-section" style={{
-              padding: '2rem',
-              textAlign: 'center',
-              color: 'var(--text-secondary)'
-            }}>
-              <div style={{
-                fontSize: '48px',
-                marginBottom: '1rem'
-              }}>
-                👨‍🎓
-              </div>
-              <h3 style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                color: 'var(--text-color)',
-                marginBottom: '0.5rem'
-              }}>
-                Manual Student Registration
-              </h3>
-              <p style={{
-                fontSize: '14px',
-                lineHeight: '1.6',
-                maxWidth: '600px',
-                margin: '0 auto 1.5rem'
-              }}>
-                Use this section to manually enter and register a student into the system. 
-                You can add student details, assign them to programs, and configure their enrollment information.
-              </p>
-              <button 
-                className="add-btn"
-                onClick={() => {
-                  // TODO: Open student registration modal
-                  showToast('Student registration modal coming soon!', 'info');
-                }}
-              >
-                + Add Student
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
 
       {/* Add Program Modal */}
       <Modal isOpen={isProgramModalOpen} onClose={() => setIsProgramModalOpen(false)} title="Add New Program">

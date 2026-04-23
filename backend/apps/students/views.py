@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.common.permissions import IsDepartmentHead
+from apps.users.models import StudentProfile
 from .models import (
     Enrollment, AcademicHistory, SemesterRegistration,
     FeeTransaction, RegisteredCourse
@@ -164,8 +165,11 @@ class SemesterRegistrationViewSet(viewsets.ModelViewSet):
         # Get the student profile
         try:
             student_profile = user.student_profile
-        except AttributeError:
-            raise PermissionDenied('Student profile not found for this user.')
+        except StudentProfile.DoesNotExist:
+            raise PermissionDenied(
+                'Student profile not found for this user. Please contact the administrator '
+                'to set up your student profile before registering for semesters.'
+            )
         
         # Save with the current student
         serializer.save(student=student_profile)
@@ -173,7 +177,6 @@ class SemesterRegistrationViewSet(viewsets.ModelViewSet):
 
 
 from rest_framework.views import APIView
-from apps.users.models import StudentProfile
 
 
 class RegistrationTrackingView(APIView):

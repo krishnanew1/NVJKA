@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     
                     current_program_code = 'BMS'
                     current_program = self.create_program(
-                        name='Bachelor of Technology in Mathematics and Scientific Computing',
+                        name='Bachelor in Mathematics and Scientific Computing',
                         code='BMS',
                         department_code='MSC',
                         total_credits=total_credits

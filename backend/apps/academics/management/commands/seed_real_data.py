@@ -13,7 +13,7 @@ from apps.academics.models import Department, Program, Subject, Course
 
 
 class Command(BaseCommand):
-    help = 'Seeds the database with real Course of Study data (BTECH-CSE, BTECH-EEE, BMS)'
+    help = 'Seeds the database with real Course of Study data (BTECH-CSE, BTECH-EEE, BMS - Bachelor in Mathematics and Scientific Computing)'
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Starting Course of Study data seeding...'))
@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 self.stdout.write('\nCreated Programs:')
                 self.stdout.write('  • BTECH-CSE: B.Tech. in Computer Science and Engineering (167 credits)')
                 self.stdout.write('  • BTECH-EEE: B.Tech. in Electrical and Electronics Engineering (169 credits)')
-                self.stdout.write('  • BMS: B.Tech. in Mathematics and Scientific Computing (175 credits)')
+                self.stdout.write('  • BMS: Bachelor in Mathematics and Scientific Computing (175 credits)')
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'\n✗ Error during seeding: {str(e)}'))
@@ -274,9 +274,9 @@ class Command(BaseCommand):
         self.create_subjects(course, subjects, 'BTECH-EEE')
 
     def create_bms(self):
-        """Create BMS program and subjects."""
+        """Create BMS (Bachelor in Mathematics and Scientific Computing) program and subjects."""
         self.stdout.write('\n' + '='*70)
-        self.stdout.write('Creating B.Tech. in Mathematics and Scientific Computing...')
+        self.stdout.write('Creating Bachelor in Mathematics and Scientific Computing...')
         self.stdout.write('='*70)
         
         # Create program
@@ -284,12 +284,12 @@ class Command(BaseCommand):
         program, created = Program.objects.get_or_create(
             code='BMS',
             defaults={
-                'name': 'Bachelor of Technology in Mathematics and Scientific Computing',
+                'name': 'Bachelor in Mathematics and Scientific Computing',
                 'department': department,
                 'duration_years': 4,
                 'duration_semesters': 8,
                 'total_credits': 175,
-                'description': 'B.Tech. in Mathematics and Scientific Computing program',
+                'description': 'Bachelor in Mathematics and Scientific Computing program',
                 'is_active': True
             }
         )
@@ -303,11 +303,11 @@ class Command(BaseCommand):
         course, _ = Course.objects.get_or_create(
             code='BMS',
             defaults={
-                'name': 'Bachelor of Technology in Mathematics and Scientific Computing',
+                'name': 'Bachelor in Mathematics and Scientific Computing',
                 'department': department,
                 'credits': 175,
                 'duration_years': 4,
-                'description': 'BMS Course'
+                'description': 'BMS - Bachelor in Mathematics and Scientific Computing'
             }
         )
         

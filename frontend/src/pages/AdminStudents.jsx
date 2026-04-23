@@ -16,7 +16,11 @@ const AdminStudents = () => {
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+  const [studentToEdit, setStudentToEdit] = useState(null);
 
   // Form state
   const [studentForm, setStudentForm] = useState({
@@ -198,6 +202,105 @@ const AdminStudents = () => {
       batch_year: new Date().getFullYear(),
       custom_data: {}
     });
+  };
+
+  // Delete student handlers
+  const handleDeleteClick = (student) => {
+    setStudentToDelete(student);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!studentToDelete) return;
+
+    setIsSubmitting(true);
+    try {
+      await api.delete(`/api/users/students/${studentToDelete.id}/`);
+      setIsDeleteModalOpen(false);
+      setStudentToDelete(null);
+      await fetchData();
+      showToast(`${studentToDelete.user?.full_name || studentToDelete.user?.username} deleted successfully!`, 'success');
+    } catch (err) {
+      console.error('Error deleting student:', err);
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to delete student.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setStudentToDelete(null);
+  };
+
+  // Edit student handlers
+  const handleEditClick = (student) => {
+    setStudentToEdit(student);
+    setStudentForm({
+      username: student.user?.username || '',
+      email: student.user?.email || '',
+      first_name: student.user?.first_name || '',
+      last_name: student.user?.last_name || '',
+      password: '', // Don't populate password for security
+      reg_no: student.reg_no || '',
+      dob: student.dob || '',
+      gender: student.gender || '',
+      phone: student.phone || '',
+      address: student.address || '',
+      program_id: student.program?.id || '',
+      department_id: student.department?.id || '',
+      current_semester: student.current_semester || '1',
+      batch_year: student.batch_year || new Date().getFullYear(),
+      custom_data: student.custom_data || {}
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!studentToEdit) return;
+
+    setIsSubmitting(true);
+    try {
+      const data = {
+        user: {
+          email: studentForm.email,
+          first_name: studentForm.first_name,
+          last_name: studentForm.last_name,
+          phone_number: studentForm.phone
+        },
+        reg_no: studentForm.reg_no,
+        dob: studentForm.dob || null,
+        gender: studentForm.gender || null,
+        phone: studentForm.phone || null,
+        address: studentForm.address || null,
+        program_id: studentForm.program_id ? parseInt(studentForm.program_id) : null,
+        department_id: studentForm.department_id ? parseInt(studentForm.department_id) : null,
+        current_semester: parseInt(studentForm.current_semester),
+        batch_year: parseInt(studentForm.batch_year),
+        custom_data: studentForm.custom_data
+      };
+
+      await api.patch(`/api/users/students/${studentToEdit.id}/`, data);
+      setIsEditModalOpen(false);
+      setStudentToEdit(null);
+      resetForm();
+      await fetchData();
+      showToast('Student updated successfully!', 'success');
+    } catch (err) {
+      console.error('Error updating student:', err);
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to update student.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    setStudentToEdit(null);
+    resetForm();
   };
 
   // Render dynamic field
@@ -382,6 +485,7 @@ const AdminStudents = () => {
                                         <th>Email</th>
                                         <th>Semester</th>
                                         <th>Department</th>
+                                        <th>Actions</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -392,6 +496,23 @@ const AdminStudents = () => {
                                           <td>{student.user?.email}</td>
                                           <td>{student.current_semester}</td>
                                           <td>{student.department?.name || 'N/A'}</td>
+                                          <td>
+                                            <button
+                                              className="btn-small btn-primary"
+                                              onClick={() => handleEditClick(student)}
+                                              title="Edit student"
+                                              style={{ marginRight: '8px' }}
+                                            >
+                                              ✏️ Edit
+                                            </button>
+                                            <button
+                                              className="btn-small btn-danger"
+                                              onClick={() => handleDeleteClick(student)}
+                                              title="Delete student"
+                                            >
+                                              🗑️ Delete
+                                            </button>
+                                          </td>
                                         </tr>
                                       ))}
                                     </tbody>
@@ -525,6 +646,222 @@ const AdminStudents = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Edit Student Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={handleEditCancel} title="Edit Student">
+        <form onSubmit={handleEditSubmit} className="modal-form">
+          <h3 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text-color)' }}>User Account</h3>
+          
+          <div className="form-group">
+            <label htmlFor="edit-username">Username *</label>
+            <input 
+              type="text" 
+              id="edit-username" 
+              name="username" 
+              value={studentForm.username} 
+              disabled 
+              style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
+              title="Username cannot be changed"
+            />
+            <small>Username cannot be changed</small>
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-email">Email *</label>
+            <input type="email" id="edit-email" name="email" value={studentForm.email} onChange={handleInputChange} required disabled={isSubmitting} placeholder="e.g., john@example.com" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-first_name">First Name *</label>
+            <input type="text" id="edit-first_name" name="first_name" value={studentForm.first_name} onChange={handleInputChange} required disabled={isSubmitting} placeholder="e.g., John" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-last_name">Last Name *</label>
+            <input type="text" id="edit-last_name" name="last_name" value={studentForm.last_name} onChange={handleInputChange} required disabled={isSubmitting} placeholder="e.g., Doe" />
+          </div>
+
+          <h3 style={{ marginTop: '24px', marginBottom: '16px', color: 'var(--text-color)' }}>Student Profile</h3>
+          
+          <div className="form-group">
+            <label htmlFor="edit-reg_no">Registration Number *</label>
+            <input type="text" id="edit-reg_no" name="reg_no" value={studentForm.reg_no} onChange={handleInputChange} required disabled={isSubmitting} placeholder="e.g., 2026CS001" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-dob">Date of Birth</label>
+            <input type="date" id="edit-dob" name="dob" value={studentForm.dob} onChange={handleInputChange} disabled={isSubmitting} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-gender">Gender</label>
+            <select id="edit-gender" name="gender" value={studentForm.gender} onChange={handleInputChange} disabled={isSubmitting}>
+              <option value="">Select gender</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="O">Other</option>
+              <option value="N">Prefer not to say</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-phone">Phone</label>
+            <input type="tel" id="edit-phone" name="phone" value={studentForm.phone} onChange={handleInputChange} disabled={isSubmitting} placeholder="e.g., +91-9876543210" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-address">Address</label>
+            <input type="text" id="edit-address" name="address" value={studentForm.address} onChange={handleInputChange} disabled={isSubmitting} placeholder="Residential address" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-program_id">Program *</label>
+            <select id="edit-program_id" name="program_id" value={studentForm.program_id} onChange={handleInputChange} required disabled={isSubmitting}>
+              <option value="">Select a program</option>
+              {programs.map(program => (
+                <option key={program.id} value={program.id}>{program.name} ({program.code})</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-department_id">Department</label>
+            <select id="edit-department_id" name="department_id" value={studentForm.department_id} onChange={handleInputChange} disabled={isSubmitting}>
+              <option value="">Select a department</option>
+              {departments.map(dept => (
+                <option key={dept.id} value={dept.id}>{dept.name} ({dept.code})</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-current_semester">Current Semester *</label>
+            <input type="number" id="edit-current_semester" name="current_semester" value={studentForm.current_semester} onChange={handleInputChange} required disabled={isSubmitting} min="1" max="20" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="edit-batch_year">Batch Year *</label>
+            <input type="number" id="edit-batch_year" name="batch_year" value={studentForm.batch_year} onChange={handleInputChange} required disabled={isSubmitting} min="2000" max="2100" />
+          </div>
+
+          {customFields.length > 0 && (
+            <>
+              <h3 style={{ marginTop: '24px', marginBottom: '16px', color: 'var(--text-color)' }}>Custom Fields</h3>
+              {customFields.map(field => (
+                <div key={field.id} className="form-group">
+                  <label htmlFor={`edit-custom-${field.field_name}`}>
+                    {field.field_label} {field.is_required && '*'}
+                  </label>
+                  {renderCustomField(field)}
+                  {field.help_text && <small>{field.help_text}</small>}
+                </div>
+              ))}
+            </>
+          )}
+
+          <div className="form-actions">
+            <button type="button" className="btn btn-secondary" onClick={handleEditCancel} disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className={`btn btn-primary ${isSubmitting ? 'btn-loading' : ''}`} disabled={isSubmitting}>
+              {isSubmitting ? 'Updating...' : 'Update Student'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={handleDeleteCancel} 
+        title="⚠️ Confirm Delete Student"
+      >
+        <div style={{ padding: '20px' }}>
+          {studentToDelete && (
+            <>
+              <div style={{ 
+                backgroundColor: '#fef2f2', 
+                border: '2px solid #ef4444', 
+                borderRadius: '8px', 
+                padding: '16px',
+                marginBottom: '20px'
+              }}>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '15px', 
+                  color: '#991b1b',
+                  lineHeight: '1.6'
+                }}>
+                  <strong>Warning:</strong> You are about to delete the following student:
+                </p>
+                <div style={{ 
+                  marginTop: '12px',
+                  padding: '12px',
+                  backgroundColor: '#fff',
+                  borderRadius: '4px',
+                  border: '1px solid #fecaca'
+                }}>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Name:</strong> {studentToDelete.user?.full_name || studentToDelete.user?.username}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Reg No:</strong> {studentToDelete.reg_no}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Email:</strong> {studentToDelete.user?.email}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Program:</strong> {studentToDelete.program?.name || 'N/A'}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#374151' }}>
+                    <strong>Semester:</strong> {studentToDelete.current_semester}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ 
+                backgroundColor: '#fffbeb', 
+                border: '1px solid #f59e0b', 
+                borderRadius: '6px', 
+                padding: '12px',
+                marginBottom: '20px'
+              }}>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '13px', 
+                  color: '#92400e',
+                  lineHeight: '1.5'
+                }}>
+                  ⚠️ <strong>This action cannot be undone.</strong> Deleting this student will:
+                </p>
+                <ul style={{ 
+                  margin: '8px 0 0 0',
+                  paddingLeft: '20px',
+                  fontSize: '13px',
+                  color: '#92400e',
+                  lineHeight: '1.5'
+                }}>
+                  <li>Remove their user account and profile</li>
+                  <li>Delete their semester registrations</li>
+                  <li>Delete their course enrollments</li>
+                  <li>Delete their attendance records</li>
+                  <li>Delete their grades and assessments</li>
+                  <li>Delete their academic history</li>
+                </ul>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleDeleteCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteConfirm}
+                  disabled={isSubmitting}
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                >
+                  {isSubmitting ? 'Deleting...' : 'Yes, Delete Student'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </Modal>
     </div>
   );
