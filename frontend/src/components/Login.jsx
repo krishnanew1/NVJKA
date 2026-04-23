@@ -78,13 +78,13 @@ const Login = () => {
               navigate('/student');
               break;
             default:
-              navigate('/admin'); // Default fallback
+              navigate('/student'); // Default fallback
           }
         } else {
           // Fallback if no role info available
-          navigate('/admin');
+          navigate('/student');
         }
-      }, 1500);
+      }, 500);
 
     } catch (err) {
       console.error('Login error:', err);

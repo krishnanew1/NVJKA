@@ -1,0 +1,61 @@
+name,email,phone,designation,department_code,specialization,employee_id
+Prof. Rajesh Kumar,rajesh.kumar@college.edu,9876543210,Professor,CS,Artificial Intelligence,FAC2024061
+Dr. Priya Sharma,priya.sharma@college.edu,9876543211,Associate Professor,CS,Machine Learning,FAC2024002
+Dr. Amit Patel,amit.patel@college.edu,9876543212,Assistant Professor,CS,Data Science,FAC2024003
+Prof. Sunita Verma,sunita.verma@college.edu,9876543213,Professor,CS,Computer Networks,FAC2024004
+Dr. Vikram Singh,vikram.singh@college.edu,9876543214,Associate Professor,CS,Database Systems,FAC2024005
+Dr. Neha Gupta,neha.gupta@college.edu,9876543215,Assistant Professor,CS,Software Engineering,FAC2024006
+Prof. Arun Mehta,arun.mehta@college.edu,9876543216,Professor,CS,Algorithms,FAC2024007
+Dr. Kavita Reddy,kavita.reddy@college.edu,9876543217,Associate Professor,CS,Cloud Computing,FAC2024008
+Dr. Rahul Joshi,rahul.joshi@college.edu,9876543218,Assistant Professor,CS,Cybersecurity,FAC2024009
+Prof. Deepa Nair,deepa.nair@college.edu,9876543219,Professor,CS,Computer Vision,FAC2024010
+Prof. Suresh Iyer,suresh.iyer@college.edu,9876543220,Professor,CSE,Software Architecture,FAC2024011
+Dr. Anjali Desai,anjali.desai@college.edu,9876543221,Associate Professor,CSE,Web Technologies,FAC2024012
+Dr. Manoj Kumar,manoj.kumar@college.edu,9876543222,Assistant Professor,CSE,Mobile Computing,FAC2024013
+Prof. Lakshmi Rao,lakshmi.rao@college.edu,9876543223,Professor,CSE,Distributed Systems,FAC2024014
+Dr. Karthik Menon,karthik.menon@college.edu,9876543224,Associate Professor,CSE,Operating Systems,FAC2024015
+Dr. Pooja Agarwal,pooja.agarwal@college.edu,9876543225,Assistant Professor,CSE,Computer Graphics,FAC2024016
+Prof. Ramesh Pillai,ramesh.pillai@college.edu,9876543226,Professor,CSE,Compiler Design,FAC2024017
+Dr. Shalini Bhat,shalini.bhat@college.edu,9876543227,Associate Professor,CSE,Theory of Computation,FAC2024018
+Dr. Naveen Shetty,naveen.shetty@college.edu,9876543228,Assistant Professor,CSE,Parallel Computing,FAC2024019
+Prof. Meera Krishnan,meera.krishnan@college.edu,9876543229,Professor,CSE,Natural Language Processing,FAC2024020
+Prof. Harish Chandra,harish.chandra@college.edu,9876543230,Professor,EEE,Power Electronics,FAC2024021
+Dr. Divya Nambiar,divya.nambiar@college.edu,9876543231,Associate Professor,EEE,Control Systems,FAC2024022
+Dr. Sandeep Yadav,sandeep.yadav@college.edu,9876543232,Assistant Professor,EEE,Digital Signal Processing,FAC2024023
+Prof. Radha Krishnan,radha.krishnan@college.edu,9876543233,Professor,EEE,Electrical Machines,FAC2024024
+Dr. Prakash Hegde,prakash.hegde@college.edu,9876543234,Associate Professor,EEE,Power Systems,FAC2024025
+Dr. Swati Kulkarni,swati.kulkarni@college.edu,9876543235,Assistant Professor,EEE,Microprocessors,FAC2024026
+Prof. Venkat Raman,venkat.raman@college.edu,9876543236,Professor,EEE,Communication Systems,FAC2024027
+Dr. Nisha Pandey,nisha.pandey@college.edu,9876543237,Associate Professor,EEE,VLSI Design,FAC2024028
+Dr. Arjun Nair,arjun.nair@college.edu,9876543238,Assistant Professor,EEE,Embedded Systems,FAC2024029
+Prof. Geetha Menon,geetha.menon@college.edu,9876543239,Professor,EEE,Renewable Energy,FAC2024030
+Prof. Ashok Kumar,ashok.kumar@college.edu,9876543240,Professor,MATH,Applied Mathematics,FAC2024031
+Dr. Rekha Sharma,rekha.sharma@college.edu,9876543241,Associate Professor,MATH,Numerical Analysis,FAC2024032
+Dr. Sunil Jain,sunil.jain@college.edu,9876543242,Assistant Professor,MATH,Discrete Mathematics,FAC2024033
+Prof. Usha Rani,usha.rani@college.edu,9876543243,Professor,MATH,Linear Algebra,FAC2024034
+Dr. Mohan Das,mohan.das@college.edu,9876543244,Associate Professor,MATH,Probability Theory,FAC2024035
+Dr. Anita Singh,anita.singh@college.edu,9876543245,Assistant Professor,MATH,Statistics,FAC2024036
+Prof. Bhaskar Rao,bhaskar.rao@college.edu,9876543246,Professor,MATH,Differential Equations,FAC2024037
+Dr. Chitra Iyer,chitra.iyer@college.edu,9876543247,Associate Professor,MATH,Real Analysis,FAC2024038
+Dr. Dinesh Patel,dinesh.patel@college.edu,9876543248,Assistant Professor,MATH,Complex Analysis,FAC2024039
+Prof. Esha Reddy,esha.reddy@college.edu,9876543249,Professor,MATH,Topology,FAC2024040
+Prof. Ganesh Murthy,ganesh.murthy@college.edu,9876543250,Professor,CS,Blockchain Technology,FAC2024041
+Dr. Hema Malini,hema.malini@college.edu,9876543251,Associate Professor,CS,Internet of Things,FAC2024042
+Dr. Indra Kumar,indra.kumar@college.edu,9876543252,Assistant Professor,CS,Big Data Analytics,FAC2024043
+Prof. Jaya Lakshmi,jaya.lakshmi@college.edu,9876543253,Professor,CSE,Quantum Computing,FAC2024044
+Dr. Kiran Bedi,kiran.bedi@college.edu,9876543254,Associate Professor,CSE,Bioinformatics,FAC2024045
+Dr. Lalit Mohan,lalit.mohan@college.edu,9876543255,Assistant Professor,CSE,Human Computer Interaction,FAC2024046
+Prof. Madhavi Devi,madhavi.devi@college.edu,9876543256,Professor,EEE,Smart Grid Technology,FAC2024047
+Dr. Naresh Babu,naresh.babu@college.edu,9876543257,Associate Professor,EEE,Instrumentation,FAC2024048
+Dr. Omkar Joshi,omkar.joshi@college.edu,9876543258,Assistant Professor,EEE,Robotics,FAC2024049
+Prof. Padma Shri,padma.shri@college.edu,9876543259,Professor,MATH,Operations Research,FAC2024050
+Dr. Qamar Ali,qamar.ali@college.edu,9876543260,Associate Professor,MATH,Graph Theory,FAC2024051
+Dr. Ravi Shankar,ravi.shankar@college.edu,9876543261,Assistant Professor,MATH,Number Theory,FAC2024052
+Prof. Sarita Devi,sarita.devi@college.edu,9876543262,Professor,CS,Information Security,FAC2024053
+Dr. Tarun Gupta,tarun.gupta@college.edu,9876543263,Associate Professor,CS,Pattern Recognition,FAC2024054
+Dr. Uma Mahesh,uma.mahesh@college.edu,9876543264,Assistant Professor,CS,Computational Intelligence,FAC2024055
+Prof. Vijay Kumar,vijay.kumar@college.edu,9876543265,Professor,CSE,Software Testing,FAC2024056
+Dr. Waman Rao,waman.rao@college.edu,9876543266,Associate Professor,CSE,Agile Methodologies,FAC2024057
+Dr. Yashoda Rani,yashoda.rani@college.edu,9876543267,Assistant Professor,CSE,DevOps,FAC2024058
+Prof. Zarina Begum,zarina.begum@college.edu,9876543268,Professor,EEE,Optical Communication,FAC2024059
+Dr. Aditya Verma,aditya.verma@college.edu,9876543269,Associate Professor,EEE,Antenna Design,FAC2024060

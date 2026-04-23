@@ -1,0 +1,4 @@
+name,email,phone,designation,department_code,specialization,employee_id
+Dr. John Smith,john.smith@example.com,1234567890,Professor,CS,Machine Learning,FAC2024001
+Prof. Jane Doe,jane.doe@example.com,9876543210,Associate Professor,CSE,Data Science,FAC2024002
+Dr. Robert Brown,robert.brown@example.com,5551234567,Assistant Professor,EEE,Power Systems,FAC2024003
