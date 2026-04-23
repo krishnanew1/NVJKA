@@ -7,9 +7,18 @@ import './AdminRegTracking.css';
 
 const AdminRegTracking = () => {
   // Filter state
-  const [academicYear, setAcademicYear] = useState('2025-26');
-  const [semester, setSemester] = useState('Jan-Jun 2026');
+  const [academicYear, setAcademicYear] = useState('');
+  const [semester, setSemester] = useState('');
   const [filterTab, setFilterTab] = useState('all'); // 'all', 'registered', 'pending'
+
+  // Options state
+  const [registrationOptions, setRegistrationOptions] = useState({
+    academic_years: [],
+    semesters: [],
+    current_academic_year: '',
+    current_semester: ''
+  });
+  const [optionsLoading, setOptionsLoading] = useState(true);
 
   // Data state
   const [trackingData, setTrackingData] = useState(null);
@@ -29,6 +38,24 @@ const AdminRegTracking = () => {
     message: '',
     type: 'info'
   });
+
+  // Fetch registration options
+  const fetchRegistrationOptions = async () => {
+    try {
+      setOptionsLoading(true);
+      const response = await api.get('/api/students/registration-options/');
+      setRegistrationOptions(response.data);
+      
+      // Set default values to current academic year and semester
+      setAcademicYear(response.data.current_academic_year);
+      setSemester(response.data.current_semester);
+    } catch (err) {
+      console.error('Error fetching registration options:', err);
+      showToast('Failed to load registration options', 'error');
+    } finally {
+      setOptionsLoading(false);
+    }
+  };
 
   // Fetch tracking data
   const fetchTrackingData = async () => {
@@ -81,8 +108,15 @@ const AdminRegTracking = () => {
 
   // Initial fetch
   useEffect(() => {
-    fetchTrackingData();
+    fetchRegistrationOptions();
   }, []);
+
+  // Auto-fetch tracking data when options are loaded and defaults are set
+  useEffect(() => {
+    if (!optionsLoading && academicYear && semester) {
+      fetchTrackingData();
+    }
+  }, [optionsLoading, academicYear, semester]);
 
   // Filter students based on tab
   useEffect(() => {
@@ -161,38 +195,56 @@ const AdminRegTracking = () => {
             <label htmlFor="academic-year" className="filter-label">
               Academic Year
             </label>
-            <input
-              type="text"
+            <select
               id="academic-year"
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
-              placeholder="e.g., 2025-26"
-              className="filter-input"
-            />
+              className="filter-select"
+              disabled={optionsLoading}
+            >
+              <option value="">Select Academic Year</option>
+              {registrationOptions.academic_years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="filter-group">
             <label htmlFor="semester" className="filter-label">
               Semester
             </label>
-            <input
-              type="text"
+            <select
               id="semester"
               value={semester}
               onChange={(e) => setSemester(e.target.value)}
-              placeholder="e.g., Jan-Jun 2026"
-              className="filter-input"
-            />
+              className="filter-select"
+              disabled={optionsLoading}
+            >
+              <option value="">Select Semester</option>
+              {registrationOptions.semesters.map((sem) => (
+                <option key={sem} value={sem}>
+                  {sem}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button
             onClick={fetchTrackingData}
             className="fetch-btn"
-            disabled={loading}
+            disabled={loading || !academicYear || !semester}
           >
             {loading ? 'Loading...' : '🔍 Fetch Data'}
           </button>
         </div>
+
+        {optionsLoading && (
+          <div className="options-loading">
+            <Loader message="Loading options..." size="small" />
+          </div>
+        )}
       </div>
 
       {/* Summary Cards */}

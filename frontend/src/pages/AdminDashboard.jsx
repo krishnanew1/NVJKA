@@ -124,6 +124,12 @@ const AdminDashboard = () => {
             <p>View and manage student records</p>
           </div>
 
+          <div className="action-card" onClick={() => navigate('/admin/registration-tracking')}>
+            <div className="action-icon">📋</div>
+            <h3>Registration Tracking</h3>
+            <p>Monitor semester registration progress</p>
+          </div>
+
           <div className="action-card" onClick={() => navigate('/admin/faculty')}>
             <div className="action-icon">🎓</div>
             <h3>Manage Faculty</h3>

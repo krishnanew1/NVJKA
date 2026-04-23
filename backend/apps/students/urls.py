@@ -3,7 +3,8 @@ from django.urls import path, include
 from .views import (
     EnrollmentViewSet, AcademicHistoryViewSet,
     SemesterRegistrationViewSet, RegistrationTrackingView,
-    StudentRegistrationDetailView, ApproveRegistrationView
+    StudentRegistrationDetailView, ApproveRegistrationView,
+    RegistrationOptionsView
 )
 
 app_name = 'students'
@@ -16,6 +17,7 @@ router.register(r'semester-register', SemesterRegistrationViewSet, basename='sem
 urlpatterns = [
     path('', include(router.urls)),
     path('registration-tracking/', RegistrationTrackingView.as_view(), name='registration-tracking'),
+    path('registration-options/', RegistrationOptionsView.as_view(), name='registration-options'),
     path('registration-detail/<int:student_id>/<int:registration_id>/', 
          StudentRegistrationDetailView.as_view(), 
          name='registration-detail'),

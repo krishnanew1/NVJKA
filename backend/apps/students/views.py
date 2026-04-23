@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 
 from apps.common.permissions import IsDepartmentHead
 from apps.users.models import StudentProfile
@@ -563,5 +564,79 @@ class ApproveRegistrationView(APIView):
         except Exception as e:
             return Response(
                 {'error': f'Failed to process registration: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class RegistrationOptionsView(APIView):
+    """
+    API endpoint to get available academic years and semesters for registration tracking.
+    
+    **Permissions**: Admin only
+    
+    **Response**:
+    Returns available academic years and semesters from existing registrations:
+    - academic_years: List of unique academic years
+    - semesters: List of unique semesters
+    - current_academic_year: Suggested current academic year
+    - current_semester: Suggested current semester
+    
+    **Example**:
+    GET /api/students/registration-options/
+    """
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get(self, request):
+        try:
+            # Get unique academic years and semesters from existing registrations
+            registrations = SemesterRegistration.objects.all()
+            
+            academic_years = list(registrations.values_list('academic_year', flat=True).distinct().order_by('-academic_year'))
+            semesters = list(registrations.values_list('semester', flat=True).distinct().order_by('semester'))
+            
+            # Generate current academic year based on current date
+            from datetime import datetime
+            current_year = datetime.now().year
+            current_month = datetime.now().month
+            
+            # Academic year typically starts in July/August
+            if current_month >= 7:  # July onwards is new academic year
+                suggested_academic_year = f"{current_year}-{str(current_year + 1)[2:]}"
+            else:  # January to June is continuation of previous academic year
+                suggested_academic_year = f"{current_year - 1}-{str(current_year)[2:]}"
+            
+            # Suggest current semester based on month
+            if current_month >= 1 and current_month <= 6:
+                suggested_semester = f"Jan-Jun {current_year}"
+            else:
+                suggested_semester = f"Jul-Dec {current_year}"
+            
+            # If no registrations exist, provide default options
+            if not academic_years:
+                academic_years = [
+                    suggested_academic_year,
+                    f"{current_year - 1}-{str(current_year)[2:]}",
+                    f"{current_year + 1}-{str(current_year + 2)[2:]}"
+                ]
+            
+            if not semesters:
+                semesters = [
+                    f"Jan-Jun {current_year}",
+                    f"Jul-Dec {current_year}",
+                    f"Jan-Jun {current_year + 1}",
+                    f"Jul-Dec {current_year + 1}"
+                ]
+            
+            return Response({
+                'academic_years': academic_years,
+                'semesters': semesters,
+                'current_academic_year': suggested_academic_year,
+                'current_semester': suggested_semester,
+                'total_registrations': registrations.count()
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch registration options: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
