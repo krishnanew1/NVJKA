@@ -32,9 +32,47 @@ const AdminRegTracking = () => {
   const [registrationDetail, setRegistrationDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // Approval state
+  const [approvingRegistrations, setApprovingRegistrations] = useState({});
+
   // Receipt modal state
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  // Approve/Reject registration
+  const handleApproveRegistration = async (registrationId, action, notes = '') => {
+    try {
+      setApprovingRegistrations(prev => ({ ...prev, [registrationId]: true }));
+
+      const response = await api.post('/api/students/approve-registration/', {
+        registration_id: registrationId,
+        action: action, // 'approve' or 'reject'
+        notes: notes
+      });
+
+      if (response.data.success) {
+        showToast(
+          `Registration ${action}d successfully!`, 
+          action === 'approve' ? 'success' : 'info'
+        );
+        
+        // Refresh the tracking data to show updated status
+        await fetchTrackingData();
+        
+        // Close modal if open
+        if (isModalOpen) {
+          closeModal();
+        }
+      }
+    } catch (err) {
+      console.error(`Error ${action}ing registration:`, err);
+      const errorMessage = err.response?.data?.error || 
+                          `Failed to ${action} registration. Please try again.`;
+      showToast(errorMessage, 'error');
+    } finally {
+      setApprovingRegistrations(prev => ({ ...prev, [registrationId]: false }));
+    }
+  };
 
   // Toast state
   const [toast, setToast] = useState({
@@ -369,12 +407,38 @@ const AdminRegTracking = () => {
                     </td>
                     <td className="action-cell">
                       {student.has_registered ? (
-                        <button
-                          onClick={() => handleViewForm(student)}
-                          className="view-btn"
-                        >
-                          View Form
-                        </button>
+                        <div className="action-buttons">
+                          <button
+                            onClick={() => handleViewForm(student)}
+                            className="view-btn"
+                          >
+                            View Form
+                          </button>
+                          {student.approval_status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleApproveRegistration(student.registration_id, 'approve')}
+                                className="approve-btn"
+                                disabled={approvingRegistrations[student.registration_id]}
+                              >
+                                {approvingRegistrations[student.registration_id] ? 'Approving...' : '✓ Approve'}
+                              </button>
+                              <button
+                                onClick={() => handleApproveRegistration(student.registration_id, 'reject')}
+                                className="reject-btn"
+                                disabled={approvingRegistrations[student.registration_id]}
+                              >
+                                {approvingRegistrations[student.registration_id] ? 'Rejecting...' : '✗ Reject'}
+                              </button>
+                            </>
+                          )}
+                          {student.approval_status === 'approved' && (
+                            <span className="status-text approved">✓ Approved</span>
+                          )}
+                          {student.approval_status === 'rejected' && (
+                            <span className="status-text rejected">✗ Rejected</span>
+                          )}
+                        </div>
                       ) : (
                         <span className="no-action">—</span>
                       )}
@@ -605,6 +669,50 @@ const AdminRegTracking = () => {
                 </div>
               </div>
             </div>
+
+            {/* Approval Actions */}
+            {registrationDetail.registration.approval_status === 'pending' && (
+              <div className="detail-section approval-actions">
+                <h3 className="section-title">Approval Actions</h3>
+                <div className="approval-buttons">
+                  <button
+                    onClick={() => handleApproveRegistration(registrationDetail.registration.id, 'approve')}
+                    className="approve-btn large"
+                    disabled={approvingRegistrations[registrationDetail.registration.id]}
+                  >
+                    {approvingRegistrations[registrationDetail.registration.id] ? 'Approving...' : '✓ Approve Registration'}
+                  </button>
+                  <button
+                    onClick={() => handleApproveRegistration(registrationDetail.registration.id, 'reject')}
+                    className="reject-btn large"
+                    disabled={approvingRegistrations[registrationDetail.registration.id]}
+                  >
+                    {approvingRegistrations[registrationDetail.registration.id] ? 'Rejecting...' : '✗ Reject Registration'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Approval Status */}
+            {registrationDetail.registration.approval_status !== 'pending' && (
+              <div className="detail-section approval-status">
+                <h3 className="section-title">Approval Status</h3>
+                <div className="status-info">
+                  <div className={`status-badge-large ${registrationDetail.registration.approval_status}`}>
+                    {registrationDetail.registration.approval_status === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                  </div>
+                  {registrationDetail.registration.approved_by_name && (
+                    <div className="approval-details">
+                      <p><strong>Approved by:</strong> {registrationDetail.registration.approved_by_name}</p>
+                      <p><strong>Date:</strong> {formatDate(registrationDetail.registration.approved_at)}</p>
+                      {registrationDetail.registration.admin_notes && (
+                        <p><strong>Notes:</strong> {registrationDetail.registration.admin_notes}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="modal-error">

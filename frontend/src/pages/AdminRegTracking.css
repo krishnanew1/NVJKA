@@ -353,6 +353,14 @@
   text-align: center;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .view-btn {
   padding: 0.5rem 1rem;
   background: var(--primary-color);
@@ -369,6 +377,79 @@
 .view-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
+}
+
+.approve-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.approve-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.approve-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reject-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-text.approved {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-text.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 .no-action {
@@ -806,6 +887,91 @@
   font-size: 1.1rem;
   color: var(--text-primary);
   font-weight: 700;
+}
+
+/* Approval Actions in Modal */
+.approval-actions {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 2px solid var(--border-color);
+}
+
+.approval-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.approve-btn.large,
+.reject-btn.large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.approve-btn.large:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+}
+
+.reject-btn.large:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Approval Status in Modal */
+.approval-status {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 2px solid var(--border-color);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-badge-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.status-badge-large.approved {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge-large.rejected {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.approval-details {
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.approval-details p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.approval-details strong {
+  color: var(--text-primary);
 }
 
 .no-data {

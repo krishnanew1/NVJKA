@@ -337,7 +337,8 @@ class SubjectSerializer(serializers.ModelSerializer):
     
     def get_total_timetable_entries(self, obj):
         """Get the total number of timetable entries for this subject."""
-        return obj.timetable_entries.count()
+        # Timetable model was removed, return 0 for now
+        return 0
     
     def validate_course_id(self, value):
         """Validate that the course exists."""

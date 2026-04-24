@@ -453,25 +453,77 @@ class AdminSubjectGradesView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Get all grades for this subject
-        from .models import StudentGrade
-        grades = StudentGrade.objects.filter(
-            subject=subject
-        ).select_related('student', 'student__user', 'faculty', 'faculty__user').order_by('student__enrollment_number')
+        # Get all students enrolled in this subject through RegisteredCourse
+        from apps.students.models import RegisteredCourse
+        registered_courses = RegisteredCourse.objects.filter(
+            subject=subject,
+            semester_registration__approval_status='approved'
+        ).select_related('semester_registration__student', 'semester_registration__student__user')
         
-        # Serialize grades
-        serializer = StudentGradeSerializer(grades, many=True)
+        # Get existing grades for this subject
+        from .models import StudentGrade
+        existing_grades = StudentGrade.objects.filter(
+            subject=subject
+        ).select_related('student', 'student__user')
+        
+        # Create a map of student_id to grade
+        grades_map = {grade.student.id: grade for grade in existing_grades}
+        
+        # Build response with all enrolled students and their grades (if any)
+        grades_data = []
+        total_percentage = 0
+        graded_count = 0
+        pass_count = 0
+        fail_count = 0
+        
+        for reg_course in registered_courses:
+            student = reg_course.semester_registration.student
+            grade = grades_map.get(student.id)
+            
+            if grade:
+                # Student has a grade
+                grade_data = {
+                    'id': grade.id,
+                    'student_id': student.id,
+                    'student_name': student.user.get_full_name() or student.user.username,
+                    'student_enrollment': student.enrollment_number,
+                    'marks_obtained': grade.marks_obtained,
+                    'total_marks': grade.total_marks,
+                    'percentage': grade.percentage,
+                    'grade_letter': grade.grade_letter,
+                    'remarks': grade.remarks or '',
+                    'has_grade': True
+                }
+                total_percentage += grade.percentage
+                graded_count += 1
+                if grade.grade_letter != 'F':
+                    pass_count += 1
+                else:
+                    fail_count += 1
+            else:
+                # Student is enrolled but no grade yet
+                grade_data = {
+                    'id': None,
+                    'student_id': student.id,
+                    'student_name': student.user.get_full_name() or student.user.username,
+                    'student_enrollment': student.enrollment_number,
+                    'marks_obtained': None,
+                    'total_marks': None,
+                    'percentage': None,
+                    'grade_letter': None,
+                    'remarks': 'Not graded yet',
+                    'has_grade': False
+                }
+            
+            grades_data.append(grade_data)
+        
+        # Sort by student enrollment number
+        grades_data.sort(key=lambda x: x['student_enrollment'] or '')
         
         # Calculate statistics
-        total_students = grades.count()
-        if total_students > 0:
-            average_percentage = sum(g.percentage for g in grades) / total_students
-            pass_count = grades.exclude(grade_letter='F').count()
-            fail_count = grades.filter(grade_letter='F').count()
-        else:
-            average_percentage = 0
-            pass_count = 0
-            fail_count = 0
+        total_students = len(grades_data)
+        average_percentage = (total_percentage / graded_count) if graded_count > 0 else 0
+        pass_rate = (pass_count / graded_count * 100) if graded_count > 0 else 0
         
         return Response({
             'subject': {
@@ -481,12 +533,14 @@ class AdminSubjectGradesView(APIView):
                 'course': subject.course.name if subject.course else None,
                 'faculty': subject.faculty.user.get_full_name() if subject.faculty else None,
             },
-            'grades': serializer.data,
+            'grades': grades_data,
             'statistics': {
                 'total_students': total_students,
+                'graded_students': graded_count,
+                'ungraded_students': total_students - graded_count,
                 'average_percentage': round(average_percentage, 2),
                 'pass_count': pass_count,
                 'fail_count': fail_count,
-                'pass_rate': round((pass_count / total_students * 100), 2) if total_students > 0 else 0
+                'pass_rate': round(pass_rate, 2)
             }
         }, status=status.HTTP_200_OK)

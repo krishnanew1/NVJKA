@@ -147,12 +147,6 @@ const AdminDashboard = () => {
             <h3>Grades</h3>
             <p>View student grades and performance</p>
           </div>
-
-          <div className="action-card" onClick={() => navigate('/admin/reports')}>
-            <div className="action-icon">📈</div>
-            <h3>Reports</h3>
-            <p>Generate and view system reports</p>
-          </div>
         </div>
       </div>
     </div>

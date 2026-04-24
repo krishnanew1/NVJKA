@@ -353,7 +353,8 @@ class RegistrationTrackingView(APIView):
                 'batch_year': student.batch_year,
                 'has_registered': registration is not None,
                 'registration_id': registration.id if registration else None,
-                'registration_date': registration.created_at.isoformat() if registration else None
+                'registration_date': registration.created_at.isoformat() if registration else None,
+                'approval_status': registration.approval_status if registration else None
             })
         
         # Calculate summary statistics
@@ -744,5 +745,121 @@ class RegistrationOptionsView(APIView):
         except Exception as e:
             return Response(
                 {'error': f'Failed to fetch registration options: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class SubjectEnrolledStudentsView(APIView):
+    """
+    API endpoint to get students enrolled in a specific subject.
+    
+    **Permissions**: Faculty (can only see their own subjects) or Admin (can see all)
+    
+    **Parameters**:
+    - subject_id (required): ID of the subject to get enrolled students for
+    
+    **Response**:
+    Returns list of students enrolled in the subject:
+    - id: Student profile ID
+    - name: Student full name
+    - roll_number: Student enrollment/roll number
+    - email: Student email
+    - current_semester: Student's current semester
+    - registration_id: Semester registration ID
+    - is_backlog: Whether this is a backlog subject for the student
+    
+    **Example**:
+    GET /api/students/subject-enrolled/?subject_id=123
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        subject_id = request.query_params.get('subject_id')
+        
+        if not subject_id:
+            return Response(
+                {'error': 'subject_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from apps.academics.models import Subject
+            from apps.users.models import FacultyProfile
+            
+            # Get the subject
+            try:
+                subject = Subject.objects.get(id=subject_id)
+            except Subject.DoesNotExist:
+                return Response(
+                    {'error': 'Subject not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Check permissions
+            user = request.user
+            if user.role == 'FACULTY':
+                # Faculty can only see students for their own subjects
+                try:
+                    faculty_profile = FacultyProfile.objects.get(user=user)
+                    if subject.faculty != faculty_profile:
+                        return Response(
+                            {'error': 'You can only view students for subjects assigned to you'},
+                            status=status.HTTP_403_FORBIDDEN
+                        )
+                except FacultyProfile.DoesNotExist:
+                    return Response(
+                        {'error': 'Faculty profile not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            elif user.role not in ['ADMIN', 'FACULTY']:
+                return Response(
+                    {'error': 'Permission denied'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Get students enrolled in this subject through RegisteredCourse
+            registered_courses = RegisteredCourse.objects.select_related(
+                'semester_registration__student__user',
+                'semester_registration__student',
+                'subject'
+            ).filter(
+                subject=subject,
+                semester_registration__approval_status='approved'  # Only approved registrations
+            ).order_by('semester_registration__student__user__first_name')
+            
+            # Format the response
+            students = []
+            for reg_course in registered_courses:
+                student_profile = reg_course.semester_registration.student
+                student_user = student_profile.user
+                
+                students.append({
+                    'id': student_profile.id,
+                    'name': student_user.get_full_name() or student_user.username,
+                    'roll_number': student_profile.enrollment_number or student_profile.reg_no,
+                    'email': student_user.email,
+                    'current_semester': student_profile.current_semester,
+                    'registration_id': reg_course.semester_registration.id,
+                    'is_backlog': reg_course.is_backlog,
+                    'academic_year': reg_course.semester_registration.academic_year,
+                    'semester_period': reg_course.semester_registration.semester
+                })
+            
+            return Response({
+                'subject': {
+                    'id': subject.id,
+                    'name': subject.name,
+                    'code': subject.code,
+                    'course': subject.course.name if subject.course else None,
+                    'semester': subject.semester,
+                    'credits': subject.credits
+                },
+                'students': students,
+                'total_students': len(students)
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch enrolled students: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

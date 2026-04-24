@@ -132,23 +132,24 @@ const FacultyDashboard = () => {
     try {
       setLoadingStudents(true);
       
-      // Get students enrolled in the course and semester
-      const response = await api.get('/api/students/enrollments/', {
+      // Get students enrolled in this specific subject
+      const response = await api.get('/api/students/subject-enrolled/', {
         params: {
-          course: subject.course?.id,
-          semester: subject.semester,
-          status: 'Active'
+          subject_id: subject.id
         }
       });
 
-      const enrollments = response.data.results || response.data;
+      const data = response.data;
       
-      // Extract student profiles from enrollments
-      const studentProfiles = enrollments.map(enrollment => ({
-        id: enrollment.student.id,
-        name: enrollment.student.user?.full_name || enrollment.student.user?.username || 'Unknown',
-        roll_number: enrollment.student.roll_number || 'N/A',
-        enrollment_id: enrollment.id
+      // Extract student profiles from the response
+      const studentProfiles = data.students.map(student => ({
+        id: student.id,
+        name: student.name,
+        roll_number: student.roll_number,
+        enrollment_id: student.registration_id,
+        email: student.email,
+        current_semester: student.current_semester,
+        is_backlog: student.is_backlog
       }));
 
       setStudents(studentProfiles);
@@ -162,7 +163,13 @@ const FacultyDashboard = () => {
 
     } catch (err) {
       console.error('Error fetching students:', err);
-      showToast('Failed to load students. Please try again.', 'error');
+      if (err.response?.status === 404) {
+        showToast('Subject not found or no students enrolled.', 'warning');
+      } else if (err.response?.status === 403) {
+        showToast('You can only view students for subjects assigned to you.', 'error');
+      } else {
+        showToast('Failed to load students. Please try again.', 'error');
+      }
       setStudents([]);
     } finally {
       setLoadingStudents(false);
@@ -256,17 +263,46 @@ const FacultyDashboard = () => {
       });
 
       const data = response.data;
-      setEditStudents(data.students || []);
+      
+      // If we have attendance records, use them
+      if (data.students && data.students.length > 0) {
+        setEditStudents(data.students || []);
 
-      // Initialize attendance records with existing statuses
-      const initialRecords = {};
-      data.students.forEach(student => {
-        initialRecords[student.student_id] = student.status || 'Present';
-      });
-      setEditAttendanceRecords(initialRecords);
+        // Initialize attendance records with existing statuses
+        const initialRecords = {};
+        data.students.forEach(student => {
+          initialRecords[student.student_id] = student.status || 'Present';
+        });
+        setEditAttendanceRecords(initialRecords);
 
-      if (!data.has_records) {
-        showToast('No attendance was marked on this date', 'info');
+        if (!data.has_records) {
+          showToast('No attendance was marked on this date', 'info');
+        }
+      } else {
+        // If no attendance records, fetch enrolled students for this subject
+        const studentsResponse = await api.get('/api/students/subject-enrolled/', {
+          params: {
+            subject_id: selectedClassForEdit.id
+          }
+        });
+
+        const enrolledStudents = studentsResponse.data.students.map(student => ({
+          student_id: student.id,
+          name: student.name,
+          roll_number: student.roll_number,
+          status: null // No previous attendance
+        }));
+
+        setEditStudents(enrolledStudents);
+
+        // Initialize with 'Present' as default
+        const initialRecords = {};
+        enrolledStudents.forEach(student => {
+          initialRecords[student.student_id] = 'Present';
+        });
+        setEditAttendanceRecords(initialRecords);
+
+        showToast('No attendance was marked on this date. You can mark it now.', 'info');
       }
     } catch (err) {
       console.error('Error fetching past attendance:', err);
@@ -457,6 +493,16 @@ const FacultyDashboard = () => {
                     title="Edit past attendance records"
                   >
                     ✏️ Edit Attendance
+                  </button>
+                  <button 
+                    className="action-btn grade-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = '/faculty/grades';
+                    }}
+                    title="Manage grades for this subject"
+                  >
+                    📊 Grades
                   </button>
                 </div>
               </div>

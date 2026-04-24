@@ -4,7 +4,7 @@ from .views import (
     EnrollmentViewSet, AcademicHistoryViewSet,
     SemesterRegistrationViewSet, RegistrationTrackingView,
     StudentRegistrationDetailView, ApproveRegistrationView,
-    RegistrationOptionsView
+    RegistrationOptionsView, SubjectEnrolledStudentsView
 )
 
 app_name = 'students'
@@ -22,4 +22,5 @@ urlpatterns = [
          StudentRegistrationDetailView.as_view(), 
          name='registration-detail'),
     path('approve-registration/', ApproveRegistrationView.as_view(), name='approve-registration'),
+    path('subject-enrolled/', SubjectEnrolledStudentsView.as_view(), name='subject-enrolled-students'),
 ]

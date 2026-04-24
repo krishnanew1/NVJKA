@@ -323,19 +323,26 @@ class AttendanceRecordsView(APIView):
             except Exception:
                 return Response({'error': 'Faculty profile not found for this user.'}, status=status.HTTP_403_FORBIDDEN)
             
-            if not ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists():
+            # Support both assignment mechanisms:
+            # - `ClassAssignment` records (older / more explicit mapping)  
+            # - `Subject.faculty` FK (used by current admin UI)
+            is_assigned = (
+                ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists()
+                or subject.faculty_id == faculty_profile.id
+            )
+            
+            if not is_assigned:
                 return Response(
                     {'error': 'You are not assigned to this subject.'},
                     status=status.HTTP_403_FORBIDDEN
                 )
         
-        # Get all students enrolled in this subject's course and semester
-        from apps.students.models import Enrollment
-        enrollments = Enrollment.objects.filter(
-            course=subject.course,
-            semester=subject.semester,
-            status='Active'
-        ).select_related('student', 'student__user')
+        # Get all students enrolled in this specific subject through RegisteredCourse
+        from apps.students.models import RegisteredCourse
+        registered_courses = RegisteredCourse.objects.filter(
+            subject=subject,
+            semester_registration__approval_status='approved'  # Only approved registrations
+        ).select_related('semester_registration__student', 'semester_registration__student__user')
         
         # Get existing attendance records for this date
         attendance_records = Attendance.objects.filter(
@@ -348,8 +355,8 @@ class AttendanceRecordsView(APIView):
         
         # Build response with all enrolled students
         students_data = []
-        for enrollment in enrollments:
-            student = enrollment.student
+        for reg_course in registered_courses:
+            student = reg_course.semester_registration.student
             students_data.append({
                 'student_id': student.id,
                 'name': student.user.get_full_name() or student.user.username,
@@ -402,7 +409,15 @@ class AttendanceRecordsView(APIView):
             except Exception:
                 return Response({'error': 'Faculty profile not found for this user.'}, status=status.HTTP_403_FORBIDDEN)
             
-            if not ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists():
+            # Support both assignment mechanisms:
+            # - `ClassAssignment` records (older / more explicit mapping)  
+            # - `Subject.faculty` FK (used by current admin UI)
+            is_assigned = (
+                ClassAssignment.objects.filter(faculty=faculty_profile, subject=subject).exists()
+                or subject.faculty_id == faculty_profile.id
+            )
+            
+            if not is_assigned:
                 return Response(
                     {'error': 'You are not assigned to this subject and cannot update its attendance.'},
                     status=status.HTTP_403_FORBIDDEN
@@ -587,19 +602,18 @@ class FacultyAttendanceSummaryView(APIView):
         subjects_data = []
         
         for subject in subjects:
-            # Get all students enrolled in this subject's course and semester
-            from apps.students.models import Enrollment
-            enrollments = Enrollment.objects.filter(
-                course=subject.course,
-                semester=subject.semester,
-                status='Active'
-            ).select_related('student', 'student__user')
+            # Get all students enrolled in this specific subject through RegisteredCourse
+            from apps.students.models import RegisteredCourse
+            registered_courses = RegisteredCourse.objects.filter(
+                subject=subject,
+                semester_registration__approval_status='approved'  # Only approved registrations
+            ).select_related('semester_registration__student', 'semester_registration__student__user')
             
             # Group students by batch (extract year from reg_no)
             batches_data = {}
             
-            for enrollment in enrollments:
-                student = enrollment.student
+            for reg_course in registered_courses:
+                student = reg_course.semester_registration.student
                 reg_no = student.enrollment_number or ''
                 
                 # Extract batch year from reg_no (first 4 digits)

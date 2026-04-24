@@ -58,16 +58,12 @@ const Layout = () => {
           { path: '/admin/faculty', label: 'Faculty', icon: '' },
           { path: '/admin/grades', label: 'Grades', icon: '' },
           { path: '/admin/timetables', label: 'Timetables', icon: '' },
-          { path: '/admin/exams', label: 'Exams', icon: '' },
-          { path: '/admin/reports', label: 'Reports', icon: '' },
         ];
       case 'FACULTY':
         return [
           { path: '/faculty', label: 'Dashboard', icon: '', isDashboard: true },
+          { path: '/faculty/grades', label: 'Grades', icon: '' },
           { path: '/faculty/attendance', label: 'Attendance', icon: '' },
-          { path: '/faculty/assignments', label: 'Assignments', icon: '' },
-          { path: '/faculty/exams', label: 'Exams', icon: '' },
-          { path: '/faculty/reports', label: 'Reports', icon: '' },
           { path: '/faculty/timetable', label: 'My Timetable', icon: '' },
           { path: '/faculty/works', label: 'My Works', icon: '' },
         ];
@@ -77,7 +73,6 @@ const Layout = () => {
           { path: '/student/register', label: 'Semester Reg.', icon: '' },
           { path: '/student/timetable', label: 'Timetable', icon: '' },
           { path: '/student/attendance', label: 'My Attendance', icon: '' },
-          { path: '/student/assignments', label: 'Assignments', icon: '' },
           { path: '/student/faculty', label: 'Faculty', icon: '' },
           { path: '/student/grades', label: 'Grades', icon: '' },
           { path: '/student/reports', label: 'Reports', icon: '' },

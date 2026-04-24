@@ -1,0 +1,559 @@
+/* Faculty Grades Page Styles */
+
+.faculty-grades {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.grades-header {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.grades-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.grades-header p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* Summary Section */
+.summary-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  opacity: 0.8;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin: 0 0 0.25rem 0;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Subjects Section */
+.subjects-section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.section-header p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Subject Cards Grid */
+.subject-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.subject-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.subject-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.subject-icon {
+  font-size: 2rem;
+}
+
+.subject-badge {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.subject-card-body {
+  margin-bottom: 1.5rem;
+}
+
+.subject-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.subject-code {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0 0 0.25rem 0;
+}
+
+.subject-course {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.subject-credits {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.subject-card-footer {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.grade-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.grade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Error State */
+.error-container {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--danger-color);
+}
+
+.error-icon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+
+.error-text {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.retry-button {
+  padding: 0.75rem 2rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.grading-modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.subject-info {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.subject-info h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.subject-info p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.modal-loading {
+  padding: 3rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Grades Table */
+.grades-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  min-width: 800px;
+}
+
+.grades-table thead {
+  background: var(--bg-secondary);
+}
+
+.grades-table th {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.grades-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+}
+
+.grades-table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+.grades-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.grades-table td {
+  padding: 0.75rem;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.student-roll {
+  font-weight: 600;
+  color: var(--primary-color);
+  white-space: nowrap;
+}
+
+.student-name {
+  font-weight: 500;
+  min-width: 150px;
+}
+
+.backlog-badge {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.marks-input input,
+.total-marks-input input {
+  width: 80px;
+  padding: 0.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color 0.3s ease;
+}
+
+.marks-input input:focus,
+.total-marks-input input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.percentage {
+  font-weight: 600;
+  color: var(--success-color);
+  white-space: nowrap;
+}
+
+.grade-select select {
+  width: 120px;
+  padding: 0.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.grade-select select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.remarks-input input {
+  width: 150px;
+  padding: 0.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color 0.3s ease;
+}
+
+.remarks-input input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* No Students State */
+.no-students {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.no-students p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Grading Actions */
+.grading-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border-color);
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--border-color);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-loading {
+  position: relative;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .faculty-grades {
+    padding: 1rem;
+  }
+
+  .subject-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 0.5rem;
+  }
+
+  .marks-input input,
+  .total-marks-input input {
+    width: 70px;
+  }
+
+  .grade-select select {
+    width: 100px;
+  }
+
+  .remarks-input input {
+    width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .grades-header {
+    padding: 1.5rem;
+  }
+
+  .grades-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .summary-section {
+    grid-template-columns: 1fr;
+  }
+
+  .subject-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grading-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .grades-table-container {
+    font-size: 0.85rem;
+  }
+
+  .marks-input input,
+  .total-marks-input input,
+  .grade-select select,
+  .remarks-input input {
+    width: 100%;
+    min-width: 60px;
+  }
+}
